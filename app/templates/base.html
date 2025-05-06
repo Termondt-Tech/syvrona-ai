@@ -1,61 +1,57 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>MYAI Streaming Chat</title>
-    <style>
-        body {
-            display: flex;
-            flex-direction: column;
-            align-items: center;
-            justify-content: flex-start;
-            height: 100vh;
-        }
-
-        h1 {
-            margin-bottom: 50px;
-        }
-
-        pre {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            display: inline;
-            max-width: 50%;
-        }
-    </style>
+    <title>Syvrona</title>
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/style.css') }}">
 </head>
-<body>
-    <div>
-        <nav>
-            <div>
-                <div>
-                    <div>
-                        {% if current_user.is_authenticated %}
-                            <a href="{{ url_for('main.chat') }}">
-                                Chat
-                            </a>
-                            <a href="{{ url_for('main.profile') }}">
-                                Profile
-                            </a>
-                            <a href="{{ url_for('auth.logout') }}">
-                                Logout
-                            </a>
-                        {% else %}
-                            <a href="{{ url_for('auth.login') }}">
-                                Login
-                            </a>
-                            <a href="{{ url_for('auth.signup') }}">
-                                Sign Up
-                            </a>
-                        {% endif %}
-                    </div>
-                </div>
-            </div>
-        </nav>
-    </div>
+
+<body class="bg-light">
+    <!-- Header / Navbar -->
+    <header class="navbar">
+        <div class="container">
+            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}" alt="Logo"
+                class="logo-image">
+
+            <!-- Hamburger button -->
+            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+                ☰
+            </button>
+
+            <!-- Nav links -->
+            <nav class="nav-links" id="navLinks">
+                <a href="{{ url_for('main.index') }}">Home</a>
+                {% if current_user.is_authenticated %}
+                <a href="{{ url_for('main.chat') }}">Chat</a>
+                <a href="{{ url_for('main.profile') }}">Profile</a>
+                <a href="{{ url_for('auth.logout') }}">Logout</a>
+                {% else %}
+                <a href="{{ url_for('auth.login') }}">Login</a>
+                <a href="{{ url_for('auth.signup') }}">Sign Up</a>
+                {% endif %}
+            </nav>
+        </div>
+    </header>
+
     {% block content %}
     {% endblock %}
-    
+    <footer class="site-footer">
+        <div class="footer-container">
+            <p>&copy; 2025 Termondt Tech. All rights reserved.</p>
+        </div>
+    </footer>
+
+    <script>
+        const menuToggle = document.getElementById('menuToggle');
+        const navLinks = document.getElementById('navLinks');
+
+        menuToggle.addEventListener('click', () => {
+            navLinks.classList.toggle('open');
+        });
+    </script>
+
 </body>
+
 </html>

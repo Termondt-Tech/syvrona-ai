@@ -1,26 +1,28 @@
 {% extends "base.html" %}
 
 {% block content %}
-<h1>MYAI Chat</h1>
-<form>
-    <textarea id="input" placeholder="Enter your message" cols="50"></textarea>
-    <button type="submit">Send</button>
-</form>
-<pre id="body"></pre>
+<h1 class="main-title">Syvrona Chat</h1>
+<main class="chat-container">
+    <form id="chat-form">
+        <textarea id="input" placeholder="Enter your message" cols="50" rows="4"></textarea>
 
-<script src="https://cdn.jsdelivr.net/npm/marked/marked.min.js"></script>
+        <button type="submit" class="btn-primary">Send</button>
+    </form>
+    <pre id="body"></pre>
+</main>
+<script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
 <script>
-    const body = document.getElementById('body');
-    const submit_btn = document.querySelector('button');
+    const form = document.querySelector('form');
     const input = document.getElementById('input');
+    const body = document.getElementById('body');
 
-    submit_btn.addEventListener("click", async (e) => {
+    form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
         const response = await fetch("/answer", {
             method: "POST",
-            headers: {"Content-Type": "application/json"},
-            body: JSON.stringify({message: input.value})
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ message: input.value })
         });
 
         const reader = response.body.getReader();
@@ -28,10 +30,12 @@
 
         while (true) {
             const { done, value } = await reader.read();
+            console.log("Chunk received:", value); // DEBUG
             output += new TextDecoder().decode(value);
             body.innerHTML = marked.parse(output);
 
             if (done) {
+                console.log("Stream complete"); // DEBUG
                 return;
             }
         }

@@ -1,0 +1,248 @@
+body {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: flex-start;
+    height: 100vh;
+}
+
+h1 {
+    margin-bottom: 50px;
+}
+
+pre {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: inline;
+    max-width: 50%;
+}
+
+/* Navbar styles */
+.navbar {
+    background-color: #ffffff;
+    border-bottom: 1px solid #e5e7eb;
+    padding: 1rem 0;
+    box-shadow: 0 1px 2px rgba(0, 0, 0, 0.05);
+    position: sticky;
+    top: 0;
+    z-index: 10;
+}
+
+.container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+}
+
+/* Logo */
+.logo {
+    font-size: 1.5rem;
+    font-weight: 700;
+    color: #2563eb;
+}
+
+/* Nav links */
+.nav-links a {
+    margin-left: 1.5rem;
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+.nav-links a:hover {
+    color: #2563eb;
+}
+
+/* Main content */
+.main-content {
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.main-content h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.main-content p {
+    font-size: 1.125rem;
+    color: #4b5563;
+}
+
+/* Form container */
+.form-container {
+    max-width: 500px;
+    margin: 2rem auto;
+    padding: 2rem;
+    background-color: #ffffff;
+    border-radius: 0.5rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.05);
+}
+
+/* Title */
+.form-title {
+    font-size: 1.75rem;
+    margin-bottom: 1.5rem;
+    text-align: center;
+    color: #1f2937;
+}
+
+/* Form group layout */
+.form-group {
+    margin-bottom: 1.25rem;
+    display: flex;
+    flex-direction: column;
+}
+
+.form-group label {
+    font-weight: 600;
+    margin-bottom: 0.5rem;
+    color: #374151;
+}
+
+.form-group input {
+    padding: 0.5rem 0.75rem;
+    border: 1px solid #d1d5db;
+    border-radius: 0.375rem;
+    font-size: 1rem;
+    color: #111827;
+    background-color: #f9fafb;
+}
+
+.form-group input:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+}
+
+/* Submit button */
+.btn-primary {
+    background-color: #2563eb;
+    color: #ffffff;
+    font-weight: 600;
+    padding: 0.75rem 1.5rem;
+    border: none;
+    border-radius: 0.375rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease-in-out;
+}
+
+.btn-primary:hover {
+    background-color: #1e40af;
+}
+
+.form-actions {
+    text-align: center;
+    margin-top: 1rem;
+}
+
+/* Responsive layout for nav */
+.menu-toggle {
+    display: none;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
+}
+
+.nav-links {
+    display: flex;
+    gap: 1.5rem;
+}
+
+.nav-links a {
+    text-decoration: none;
+    color: #374151;
+    font-weight: 500;
+}
+
+.nav-links a:hover {
+    color: #2563eb;
+}
+
+/* Mobile styles */
+@media (max-width: 768px) {
+    .menu-toggle {
+        display: block;
+    }
+
+    .nav-links {
+        display: none;
+        flex-direction: column;
+        background-color: #ffffff;
+        position: absolute;
+        top: 64px;
+        /* adjust based on your header height */
+        right: 1rem;
+        padding: 1rem;
+        box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+        border-radius: 0.5rem;
+    }
+
+    .nav-links.open {
+        display: flex;
+    }
+
+    .nav-links a {
+        margin: 0.5rem 0;
+    }
+}
+
+/* Footer styling */
+.site-footer {
+    background-color: #f3f4f6;
+    border-top: 1px solid #e5e7eb;
+    padding: 1.5rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.main-description {
+    font-size: 1.125rem;
+    color: #374151;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.chat-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+}
+
+pre#body {
+    white-space: pre-wrap;
+    word-wrap: break-word;
+    display: block;
+    max-width: 100%;
+    width: 100%;
+    background-color: #f9fafb;
+    padding: 1rem;
+    margin: 1rem auto;
+    border: 1px solid #e5e7eb;
+    border-radius: 0.375rem;
+    font-family: monospace;
+    font-size: 0.95rem;
+    overflow-y: auto;
+}

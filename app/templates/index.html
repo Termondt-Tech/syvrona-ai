@@ -1,15 +1,24 @@
 {% extends "base.html" %}
 {% block content %}
-    <h2>Welcome To MYAI </h2>
-    <p>MYAI is a simple chatbot application built with Flask.</p>
-<form action="{{ url_for("main.index")}}" method="post">
-<label for="query">Query:</label>
-<textarea type="text" id="query" name="query" placeholder="query">
-</textarea>
-<button type="submit">Send</button>
-</form>
-{% if reply %}
-    <h3>Reply:</h3>
-    <p>{{ reply }}</p>
-{% endif %}
+<main class="main-content">
+    <h1 class="main-title">Welcome to Syvrona</h1>
+    <p class="main-description">
+        Syvrona is your personal AI companion — designed to help you think, write, and explore ideas through natural
+        conversation.
+        Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona provides
+        a clean,
+        focused chat experience with memory support and custom enhancements.
+    </p>
+    <p class="main-description">
+        Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface — making it
+        ideal for professionals,
+        creatives, and everyday users alike.
+    </p>
+    <p class="main-description">
+        Syvrona is currently available for personal and exploratory use. Future versions may introduce new features,
+        customization options,
+        and expanded access based on user feedback and evolving needs.
+    </p>
+</main>
+
 {% endblock %}

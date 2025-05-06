@@ -2,6 +2,7 @@ from contextlib import contextmanager
 from http import client
 import logging
 from flask import Blueprint, Response, current_app, render_template, request, stream_with_context
+from werkzeug.security import generate_password_hash
 from flask_login import login_required, current_user
 from openai import OpenAI
 
@@ -17,23 +18,47 @@ logger = logging.getLogger(__name__)
 # Define the index route
 
 
-@main.route('/', methods=["GET", "POST"])
+@main.route('/', methods=["GET"])
 @login_required
 def index():
-    if request.method == "POST":
-        app.logger.info("POST request received")
-        query = request.form.get("query")
-        reply = openai_handler.chat(query)
-        logger.info(f"Query: {query} Reply: {reply}")
-        return render_template("index.html", reply=reply)
-    else:
-        return render_template("index.html")
+    return render_template("index.html")
 
 
 @main.route('/profile')
 @login_required
 def profile():
-    return render_template('profile.html', name=current_user.name)
+    profile_data = {
+        "name": current_user.name,
+        "email": current_user.email
+    }
+    return render_template('profile.html', user=profile_data)
+
+
+@main.route('/profile/update', methods=["POST"])
+@login_required
+def update_profile():
+    try:
+
+        name = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+
+        if not name or not email:
+            return {"error": "Name and email are required"}, 400
+
+        current_user.name = name
+        current_user.email = email
+        if password:
+            password = generate_password_hash(
+                password, method='pbkdf2', salt_length=16)
+            current_user.set_password(password)
+        app.db.session.commit()
+
+        logger.info(f"Profile updated for user: {current_user.get_id()}")
+        return {"message": "Profile updated successfully"}, 200
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        return {"error": "Failed to update profile"}, 500
 
 
 @main.route('/chat')
