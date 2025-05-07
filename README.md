@@ -1,113 +1,47 @@
-# Build a Chat Bot with Python & Flask
+# Syvnora
 
-## Setup Local Environment
+![Syvrona Logo](app/static/images/syvrona-logo-darktext-transparent.png)
 
-### Required Environment Varibles
+Syvnora is an AI-powered technician assistant platform, built with Laravel and designed to connect with OpenAI, internal knowledge bases, and third-party systems like Drupal. It’s developed and maintained by [Termondt Tech](https://termondttech.com).
 
-**You must create an evironment variable named OPENAI_API_KEY and containing your OpenAI API key.**
+---
 
-#### Windows
+## 🚀 Tech Stack
 
-You can create or change environment variables in the Environment Variables dialog box or by excuting the commonad below. To open the Environment Variables dialog box: In Search, search for and then select: Edit environment variables for your account.
+- Python
+- Flask
+- Docker
+- Sqlite
+- OpenAI API integration
 
-##### Command Line
+---
 
-```bash
-set OPENAI_API_KEY=Your OpenAI API Key
-```
-
-#### MacOS/Linux
-
-```bash
-export OPENAI_API_KEY=Your OpenAI API Key
-```
-
-## Verify Local Environment
-
-### Create Virtual Environment
-
-In a terminal run the following commands from the root folder of the forked project.
-
-#### Windows
+## 🧪 Local Development Setup
 
 ```bash
-py -m venv .\.venv
+# Clone the repository
+git clone https://github.com/Termondt-Tech/syvrona-ai.git
+cd syvrona-ai
+
+# Spin up local containers
+docker-compose up -d --build
+
+# Enter the app container
+docker exec -it syvnora-ai-web bash
 ```
 
-Or
+App runs at: [http://localhost:5001](http://localhost:5001)
 
-```bash
-python -m venv .\.venv
-```
+---
 
-#### macOS & Linux
+## 📄 License
 
-```bash
-python -m venv ./.venv
-```
+This project uses a proprietary license and is the intellectual property of Termondt Tech LLC.  
+See the [LICENSE](LICENSE) file for full terms.
 
-Once that completes, also run this command from the same folder.
+---
 
-#### Windows
+## 🤝 Maintained By
 
-```bash
-.\.venv\Scripts\activate
-```
-
-#### macOS & Linux
-
-```bash
-source .venv/bin/activate
-```
-
-### Install Dependencies
-
-Now that you are working in the virtualenv, install the project dependencies with the following command.
-
-```bash
-pip install -r requirements.txt
-```
-
-### Create database
-
-The following command creates a new, empty database:
-
-```bash
-./.venv/bin/python tests/create_database.py
-```
-
-After creating the database you need to create a new user. Run the application (seeing Running Flask section for instructions), then navigate to "/signup" to create a new user.
-
-### Verify Setup
-
-In order to verify that everything is setup correctly, run the following command, which should show you any failing tests.
-
-```bash
-pytest
-```
-
-Every time you want to check your work locally you can type that command, and it will report the status of every task in the project.
-
-### Direct Python Execution
-
-#### MacOS
-
-```bash
-./.venv/bin/python openai-streaming-handler.py
-```
-
-#### Windows
-
-```bash
-py openai-streaming-handler.py
-```
-
-### Running in Flask
-
-You can preview your work by running `flask run` in the root of your fork and then visit`http://localhost:5000` in your browser.
-
-### Docker Build and Run
-
-```bash
-docker-compose up --build
-```
+**[Rich Termondt](https://termondttech.com)**  
+Founder & Principal Architect at Termondt Tech LLC
