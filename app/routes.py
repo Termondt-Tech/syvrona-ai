@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from http import client
 import logging
-from flask import Blueprint, Response, current_app, render_template, request, stream_with_context
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, stream_with_context, url_for
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, current_user
 from openai import OpenAI
@@ -19,7 +19,6 @@ logger = logging.getLogger(__name__)
 
 
 @main.route('/', methods=["GET"])
-@login_required
 def index():
     return render_template("index.html")
 
@@ -44,8 +43,8 @@ def update_profile():
         password = request.form.get("password")
 
         if not name or not email:
-            return {"error": "Name and email are required"}, 400
-
+            flash('Name and email are required.', 'warning')
+            return redirect(url_for('main.profile'))
         current_user.name = name
         current_user.email = email
         if password:
@@ -55,10 +54,12 @@ def update_profile():
         app.db.session.commit()
 
         logger.info(f"Profile updated for user: {current_user.get_id()}")
-        return {"message": "Profile updated successfully"}, 200
+        flash("Profile updated successfully!", "success")
+        return redirect(url_for('main.profile'))
     except Exception as e:
         logger.error(f"Error updating profile: {e}")
-        return {"error": "Failed to update profile"}, 500
+        flash("Error updating profile.", "error")
+        return redirect(url_for('main.profile'))
 
 
 @main.route('/chat')

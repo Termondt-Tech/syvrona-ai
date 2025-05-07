@@ -1,0 +1,31 @@
+/* === typography.css === */
+.main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.main-description {
+    font-size: 1.125rem;
+    color: #374151;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+.main-content {
+    padding: 2rem 1rem;
+    text-align: center;
+}
+
+.main-content h1 {
+    font-size: 2rem;
+    margin-bottom: 0.5rem;
+}
+
+.main-content p {
+    font-size: 1.125rem;
+    color: #4b5563;
+}
