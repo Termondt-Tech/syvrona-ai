@@ -2,14 +2,14 @@
 
 ![Syvrona Logo](app/static/images/syvrona-logo-darktext-transparent.png)
 
-Syvnora is an AI-powered technician assistant platform, built with Laravel and designed to connect with OpenAI, internal knowledge bases, and third-party systems like Drupal. It’s developed and maintained by [Termondt Tech](https://termondttech.com).
+Syvnora is an AI-powered technician assistant platform, built with Flask and designed to connect with OpenAI, internal knowledge bases, and third-party systems. It’s developed and maintained by [Termondt Tech](https://termondttech.com).
 
 ---
 
 ## 🚀 Tech Stack
 
-- Python
-- Flask
+- Python 3.9
+- Flask 3
 - Docker
 - Sqlite
 - OpenAI API integration
@@ -27,7 +27,7 @@ cd syvrona-ai
 docker-compose up -d --build
 
 # Enter the app container
-docker exec -it syvnora-ai-web bash
+docker exec -it syvrona-ai-web-1 bash
 ```
 
 App runs at: [http://localhost:5001](http://localhost:5001)
