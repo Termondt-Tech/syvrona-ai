@@ -4,7 +4,14 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    {% block header %}
     <title>Syvrona</title>
+    <meta name="description" content="Syvrona: Your personal AI companion for creative and technical chat.">
+    <link rel="canonical" href="https://syvrona.com/" />
+    {% endblock %}
+
+
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon"> 
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
@@ -20,7 +27,7 @@
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container">
-            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}" alt="Logo"
+            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}" alt="Syvrona AI Chat Logo"
                 class="logo-image">
 
             <!-- Hamburger button -->
@@ -48,8 +55,16 @@
     <footer class="site-footer">
         <div class="footer-container">
             <p>&copy; 2025 Termondt Tech. All rights reserved.</p>
+            <p>
+                <a href="/privacy" class="footer-link">Privacy Policy</a>
+                &nbsp;|&nbsp;
+                <a href="/terms" class="footer-link">Terms of Service</a>
+            </p>
         </div>
     </footer>
+    
+    
+    
 
     <script>
         const menuToggle = document.getElementById('menuToggle');

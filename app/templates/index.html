@@ -1,20 +1,67 @@
 {% extends "base.html" %}
+
+{% block header %}
+<title>Syvrona – AI Chat Assistant for Thinking, Writing & Exploration</title>
+<meta name="description"
+    content="Syvrona is an intelligent AI companion designed for brainstorming, writing, and deep conversation. A clean and simple interface for creators, professionals, and curious minds.">
+<!-- Open Graph -->
+<meta property="og:title" content="Syvrona – Your Personal AI Chat Assistant">
+<meta property="og:description"
+    content="Chat naturally, write better, and explore ideas with Syvrona. A smart, streamlined AI assistant for professionals, creatives, and curious minds.">
+<meta property="og:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
+<meta property="og:url" content="https://syvrona.com/">
+<meta property="og:type" content="website">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Syvrona – Your Personal AI Chat Assistant">
+<meta name="twitter:description"
+    content="A simple, smart AI assistant built to help you brainstorm, write, and explore ideas.">
+<meta name="twitter:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
+<link rel="canonical" href="https://syvrona.com/" />
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+    {
+      "@context": "https://schema.org",
+      "@type": "SoftwareApplication",
+      "name": "Syvrona",
+      "operatingSystem": "All",
+      "applicationCategory": "ChatbotApplication",
+      "offers": {
+        "@type": "Offer",
+        "price": "0",
+        "priceCurrency": "USD"
+      },
+      "description": "Syvrona is an AI-powered chat assistant built for writing, thinking, and exploring ideas.",
+      "url": "https://syvrona.com/",
+      "publisher": {
+        "@type": "Organization",
+        "name": "Termondt Tech LLC",
+        "url": "https://termondttech.com"
+      }
+    }
+    </script>
+
+{% endblock %}
+
+
 {% block content %}
 <main class="main-content">
     <h1 class="main-title">Welcome to Syvrona</h1>
-    <p class="main-description">
+    <p>
         Syvrona is your personal AI companion — designed to help you think, write, and explore ideas through natural
         conversation.
         Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona provides
         a clean,
         focused chat experience with memory support and custom enhancements.
     </p>
-    <p class="main-description">
+    <p>
         Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface — making it
         ideal for professionals,
         creatives, and everyday users alike.
     </p>
-    <p class="main-description">
+    <p>
         Syvrona is currently available for personal and exploratory use. Future versions may introduce new features,
         customization options,
         and expanded access based on user feedback and evolving needs.

@@ -22,6 +22,14 @@ logger = logging.getLogger(__name__)
 def index():
     return render_template("index.html")
 
+@main.route('/privacy', methods=["GET"])
+def privacy():
+    return render_template("privacy.html")
+
+@main.route('/terms', methods=["GET"])
+def terms():
+    return render_template("terms.html")
+
 
 @main.route('/profile')
 @login_required
