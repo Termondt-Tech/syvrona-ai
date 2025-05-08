@@ -3,13 +3,13 @@
 {% block content %}
 <h1 class="main-title">Syvrona Chat</h1>
 <main class="chat-container">
+    <pre id="body"></pre>
     <form id="chat-form">
         <div class="input-row">
         <textarea id="input" placeholder="Enter your message" rows="3"></textarea>
         <button type="submit" class="btn-primary">Send</button>
         </div>
     </form>
-    <pre id="body"></pre>
 </main>
 <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
 <script>
