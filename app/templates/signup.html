@@ -1,39 +1,45 @@
 {% extends "base.html" %}
 
+{% block header %}
+<title>Create Account – Syvrona</title>
+<meta name="description" content="Create your free Syvrona account to start using your intelligent AI chat assistant.">
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
 {% block content %}
 <main class="form-container">
-    <h1 class="form-title">Sign Up</h3>
-        {% with messages = get_flashed_messages(with_categories=True) %}
-        {% if messages %}
-        {% for category, message in messages %}
-        <div class="flash-message flash-{{ category|lower }}">
-            {{ message }}
+    <h1 class="form-title">Sign Up</h1>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message flash-{{ category|lower }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+
+    <form method="POST" action="/signup">
+        <div class="form-group">
+            <div class="control">
+                <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+            </div>
         </div>
-        {% endfor %}
-        {% endif %}
-        {% endwith %}
 
-        <form method="POST" action="/signup">
-            <div class="form-group">
-                <div class="control">
-                    <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
-                </div>
+        <div class="form-group">
+            <div class="control">
+                <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
             </div>
+        </div>
 
-            <div class="form-group">
-                <div class="control">
-                    <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
-                </div>
+        <div class="form-group">
+            <div class="control">
+                <input class="input is-large" type="password" name="password" placeholder="Password">
             </div>
-
-            <div class="form-group">
-                <div class="control">
-                    <input class="input is-large" type="password" name="password" placeholder="Password">
-                </div>
-            </div>
-            <div class="form-actions">
-                <button class="btn-primary" type="submit">Sign Up</button>
-            </div>
-        </form>
+        </div>
+        <div class="form-actions">
+            <button class="btn-primary" type="submit">Sign Up</button>
+        </div>
+    </form>
 </main>
 {% endblock %}

@@ -1,13 +1,19 @@
 {% extends "base.html" %}
 
+{% block header %}
+<title>Chat – Syvrona</title>
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
+
 {% block content %}
 <h1 class="main-title">Syvrona Chat</h1>
 <main class="chat-container">
     <pre id="body"></pre>
     <form id="chat-form">
         <div class="input-row">
-        <textarea id="input" placeholder="Enter your message" rows="3"></textarea>
-        <button type="submit" class="btn-primary">Send</button>
+            <textarea id="input" placeholder="Enter your message" rows="3"></textarea>
+            <button type="submit" class="btn-primary">Send</button>
         </div>
     </form>
 </main>

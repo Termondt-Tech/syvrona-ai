@@ -1,55 +1,60 @@
 {% extends "base.html" %}
 
+{% block header %}
+<title>Profile – Syvrona</title>
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+
 {% block content %}
 <main class="form-container">
   <h1 class="form-title">
     Welcome, {{ user.name }}!
   </h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-      {{ message }}
+  {% with messages = get_flashed_messages(with_categories=True) %}
+  {% if messages %}
+  {% for category, message in messages %}
+  <div class="flash-message flash-{{ category|lower }}">
+    {{ message }}
+  </div>
+  {% endfor %}
+  {% endif %}
+  {% endwith %}
+
+  <p class="form-description">
+    Update your profile information below.
+  </p>
+  <form method="POST" action="/profile/update">
+    <div class="form-group">
+      <label class="label" for="username">Name</label>
+      <div class="control">
+        <input class="input" type="text" id="username" name="username" value="{{ user.name }}" required>
+      </div>
     </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    <div class="form-group">
+      <label class="label" for="email">Email</label>
+      <div class="control">
+        <input class="input" type="email" id="email" name="email" value="{{ user.email }}" required>
+      </div>
+    </div>
 
-    <p class="form-description">
-      Update your profile information below.
-    </p>
-    <form method="POST" action="/profile/update">
-      <div class="form-group">
-        <label class="label" for="username">Name</label>
-        <div class="control">
-          <input class="input" type="text" id="username" name="username" value="{{ user.name }}" required>
-        </div>
+    <div class="form-group">
+      <label class="label" for="password">New Password</label>
+      <div class="control">
+        <input class="input" type="password" id="password" name="password"
+          placeholder="Leave blank to keep current password">
       </div>
-      <div class="form-group">
-        <label class="label" for="email">Email</label>
-        <div class="control">
-          <input class="input" type="email" id="email" name="email" value="{{ user.email }}" required>
-        </div>
+    </div>
+    <div class="form-group">
+      <label class="label" for="confirm_password">Confirm New Password</label>
+      <div class="control">
+        <input class="input" type="password" id="confirm_password" name="confirm_password"
+          placeholder="Leave blank to keep current password">
       </div>
+    </div>
 
-      <div class="form-group">
-        <label class="label" for="password">New Password</label>
-        <div class="control">
-          <input class="input" type="password" id="password" name="password"
-            placeholder="Leave blank to keep current password">
-        </div>
-      </div>
-      <div class="form-group">
-        <label class="label" for="confirm_password">Confirm New Password</label>
-        <div class="control">
-          <input class="input" type="password" id="confirm_password" name="confirm_password"
-            placeholder="Leave blank to keep current password">
-        </div>
-      </div>
-
-      <div class="form-actions">
-        <button class="btn-primary" type="submit">Update Profile</button>
-      </div>
-    </form>
+    <div class="form-actions">
+      <button class="btn-primary" type="submit">Update Profile</button>
+    </div>
+  </form>
 </main>
 {% endblock %}
