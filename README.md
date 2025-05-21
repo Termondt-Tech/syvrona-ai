@@ -28,6 +28,11 @@ docker-compose up -d --build
 
 # Enter the app container
 docker exec -it syvrona-ai-web-1 bash
+
+# Migrate database changes - assuming flask db init has already been run
+flask db migrate -m "migration comments..."
+flask db upgrade
+
 ```
 
 App runs at: [http://localhost:5001](http://localhost:5001)

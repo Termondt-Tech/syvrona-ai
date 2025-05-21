@@ -1,7 +1,7 @@
 from contextlib import contextmanager
 from http import client
 import logging
-from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, stream_with_context, url_for
+from flask import Blueprint, Response, current_app, flash, redirect, render_template, request, stream_with_context, url_for, session
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, current_user
 from openai import OpenAI
@@ -9,6 +9,8 @@ from openai import OpenAI
 import app
 from app.handler import openai_handler
 from app.handler.openai_streamer import OpenAIStreamer
+from app.handler.conversation_handler import create_conversation, get_user_conversations, update_conversation_title, get_conversation, get_conversation_messages, delete_conversation
+
 
 # Create a Blueprint named 'main'
 main = Blueprint('main', __name__)
@@ -22,9 +24,11 @@ logger = logging.getLogger(__name__)
 def index():
     return render_template("index.html")
 
+
 @main.route('/privacy', methods=["GET"])
 def privacy():
     return render_template("privacy.html")
+
 
 @main.route('/terms', methods=["GET"])
 def terms():
@@ -70,12 +74,26 @@ def update_profile():
         return redirect(url_for('main.profile'))
 
 
+@main.route('/chat/new')
+@login_required
+def new_chat():
+    logger.info(f"New chat for user: {current_user.get_id()}")
+    session.pop("conversation_id", None)
+    return redirect(url_for('main.chat'))
+
+
 @main.route('/chat')
 @login_required
 def chat():
-    print("Current User:", current_user.get_id())
     logger.info(f"Current User: {current_user.get_id()}")
-    return render_template('chat.html')
+    conversation_id = session.get("conversation_id")
+    messages = []
+
+    if conversation_id:
+        conversation = get_conversation(conversation_id)
+        if conversation and conversation.user_id == current_user.id:
+            messages = get_conversation_messages(conversation_id)
+    return render_template('chat.html', messages=messages)
 
 
 @main.route("/answer", methods=["GET", "POST"])
@@ -85,13 +103,92 @@ def answer():
     message = data["message"]
     logger.info(f"Current User: {current_user.get_id()}")
     user_id = current_user.get_id()
+    conversation_id = session.get("conversation_id")
+    if not conversation_id:
+        conversation = create_conversation(user_id, message)
+        conversation_id = conversation.id
+        logger.info(f"New conversation created with ID: {conversation_id}")
+        # Store the conversation ID in the session
+        session["conversation_id"] = conversation_id
 
     streamer = OpenAIStreamer()
 
     @stream_with_context
     def generate():
-        response = streamer.chat(message, user_id)
+        response = streamer.chat(message, user_id, conversation_id)
         for res in response:
             yield res
 
     return Response(generate(), content_type="text/plain")
+
+
+@main.route("/conversations")
+@login_required
+def conversations():
+    user_id = current_user.get_id()
+    convos = get_user_conversations(user_id)
+    logger.info(f"User {user_id} has {len(convos)} conversations.")
+    if not convos:
+        flash("No conversations found.", "info")
+        return render_template("conversations.html", conversations=[])
+    # Check if the user has conversations
+    return render_template("conversations.html", conversations=convos)
+
+
+@main.route("/conversation/<int:conversation_id>/edit", methods=["POST"])
+@login_required
+def edit_conversation_title(conversation_id):
+    update_conversation_title(conversation_id, request.form["title"])
+    logger.info(f"Conversation {conversation_id} title updated.")
+    flash("Conversation title updated successfully!", "success")
+    # Redirect to the conversations page
+    return redirect(url_for("main.conversations"))
+
+
+@main.route("/conversation/<int:conversation_id>")
+@login_required
+def resume_conversation(conversation_id):
+    conversation = get_conversation(conversation_id)
+    if conversation is None:
+        flash("Conversation not found.", "error")
+        return redirect(url_for("main.conversations"))
+    if conversation.user_id != current_user.id:
+        return "Unauthorized", 403
+    session["conversation_id"] = conversation.id
+    logger.info(f"Resumed conversation with ID: {conversation_id}")
+    return redirect(url_for("main.chat"))
+
+
+@main.route("/conversation/<int:conversation_id>/view")
+@login_required
+def view_conversation(conversation_id):
+    convo = get_conversation(conversation_id)
+    if convo is None:
+        flash("Conversation not found.", "error")
+        return redirect(url_for("main.conversations"))
+    if convo.user_id != current_user.id:
+        return "Unauthorized", 403
+
+    messages = get_conversation_messages(conversation_id)
+
+    if messages is None:
+        flash("Messages not found.", "error")
+        return redirect(url_for("main.conversations"))
+
+    logger.info(
+        f"Viewing conversation with ID: {conversation_id} for user: {current_user.get_id()}")
+    return render_template("view_conversation.html", conversation=convo, messages=messages)
+
+
+@main.route('/conversation/<int:conversation_id>/delete', methods=["POST"])
+@login_required
+def delete_conversation_route(conversation_id):
+    convo = get_conversation(conversation_id)
+    if not convo or convo.user_id != current_user.id:
+        return "Unauthorized", 403
+    session.pop("conversation_id", None)  # In case it was active
+    delete_conversation(conversation_id)
+    flash("Conversation deleted.", "success")
+    logger.info(
+        f"Conversation {conversation_id} deleted for user: {current_user.get_id()}")
+    return redirect(url_for("main.conversations"))

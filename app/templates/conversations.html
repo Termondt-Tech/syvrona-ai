@@ -1,0 +1,92 @@
+{% extends "base.html" %}
+{% block header %}
+<title>My Conversations – Syvrona</title>
+<style>
+    .conversation-list {
+        list-style-type: none;
+        padding: 0;
+        margin: 30px auto;
+        max-width: 800px;
+    }
+
+    .conversation-list li {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        background-color: #fff;
+        padding: 15px 20px;
+        border-radius: 10px;
+        box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+        margin-bottom: 15px;
+        flex-wrap: wrap;
+    }
+
+    .conversation-title-form {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        flex: 1;
+    }
+
+    .conversation-title-form input[type="text"] {
+        width: 100%;
+        max-width: 300px;
+        padding: 8px;
+        border-radius: 6px;
+        border: 1px solid #ccc;
+    }
+
+    .conversation-actions {
+        display: flex;
+        gap: 10px;
+        margin-left: 10px;
+    }
+
+    .conversation-actions a {
+        text-decoration: none;
+        padding: 6px 12px;
+        border-radius: 5px;
+        background-color: #0056b3;
+        color: white;
+        font-size: 0.9rem;
+    }
+
+    .conversation-actions a:hover {
+        background-color: #004494;
+    }
+</style>
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message flash-{{ category|lower }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <h1 class="main-title">My Conversations</h1>
+    <ul class="conversation-list">
+        {% for convo in conversations %}
+        <li>
+            <form action="{{ url_for('main.edit_conversation_title', conversation_id=convo.id) }}" method="POST"
+                style="display:inline;">
+                <input type="text" name="title" value="{{ convo.title }}" />
+                <button type="submit">Save</button>
+            </form>
+            <form action="{{ url_for('main.delete_conversation_route', conversation_id=convo.id) }}" method="POST"
+                onsubmit="return confirm('Are you sure?');">
+                <button type="submit" class="btn-danger">Delete</button>
+            </form>
+            <a href="{{ url_for('main.view_conversation', conversation_id=convo.id) }}">View</a>
+            <a href="{{ url_for('main.resume_conversation', conversation_id=convo.id) }}">Resume</a>
+        </li>
+        {% else %}
+        <li>No conversations yet.</li>
+        {% endfor %}
+    </ul>
+</main>
+{% endblock %}

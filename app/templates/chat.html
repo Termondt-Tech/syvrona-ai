@@ -9,7 +9,14 @@
 {% block content %}
 <h1 class="main-title">Syvrona Chat</h1>
 <main class="chat-container">
-    <pre id="body"></pre>
+    <div id="body">
+        {% for msg in messages %}
+        <div class="{{ msg.role }}-message">
+            <strong>{{ msg.role.capitalize() }}:</strong>
+            <p>{{ msg.content }}</p>
+        </div>
+        {% endfor %}
+    </div>
     <form id="chat-form">
         <div class="input-row">
             <textarea id="input" placeholder="Enter your message" rows="3"></textarea>
@@ -26,6 +33,12 @@
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
 
+        const userDiv = document.createElement("div");
+        userDiv.className = "user-message";
+        userDiv.innerHTML = marked.parse(input.value);
+        body.appendChild(userDiv);
+        body.scrollTop = body.scrollHeight;
+
         const response = await fetch("/answer", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
@@ -34,19 +47,22 @@
 
         const reader = response.body.getReader();
         let output = "";
+        const assistantDiv = document.createElement("div");
+        assistantDiv.className = "assistant-message";
+        body.appendChild(assistantDiv);
 
         while (true) {
             const { done, value } = await reader.read();
-            console.log("Chunk received:", value); // DEBUG
-            output += new TextDecoder().decode(value);
-            body.innerHTML = marked.parse(output);
+            if (done) break;
 
-            if (done) {
-                console.log("Stream complete"); // DEBUG
-                return;
-            }
+            const chunk = new TextDecoder().decode(value);
+            output += chunk;
+            assistantDiv.innerHTML = marked.parse(output);
+            body.scrollTop = body.scrollHeight;
         }
 
-    })
+        input.value = "";
+    });
 </script>
+
 {% endblock %}

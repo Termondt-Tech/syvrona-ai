@@ -11,7 +11,7 @@
     {% endblock %}
 
 
-    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon"> 
+    <link rel="icon" href="{{ url_for('static', filename='images/favicon.ico') }}" type="image/x-icon">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/base.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/navbar.css') }}">
@@ -27,8 +27,8 @@
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container">
-            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}" alt="Syvrona AI Chat Logo"
-                class="logo-image">
+            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}"
+                alt="Syvrona AI Chat Logo" class="logo-image">
 
             <!-- Hamburger button -->
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
@@ -39,7 +39,8 @@
             <nav class="nav-links" id="navLinks">
                 <a href="{{ url_for('main.index') }}">Home</a>
                 {% if current_user.is_authenticated %}
-                <a href="{{ url_for('main.chat') }}">Chat</a>
+                <a href="{{ url_for('main.new_chat') }}">Chat</a>
+                <a href="{{ url_for('main.conversations') }}">Conversations</a>
                 <a href="{{ url_for('main.profile') }}">Profile</a>
                 <a href="{{ url_for('auth.logout') }}">Logout</a>
                 {% else %}
@@ -62,9 +63,9 @@
             </p>
         </div>
     </footer>
-    
-    
-    
+
+
+
 
     <script>
         const menuToggle = document.getElementById('menuToggle');

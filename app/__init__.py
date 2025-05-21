@@ -1,6 +1,7 @@
 import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
+from flask_migrate import Migrate
 from flask_login import LoginManager
 
 from app.config import Config
@@ -8,6 +9,8 @@ from app.config import Config
 from .log_config import configure_logging
 
 db = SQLAlchemy()
+migrate = Migrate()  # ← create Migrate instance
+
 login_manager = LoginManager()
 
 logger = logging.getLogger(__name__)
@@ -19,6 +22,8 @@ def create_app():
 
     db.init_app(app)
     logger.info("Database initialized")
+    migrate.init_app(app, db)  # ← bind Migrate to app/db
+    logger.info("Migration initialized")
 
     login_manager.init_app(app)
     login_manager.login_view = 'auth.login'

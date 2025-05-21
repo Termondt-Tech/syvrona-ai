@@ -1,0 +1,25 @@
+{% extends "base.html" %}
+{% block header %}
+<title>{{ conversation.title }}</title>
+{% endblock %}
+
+{% block content %}
+<h1 class="main-title">{{ conversation.title }}</h1>
+<main class="chat-container">
+    <p><em>Started: {{ conversation.created_at.strftime('%Y-%m-%d %I:%M %p') }}</em></p>
+    <div class="conversation-history">
+        {% for msg in messages %}
+        <div class="{{ msg.role }}-message">
+            <strong>{{ msg.role.capitalize() }}:</strong>
+            <p>{{ msg.content }}</p>
+        </div>
+        {% else %}
+        <p>No messages in this conversation.</p>
+        {% endfor %}
+    </div>
+
+    <form action="{{ url_for('main.resume_conversation', conversation_id=conversation.id) }}" method="get">
+        <button class="btn-primary">Continue This Conversation</button>
+    </form>
+</main>
+{% endblock %}

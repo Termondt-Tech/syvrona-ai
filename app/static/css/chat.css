@@ -69,3 +69,19 @@ pre#body {
     font-size: 0.95rem;
     overflow-y: auto;
 }
+
+.user-message {
+    background: #eef;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+}
+
+.assistant-message {
+    background: #f5f5f5;
+    padding: 10px;
+    border-radius: 5px;
+    margin: 10px 0;
+    white-space: pre-wrap;
+}
