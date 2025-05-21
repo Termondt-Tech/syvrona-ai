@@ -168,3 +168,4 @@ cython_debug/
 .flaskenv
 .vscode/settings.json
 .flaskenv.prod
+.env.prod
