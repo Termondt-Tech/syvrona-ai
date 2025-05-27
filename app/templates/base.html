@@ -42,6 +42,9 @@
                 <a href="{{ url_for('main.new_chat') }}">Chat</a>
                 <a href="{{ url_for('main.conversations') }}">Conversations</a>
                 <a href="{{ url_for('main.profile') }}">Profile</a>
+                {% if current_user.is_admin %}
+                <a href="{{ url_for('admin.user_list') }}" class="admin-link">Admin</a>
+                {% endif %}
                 <a href="{{ url_for('auth.logout') }}">Logout</a>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}">Login</a>

@@ -1,3 +1,6 @@
+from flask_login import current_user
+from functools import wraps
+from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -31,12 +34,17 @@ def login_post():
 
     # check if the user actually exists
     # take the user-supplied password, hash it, and compare it to the hashed password in the database
-    if not user or not check_password_hash(user.password, password):
-        flash('Please check your login details and try again.', 'error')
+    if not user or not check_password_hash(user.password, password) or not user.is_active:
+        flash('Login not permitted. Please check your login details.', 'error')
         # if the user doesn't exist or password is wrong, reload the page
         return redirect(url_for('auth.login'))
 
     # if the above check passes, then we know the user has the right credentials
+
+    # ✅ Update last_login timestamp
+    user.last_login = datetime.now()
+    db.session.commit()
+
     login_user(user, remember=remember)
     flash('Login successful.', 'success')
     return redirect(url_for('main.profile'))
@@ -77,3 +85,16 @@ def signup_post():
     db.session.commit()
     flash('Signup successful, login below.', 'success')
     return redirect(url_for('auth.login'))
+
+
+def admin_required(f):
+    @wraps(f)
+    def decorated_function(*args, **kwargs):
+        if not current_user.is_authenticated:
+            flash("You must be logged in to access this page.", "error")
+            return redirect(url_for('auth.login'))
+        if not current_user.is_admin:
+            flash("Admin access required.", "error")
+            return redirect(url_for('main.index'))
+        return f(*args, **kwargs)
+    return decorated_function

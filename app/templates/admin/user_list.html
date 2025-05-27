@@ -1,0 +1,75 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>User List – Syvrona</title>
+<meta name="description" content="View the list of registered users on Syvrona.">
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="/static/css/admin.css">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <h1 class="page-title">Registered Users</h1>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message flash-{{ category|lower }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div class="table-container">
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>Email</th>
+                    <th>Admin</th>
+                    <th>Active</th>
+                    <th>Joined</th>
+                    <th>Last Login</th>
+                    <th>Action</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for user in users %}
+                <tr>
+                    <td>{{ user.email }}</td>
+                    <td>
+                        {% if user.is_admin %}
+                        <span class="badge badge-admin">Admin</span>
+                        {% else %}
+                        <span class="badge badge-user">User</span>
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if user.is_active %}
+                        <span class="badge badge-active">Active</span>
+                        {% else %}
+                        <span class="badge badge-inactive">Inactive</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
+                    <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
+                    <td>
+                        <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}"
+                            onsubmit="return confirmToggle('{{ user.email }}', {{ user.is_active|tojson }});">
+                            <button type="submit" class="btn btn-{{ 'danger' if user.is_active else 'success' }}">
+                                {{ 'Deactivate' if user.is_active else 'Activate' }}
+                            </button>
+                        </form>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+</main>
+<script>
+    function confirmToggle(email, isActive) {
+        const action = isActive ? 'deactivate' : 'activate';
+        return confirm(`Are you sure you want to ${action} the user "${email}"?`);
+    }
+</script>
+
+{% endblock %}
