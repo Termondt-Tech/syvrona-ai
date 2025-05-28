@@ -39,7 +39,7 @@
     width: 100%;
 }
 
-@media (min-width: 769px) {
+@media (min-width: 768px) {
     .input-row {
         flex-direction: row;
         align-items: flex-end;
@@ -51,6 +51,22 @@
 
     .input-row .btn-primary {
         width: auto;
+    }
+
+    .model-selector {
+        margin-left: 1rem;
+        margin-right: 0.75rem;
+    }
+}
+
+@media (max-width: 767px) {
+    .model-selector {
+        margin-top: 0.5rem;
+        margin-bottom: 0.5rem;
+    }
+
+    .btn-primary {
+        margin-top: 0.5rem;
     }
 }
 
@@ -84,4 +100,18 @@ pre#body {
     border-radius: 5px;
     margin: 10px 0;
     white-space: pre-wrap;
+}
+
+.model-selector {
+    margin-left: 10px;
+    font-size: 0.9rem;
+}
+
+.visually-hidden {
+    position: absolute;
+    left: -10000px;
+    top: auto;
+    width: 1px;
+    height: 1px;
+    overflow: hidden;
 }

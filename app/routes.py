@@ -101,6 +101,8 @@ def chat():
 def answer():
     data = request.get_json()
     message = data["message"]
+    model = data.get("model", "gpt-3.5-turbo")  # default fallback
+    logger.info(f"Model: {model}")
     logger.info(f"Current User: {current_user.get_id()}")
     user_id = current_user.get_id()
     conversation_id = session.get("conversation_id")
@@ -115,7 +117,7 @@ def answer():
 
     @stream_with_context
     def generate():
-        response = streamer.chat(message, user_id, conversation_id)
+        response = streamer.chat(message, user_id, conversation_id, model)
         for res in response:
             yield res
 

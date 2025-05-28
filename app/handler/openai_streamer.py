@@ -11,7 +11,7 @@ class OpenAIStreamer:
     def __init__(self):
         self.client = OpenAI()
 
-    def chat(self, message, user_id, conversation_id):
+    def chat(self, message, user_id, conversation_id, model):
         logger.info(f"Current User ID: {user_id}")
         logger.info(f"Current Conversation ID: {conversation_id}")
         logger.info(f"User message: {message}")
@@ -35,7 +35,7 @@ class OpenAIStreamer:
             collected_chunks = []
             messages.append({"role": "user", "content": message})
             stream = self.client.chat.completions.create(
-                model="gpt-3.5-turbo",
+                model=model,
                 messages=messages,
                 stream=True
             )

@@ -20,6 +20,22 @@
     <form id="chat-form">
         <div class="input-row">
             <textarea id="input" placeholder="Enter your message" rows="3"></textarea>
+            <div class="model-selector">
+                <label for="model" class="visually-hidden">Model:</label>
+                <select id="model" name="model">
+                    <option value="gpt-4.1" selected>GPT-4.1 (Default)</option>
+                    <option value="gpt-4.1-mini">GPT-4.1 Mini</option>
+                    <option value="gpt-4.1-nano">GPT-4.1 Nano</option>
+                    <option value="gpt-4o">GPT-4o</option>
+                    <option value="gpt-4o-mini">GPT-4o Mini</option>
+                    <option value="o3">OpenAI o3</option>
+                    <option value="o3-mini">OpenAI o3 Mini</option>
+                    <option value="o4-mini">OpenAI o4 Mini</option>
+                    <option value="gpt-4.5">GPT-4.5</option>
+                    <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                </select>
+
+            </div>
             <button type="submit" class="btn-primary">Send</button>
         </div>
     </form>
@@ -29,6 +45,7 @@
     const form = document.querySelector('form');
     const input = document.getElementById('input');
     const body = document.getElementById('body');
+    const modelSelector = document.getElementById('model');
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
@@ -42,7 +59,7 @@
         const response = await fetch("/answer", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: input.value })
+            body: JSON.stringify({ message: input.value, model: modelSelector.value })
         });
 
         const reader = response.body.getReader();
