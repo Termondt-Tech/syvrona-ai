@@ -91,7 +91,16 @@ pre#body {
     padding: 10px;
     border-radius: 5px;
     margin: 10px 0;
-    white-space: pre-wrap;
+    white-space: normal;
+    /* Match assistant formatting */
+    line-height: 1.5;
+    /* Improve readability */
+}
+
+/* Tighter paragraph spacing inside user messages */
+.user-message p {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
 }
 
 .assistant-message {
@@ -99,7 +108,17 @@ pre#body {
     padding: 10px;
     border-radius: 5px;
     margin: 10px 0;
-    white-space: pre-wrap;
+    white-space: normal;
+    /* was pre-wrap */
+    line-height: 1.5;
+    /* improve readability */
+}
+
+/* Tighter paragraph spacing inside assistant messages */
+.assistant-message p {
+    margin-top: 0;
+    margin-bottom: 0.75rem;
+    /* reduce from default ~1em */
 }
 
 .model-selector {

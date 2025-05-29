@@ -13,7 +13,7 @@
         {% for msg in messages %}
         <div class="{{ msg.role }}-message">
             <strong>{{ msg.role.capitalize() }}:</strong>
-            <p>{{ msg.content }}</p>
+            <div class="msg-content">{{ msg.content }}</div>
         </div>
         {% endfor %}
     </div>
@@ -33,6 +33,13 @@
                     <option value="o4-mini">OpenAI o4 Mini</option>
                     <option value="gpt-4.5">GPT-4.5</option>
                     <option value="gpt-3.5-turbo">GPT-3.5 Turbo</option>
+                    <option value="claude-sonnet-4-20250514">Claude Sonnet 4</option>
+                    <option value="claude-opus-4-20250514">Claude Opus 4</option>
+                    <option value="claude-3-7-sonnet-20250219">Claude Sonnet 3.7</option>
+                    <option value="claude-3-5-sonnet-20241022">Claude Sonnet 3.5</option>
+                    <option value="claude-3-5-haiku-20241022">Claude Haiku 3.5</option>
+                    <option value="claude-3-haiku-20240307">Claude Haiku 3</option>
+                    <option value="claude-3-opus-20240229">Claude Opus 3</option>
                 </select>
 
             </div>
@@ -80,6 +87,12 @@
 
         input.value = "";
     });
+
+    // Convert all previous message content from markdown to HTML
+    document.querySelectorAll('.msg-content').forEach(el => {
+        el.innerHTML = marked.parse(el.textContent);
+    });
+
 </script>
 
 {% endblock %}

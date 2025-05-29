@@ -8,7 +8,6 @@ from openai import OpenAI
 
 import app
 from app.handler import openai_handler
-from app.handler.openai_streamer import OpenAIStreamer
 from app.handler.conversation_handler import create_conversation, get_user_conversations, update_conversation_title, get_conversation, get_conversation_messages, delete_conversation
 
 
@@ -113,7 +112,10 @@ def answer():
         # Store the conversation ID in the session
         session["conversation_id"] = conversation_id
 
-    streamer = OpenAIStreamer()
+    from app.handler.ai_streamer import AIStreamer  # adjust path as needed
+    streamer = AIStreamer()
+
+    logger.info("Calling AIStreamer.chat...")
 
     @stream_with_context
     def generate():

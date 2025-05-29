@@ -1,0 +1,20 @@
+# model_registry.py
+MODEL_REGISTRY = {
+    "gpt-4.1": "openai",
+    "gpt-4.1-mini": "openai",
+    "gpt-4o": "openai",
+    "gpt-4o-mini": "openai",
+    "gpt-4.1-nano": "openai",
+    "o3": "openai",
+    "o3-mini": "openai",
+    "o4-mini": "openai",
+    "gpt-4.5": "openai",
+    "gpt-3.5-turbo": "openai",
+    "claude-sonnet-4-20250514": "anthropic",
+    "claude-opus-4-20250514": "anthropic",
+    "claude-3-7-sonnet-20250219": "anthropic",
+    "claude-3-5-sonnet-20241022": "anthropic",
+    "claude-3-5-haiku-20241022": "anthropic",
+    "claude-3-haiku-20240307": "anthropic",
+    "claude-3-opus-20240229": "anthropic"
+}
