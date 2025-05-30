@@ -4,11 +4,12 @@
 <title>Create Account – Syvrona</title>
 <meta name="description" content="Create your free Syvrona account to start using your intelligent AI chat assistant.">
 <meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/signup.css') }}">
 {% endblock %}
 
 {% block content %}
 <main class="form-container">
-    <h1 class="form-title">Sign Up</h1>
+    <h1 class="form-title">Register</h1>
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -22,20 +23,50 @@
     <form method="POST" action="/signup">
         <div class="form-group">
             <div class="control">
-                <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="">
+                <input class="input is-large" type="email" name="email" placeholder="Email" autofocus="" required>
             </div>
         </div>
 
         <div class="form-group">
             <div class="control">
-                <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="">
+                <input class="input is-large" type="text" name="name" placeholder="Name" autofocus="" required>
             </div>
         </div>
 
         <div class="form-group">
             <div class="control">
-                <input class="input is-large" type="password" name="password" placeholder="Password">
+                <input class="input is-large" type="password" name="password" placeholder="Password" required>
             </div>
+        </div>
+        <div class="form-group plan-group">
+            <label class="label" style="margin-bottom: 0.75rem;">Choose Your Plan</label>
+            <div class="plan-cards">
+                <label class="plan-card">
+                    <input type="radio" name="plan" value="pro_monthly" checked>
+                    <div class="plan-card-content">
+                        <div class="plan-title">Pro Monthly</div>
+                        <div class="plan-price">$9.99<span class="plan-period">/month</span></div>
+                        <div class="plan-desc">Full features, billed monthly</div>
+                    </div>
+                </label>
+                <label class="plan-card">
+                    <input type="radio" name="plan" value="pro_yearly">
+                    <div class="plan-card-content">
+                        <div class="plan-title">Pro Yearly <span class="badge-best">Best Value</span></div>
+                        <div class="plan-price">$99<span class="plan-period">/year</span></div>
+                        <div class="plan-desc">Full features, best value</div>
+                    </div>
+                </label>
+            </div>
+        </div>
+        <div class="form-group">
+            <label>
+                <div class="terms-links" style="text-align:center; font-size:0.95rem; margin-bottom:1.5rem;">
+                    <input type="checkbox" name="terms" required>
+                    I agree to the <a href="/terms" target="_blank" rel="noopener noreferrer">Terms of Service</a> and
+                    <a href="/privacy" target="_blank" rel="noopener noreferrer">Privacy Policy</a>.
+                </div>
+            </label>
         </div>
         <div class="form-actions">
             <button class="btn-primary" type="submit">Sign Up</button>

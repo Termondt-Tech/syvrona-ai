@@ -43,6 +43,7 @@
     }
     </script>
 
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feature.css') }}">
 {% endblock %}
 
 
@@ -50,22 +51,46 @@
 <main class="main-content">
     <h1 class="main-title">Welcome to Syvrona</h1>
     <p>
-        Syvrona is your personal AI companion — designed to help you think, write, and explore ideas through natural
+        Syvrona is your personal AI companion—designed to help you think, write, and explore ideas through natural
         conversation.
         Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona provides
         a clean,
         focused chat experience with memory support and custom enhancements.
     </p>
     <p>
-        Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface — making it
-        ideal for professionals,
-        creatives, and everyday users alike.
+        Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface—making it
+        ideal for professionals, creatives, and everyday users alike.
     </p>
+
+    <!-- New: Feature Highlights -->
+    <section class="feature-section">
+        <h2 class="feature-title" style="margin-top:2rem;">Key Features</h2>
+        <ul class="feature-list" style="margin-bottom:2rem;">
+            <li><strong>Conversational Memory:</strong> Continue your discussions without losing context—Syvrona
+                remembers your conversation history for a seamless experience.</li>
+            <li><strong>Flexible AI Models:</strong> Choose from the latest OpenAI and Anthropic (Claude) models for
+                creative and technical chat.</li>
+            <li><strong>Intuitive Interface:</strong> Distraction-free design focused on usability, not marketing noise
+                or endless buttons.</li>
+            <li><strong>Privacy First:</strong> What you chat about stays private. Syvrona is developed by Termondt
+                Tech—not by Big Tech, and your conversations are never sold or used for ads.</li>
+            <li><strong>Conversation History:</strong> Review your previous chats and easily resume conversations from
+                where you left off.</li>
+            <li><strong>Self-Service Billing:</strong> Manage your subscription, update payment methods, and handle
+                billing through a secure, user-friendly portal.</li>
+        </ul>
+    </section>
+    <div class="cta-section" style="text-align: center; margin: 2.5rem 0;">
+        <a href="/signup" class="btn-primary cta-btn">Subscribe Now</a>
+        <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
+            Start your Syvrona journey in minutes.
+        </p>
+    </div>
     <p>
         Syvrona is currently available for personal and exploratory use. Future versions may introduce new features,
-        customization options,
-        and expanded access based on user feedback and evolving needs.
+        customization options, and expanded access based on user feedback and evolving needs.
     </p>
 </main>
+
 
 {% endblock %}

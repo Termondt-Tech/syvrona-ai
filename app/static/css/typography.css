@@ -1,4 +1,5 @@
 /* === typography.css === */
+
 .main-title {
     font-size: 2rem;
     font-weight: 700;
@@ -15,22 +16,53 @@
     text-align: left;
 }
 
+/* Updated: main-content now max-width and left-aligned by default */
 .main-content {
-    padding: 2rem 1rem;
+    max-width: 720px;
+    margin: 2.5rem auto 2rem auto;
+    padding: 2rem 1.5rem;
+    background: #fff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px rgba(30, 60, 90, 0.05);
+    text-align: left;
+}
+
+/* Headings inside main-content still centered for emphasis */
+.main-content h1,
+.main-content h2,
+.main-content .feature-title {
     text-align: center;
 }
 
-.main-content h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
-}
-
-.main-content p {
+/* Body text remains left-aligned */
+.main-content p,
+.main-content ul,
+.main-content li {
+    text-align: left;
     font-size: 1.125rem;
     color: #4b5563;
 }
 
+/* Optional: Feature section styling for visual distinction */
+.feature-section {
+    margin-top: 2rem;
+    background: #f8fafc;
+    padding: 1.5rem 1rem;
+    border-radius: 1rem;
+}
+
+.feature-list {
+    list-style: disc inside;
+    margin-left: 1.2rem;
+    color: #222;
+    font-size: 1.04rem;
+}
+
+.feature-list li {
+    margin-bottom: 0.65em;
+}
+
+/* Legal pages are always left-aligned for readability */
 .legal-page {
     text-align: left;
 }
-

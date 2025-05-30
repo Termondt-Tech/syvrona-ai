@@ -48,7 +48,10 @@ def create_app():
     from .auth import auth as auth_blueprint
     app.register_blueprint(auth_blueprint)
 
-    from .admin_routes import admin_bp  # Adjust import path as needed
-    app.register_blueprint(admin_bp)
+    from .admin_routes import admin as admin_blueprint  # Adjust import path as needed
+    app.register_blueprint(admin_blueprint)
+
+    from .billing import billing as billing_blueprint  # Adjust import path as needed
+    app.register_blueprint(billing_blueprint)
 
     return app

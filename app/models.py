@@ -13,6 +13,13 @@ class User(UserMixin, db.Model):
     is_active = db.Column(db.Boolean, default=True)
     created_at = db.Column(db.DateTime, default=datetime.now)
     last_login = db.Column(db.DateTime)
+    stripe_customer_id = db.Column(db.String(100), nullable=True)
+    subscription_status = db.Column(db.String(50), nullable=True)
+    # e.g., "pro_monthly" or Stripe price ID
+    subscription_plan = db.Column(db.String(100), nullable=True)
+    subscription_start = db.Column(db.DateTime, nullable=True)
+    # For canceled or expired subscriptions
+    subscription_end = db.Column(db.DateTime, nullable=True)
 
 
 class Conversation(db.Model):

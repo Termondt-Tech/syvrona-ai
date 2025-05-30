@@ -9,6 +9,9 @@ from openai import OpenAI
 import app
 from app.handler import openai_handler
 from app.handler.conversation_handler import create_conversation, get_user_conversations, update_conversation_title, get_conversation, get_conversation_messages, delete_conversation
+from app.models import User
+from app.decorators import require_active_subscription
+import os
 
 
 # Create a Blueprint named 'main'
@@ -37,11 +40,13 @@ def terms():
 @main.route('/profile')
 @login_required
 def profile():
-    profile_data = {
-        "name": current_user.name,
-        "email": current_user.email
+    PRICE_LABELS = {
+        os.getenv('STRIPE_PRICE_ID_PRO_MONTHLY'): 'Pro Monthly ($9.99/mo)',
+        os.getenv('STRIPE_PRICE_ID_PRO_YEARLY'): 'Pro Yearly ($99/year)',
     }
-    return render_template('profile.html', user=profile_data)
+
+    user = User.query.get(current_user.id)
+    return render_template('profile.html', user=user, price_labels=PRICE_LABELS)
 
 
 @main.route('/profile/update', methods=["POST"])
@@ -75,6 +80,7 @@ def update_profile():
 
 @main.route('/chat/new')
 @login_required
+@require_active_subscription
 def new_chat():
     logger.info(f"New chat for user: {current_user.get_id()}")
     session.pop("conversation_id", None)
@@ -83,6 +89,7 @@ def new_chat():
 
 @main.route('/chat')
 @login_required
+@require_active_subscription
 def chat():
     logger.info(f"Current User: {current_user.get_id()}")
     conversation_id = session.get("conversation_id")
@@ -97,6 +104,7 @@ def chat():
 
 @main.route("/answer", methods=["GET", "POST"])
 @login_required
+@require_active_subscription
 def answer():
     data = request.get_json()
     message = data["message"]
@@ -128,6 +136,7 @@ def answer():
 
 @main.route("/conversations")
 @login_required
+@require_active_subscription
 def conversations():
     user_id = current_user.get_id()
     convos = get_user_conversations(user_id)
@@ -141,6 +150,7 @@ def conversations():
 
 @main.route("/conversation/<int:conversation_id>/edit", methods=["POST"])
 @login_required
+@require_active_subscription
 def edit_conversation_title(conversation_id):
     update_conversation_title(conversation_id, request.form["title"])
     logger.info(f"Conversation {conversation_id} title updated.")
@@ -151,6 +161,7 @@ def edit_conversation_title(conversation_id):
 
 @main.route("/conversation/<int:conversation_id>")
 @login_required
+@require_active_subscription
 def resume_conversation(conversation_id):
     conversation = get_conversation(conversation_id)
     if conversation is None:
@@ -165,6 +176,7 @@ def resume_conversation(conversation_id):
 
 @main.route("/conversation/<int:conversation_id>/view")
 @login_required
+@require_active_subscription
 def view_conversation(conversation_id):
     convo = get_conversation(conversation_id)
     if convo is None:
@@ -186,6 +198,7 @@ def view_conversation(conversation_id):
 
 @main.route('/conversation/<int:conversation_id>/delete', methods=["POST"])
 @login_required
+@require_active_subscription
 def delete_conversation_route(conversation_id):
     convo = get_conversation(conversation_id)
     if not convo or convo.user_id != current_user.id:

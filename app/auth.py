@@ -7,6 +7,15 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
 import logging
 from . import db
+import stripe
+import os
+
+
+# Map your internal plan codes to Stripe Price IDs
+STRIPE_PRICE_IDS = {
+    'pro_monthly': os.getenv('STRIPE_PRICE_ID_PRO_MONTHLY'),
+    'pro_yearly': os.getenv('STRIPE_PRICE_ID_PRO_YEARLY'),
+}
 
 auth = Blueprint('auth', __name__)
 
@@ -68,6 +77,7 @@ def signup_post():
     email = request.form.get('email')
     name = request.form.get('name')
     password = request.form.get('password')
+    plan = request.form.get('plan', 'free')
 
     # if this returns a user, then the email already exists in database
     user = User.query.filter_by(email=email).first()
@@ -83,18 +93,38 @@ def signup_post():
     # add the new user to the database
     db.session.add(new_user)
     db.session.commit()
-    flash('Signup successful, login below.', 'success')
-    return redirect(url_for('auth.login'))
 
+    customer = stripe.Customer.create(
+        email=new_user.email,
+        name=new_user.name,
+        metadata={"user_id": new_user.id}
+    )
+    new_user.stripe_customer_id = customer.id
+    new_user.last_login = datetime.now()
+    db.session.commit()
+    flash('Thanks for signing up!', 'success')
+    login_user(new_user)  # log in the user after signup
 
-def admin_required(f):
-    @wraps(f)
-    def decorated_function(*args, **kwargs):
-        if not current_user.is_authenticated:
-            flash("You must be logged in to access this page.", "error")
-            return redirect(url_for('auth.login'))
-        if not current_user.is_admin:
-            flash("Admin access required.", "error")
-            return redirect(url_for('main.index'))
-        return f(*args, **kwargs)
-    return decorated_function
+    # If paid plan, create checkout session and redirect to Stripe
+    if plan in STRIPE_PRICE_IDS:
+        price_id = STRIPE_PRICE_IDS[plan]
+        session = stripe.checkout.Session.create(
+            customer=new_user.stripe_customer_id,
+            payment_method_types=["card"],
+            line_items=[{"price": price_id, "quantity": 1}],
+            mode="subscription",
+            allow_promotion_codes=True,
+            success_url=url_for('main.profile', _external=True) +
+            '?session_id={CHECKOUT_SESSION_ID}',
+            cancel_url=url_for('main.profile', _external=True),
+        )
+        return redirect(session.url)
+
+    # If free plan, record subscription and redirect to profile
+    new_user.subscription_status = 'active'
+    new_user.subscription_plan = 'free'
+    new_user.subscription_start = datetime.now()
+    db.session.commit()
+
+    flash('Signup successful. You are now logged in.', 'success')
+    return redirect(url_for('main.profile'))
