@@ -1,0 +1,264 @@
+.conversation-list {
+    list-style-type: none;
+    padding: 0;
+    margin: 30px auto;
+    max-width: 800px;
+}
+
+.conversation-list li {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background-color: #fff;
+    padding: 15px 20px;
+    border-radius: 10px;
+    box-shadow: 0 2px 6px rgba(0, 0, 0, 0.05);
+    margin-bottom: 15px;
+    flex-wrap: wrap;
+}
+
+.conversation-title-form {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    flex: 1;
+}
+
+.conversation-title-form input[type="text"] {
+    width: 100%;
+    max-width: 300px;
+    padding: 8px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+}
+
+.conversation-actions {
+    display: flex;
+    gap: 10px;
+    margin-left: 10px;
+}
+
+.conversation-actions a {
+    text-decoration: none;
+    padding: 6px 12px;
+    border-radius: 5px;
+    background-color: #0056b3;
+    color: white;
+    font-size: 0.9rem;
+}
+
+.conversation-actions a:hover {
+    background-color: #004494;
+}
+
+.conversation-actions-row {
+    display: flex;
+    gap: 1rem;
+    margin-top: 2rem;
+    flex-wrap: wrap;
+    justify-content: flex-start;
+}
+
+.conversation-actions-row .btn,
+.conversation-actions-row form {
+       margin-bottom: 0;
+        /* Remove margin if your btn class adds any */
+}
+
+@media (max-width: 600px) {
+    .conversation-actions-row {
+        flex-direction: column;
+        gap: 0.75rem;
+        align-items: stretch;
+    }
+}
+
+.conversation-table {
+  width: 100%;
+  max-width: 900px;
+  margin: 2rem auto;
+  border-collapse: separate;
+  border-spacing: 0;
+  background: #fff;
+  border-radius: 10px;
+  box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+  overflow: hidden;
+}
+
+.conversation-table th, .conversation-table td {
+  padding: 1rem 0.75rem;
+  text-align: left;
+  vertical-align: middle;
+}
+
+.conversation-table thead {
+  background: #f1f5f9;
+}
+
+.conversation-table th {
+  font-weight: 600;
+  font-size: 1.02rem;
+  border-bottom: 2px solid #e5e7eb;
+}
+
+.sort-header {
+  background: none;
+  border: none;
+  font: inherit;
+  color: #334155;
+  cursor: pointer;
+}
+
+.edit-title-form {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+}
+
+.edit-title-form input[type="text"] {
+  padding: 0.3rem 0.7rem;
+  border-radius: 6px;
+  border: 1px solid #b8bfc7;
+  font-size: 1rem;
+}
+
+.edit-title-form .btn-small {
+  padding: 0.3rem 0.7rem;
+  font-size: 0.95rem;
+}
+
+.dropdown {
+  position: relative;
+  display: inline-block;
+}
+
+.dropdown-toggle {
+  background: none;
+  border: none;
+  font-size: 1.8rem;
+  cursor: pointer;
+  padding: 0 0.5rem;
+  color: #64748b;
+  transition: color 0.2s;
+}
+
+.dropdown-toggle:focus,
+.dropdown-toggle:hover {
+  color: #0ea5e9;
+}
+
+.dropdown-menu {
+  display: none;
+  position: absolute;
+  right: 0;
+  top: 120%;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  min-width: 130px;
+  z-index: 999;
+  flex-direction: column;
+}
+
+/* You may keep your existing styles, but portal will use position:fixed */
+.portal-dropdown-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  min-width: 130px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+}
+
+/* Shared menu item styles for both .dropdown-menu and .portal-dropdown-menu */
+.dropdown-menu a,
+.dropdown-menu button,
+.portal-dropdown-menu a,
+.portal-dropdown-menu button {
+  display: block;
+  width: 100%;
+  padding: 0.7rem 1rem;
+  background: none;
+  border: none;
+  text-align: left;
+  color: #334155;
+  font-size: 1rem;
+  font-family: inherit;       /* <== force font consistency */
+  font-weight: 400;           /* <== force weight */
+  cursor: pointer;
+  transition: background 0.12s, color 0.12s;
+  text-decoration: none;
+  border-radius: 0;
+  appearance: none;
+}
+
+.dropdown-menu a:hover,
+.dropdown-menu button:hover,
+.portal-dropdown-menu a:hover,
+.portal-dropdown-menu button:hover,
+.dropdown-menu a:focus,
+.dropdown-menu button:focus,
+.portal-dropdown-menu a:focus,
+.portal-dropdown-menu button:focus {
+  background: #e0f2fe;
+  color: #0284c7;
+  outline: none;
+}
+
+.portal-dropdown-menu {
+  position: fixed !important;
+  z-index: 99999 !important;
+  min-width: 130px;
+  background: #fff;
+  border-radius: 8px;
+  box-shadow: 0 2px 12px rgba(0,0,0,0.13);
+  display: flex;
+  flex-direction: column;
+  overflow: hidden;
+  margin: 0;
+  padding: 0;
+}
+
+.portal-dropdown-menu .dropdown-delete,
+.dropdown-menu .dropdown-delete {
+  color: #dc2626 !important;
+  font-weight: 500;
+}
+.portal-dropdown-menu .dropdown-delete:hover,
+.dropdown-menu .dropdown-delete:hover {
+  background: #fee2e2 !important;
+  color: #b91c1c !important;
+}
+
+
+/* Responsive: stack table for narrow screens */
+@media (max-width: 600px) {
+  .conversation-table, .conversation-table thead, .conversation-table tbody, .conversation-table th, .conversation-table td, .conversation-table tr {
+    display: block;
+    width: 100%;
+  }
+  .conversation-table thead {
+    display: none;
+  }
+  .conversation-table tr {
+    margin-bottom: 1.1rem;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+  }
+  .conversation-table td {
+    padding: 0.7rem 1.2rem;
+    border-bottom: none;
+    border-right: none;
+    text-align: left;
+    position: relative;
+  }
+  .dropdown-menu {
+    left: 0; right: auto;
+    min-width: 100%;
+  }
+}
+

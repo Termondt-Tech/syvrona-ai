@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
     last_login = db.Column(db.DateTime)
     stripe_customer_id = db.Column(db.String(100), nullable=True)
     subscription_status = db.Column(db.String(50), nullable=True)
@@ -20,16 +20,21 @@ class User(UserMixin, db.Model):
     subscription_start = db.Column(db.DateTime, nullable=True)
     # For canceled or expired subscriptions
     subscription_end = db.Column(db.DateTime, nullable=True)
+    conversations = db.relationship(
+        'Conversation',
+        backref='user',
+        lazy=True,
+        cascade='all, delete-orphan',
+        passive_deletes=True
+    )
 
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id'), nullable=False)
-    user = db.relationship(
-        'User', backref=db.backref('conversations', lazy=True))
+    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
     # Optional, can be first message
     title = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 class Message(db.Model):
@@ -48,7 +53,7 @@ class Message(db.Model):
 
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.now)
+    created_at = db.Column(db.DateTime, default=datetime.utcnow)
 
 
 def create_conversation(user_id, title=None):

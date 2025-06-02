@@ -4,7 +4,7 @@
 <title>User List – Syvrona</title>
 <meta name="description" content="View the list of registered users on Syvrona.">
 <meta name="robots" content="noindex, nofollow">
-<link rel="stylesheet" href="/static/css/admin.css">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -34,7 +34,7 @@
             <tbody>
                 {% for user in users %}
                 <tr>
-                    <td>{{ user.email }}</td>
+                    <td><a href="{{ url_for('admin.user_detail', user_id=user.id) }}">{{ user.email }}</a></td>
                     <td>
                         {% if user.is_admin %}
                         <span class="badge badge-admin">Admin</span>
