@@ -68,6 +68,17 @@
             {% endfor %}
         </tbody>
     </table>
+    <div style="max-width:900px;margin:0 auto 1rem auto;display:flex;align-items:center;gap:0.75rem;">
+        <label for="page-size" style="font-weight:500;">Rows per page:</label>
+        <select id="page-size" style="padding:0.3rem 0.6rem;border-radius:6px;">
+            <option value="10" selected>10</option>
+            <option value="20">20</option>
+            <option value="50">50</option>
+            <option value="100">100</option>
+        </select>
+    </div>
+
+    <div id="pagination" class="pagination-controls"></div>
 
     <!-- Modal (Syvrona theme, hidden by default) -->
     <div id="confirm-modal" class="modal-overlay" style="display:none;">
@@ -109,9 +120,9 @@
             cancelBtn.addEventListener('click', cancelHandler);
         });
     }
-</script>
-<script>
+
     document.addEventListener('DOMContentLoaded', function () {
+        // --- Dropdown Portal Logic ---
         let portalMenu = null;
         let currentDropdown = null;
         let currentToggle = null;
@@ -151,11 +162,9 @@
 
                 // After appending, adjust position to fit in viewport
                 const portalRect = portalMenu.getBoundingClientRect();
-                // Move left if overflow
                 if (portalRect.right > window.innerWidth) {
                     portalMenu.style.left = (window.innerWidth - portalRect.width - 12) + "px";
                 }
-                // Move up if overflow
                 if (portalRect.bottom > window.innerHeight) {
                     portalMenu.style.top = (btnRect.top - portalRect.height - 4) + "px";
                 }
@@ -215,13 +224,8 @@
             window.removeEventListener('scroll', cleanupPortal, true);
             window.removeEventListener('resize', cleanupPortal, true);
         }
-    });
 
-
-    document.addEventListener('DOMContentLoaded', function () {
-        // ... portal dropdown JS here ...
-
-        // Table sorting
+        // --- Sorting Logic ---
         const table = document.getElementById('conversation-table');
         const sortHeaders = document.querySelectorAll('.sort-header');
         let sortState = { column: null, asc: true };
@@ -262,11 +266,86 @@
                     h.textContent = h.textContent.replace(/[\u2191\u2193]/g, '').trim();
                 });
                 header.textContent += sortState.asc ? ' \u2191' : ' \u2193';
+
+                // Update pagination display after sorting
+                updateTableDisplay();
             });
         });
-    });
 
+        // --- Pagination logic ---
+        let PAGE_SIZE = 10; // Default rows per page
+        let currentPage = 1;
+        const pageSizeSelect = document.getElementById('page-size');
+
+        if (pageSizeSelect) {
+            PAGE_SIZE = parseInt(pageSizeSelect.value, 10);
+            pageSizeSelect.addEventListener('change', function () {
+                PAGE_SIZE = parseInt(this.value, 10);
+                currentPage = 1;
+                updateTableDisplay();
+            });
+        }
+
+        function getTableRows() {
+            return Array.from(document.querySelectorAll('#conversation-table tbody tr'))
+                .filter(row => row.hasAttribute('data-title'));
+        }
+
+        function paginate(rows) {
+            const totalPages = Math.ceil(rows.length / PAGE_SIZE) || 1;
+            currentPage = Math.min(currentPage, totalPages);
+
+            // Hide/show rows for current page
+            rows.forEach((row, i) => {
+                row.style.display = (i >= (currentPage - 1) * PAGE_SIZE && i < currentPage * PAGE_SIZE) ? '' : 'none';
+            });
+
+            // Build pagination controls
+            const pagination = document.getElementById('pagination');
+            pagination.innerHTML = '';
+            if (totalPages <= 1) return;
+
+            // Prev button
+            const prev = document.createElement('button');
+            prev.textContent = 'Prev';
+            prev.disabled = currentPage === 1;
+            prev.onclick = () => { currentPage--; paginate(rows); };
+            pagination.appendChild(prev);
+
+            // Page number buttons (max 7 visible for compactness)
+            let start = Math.max(1, currentPage - 3);
+            let end = Math.min(totalPages, currentPage + 3);
+            if (end - start < 6) {
+                if (start === 1) end = Math.min(totalPages, start + 6);
+                if (end === totalPages) start = Math.max(1, end - 6);
+            }
+            for (let i = start; i <= end; i++) {
+                const btn = document.createElement('button');
+                btn.textContent = i;
+                btn.disabled = i === currentPage;
+                btn.onclick = () => { currentPage = i; paginate(rows); };
+                pagination.appendChild(btn);
+            }
+
+            // Next button
+            const next = document.createElement('button');
+            next.textContent = 'Next';
+            next.disabled = currentPage === totalPages;
+            next.onclick = () => { currentPage++; paginate(rows); };
+            pagination.appendChild(next);
+        }
+
+        // Call this whenever the visible rows change (sort/search/filter)
+        function updateTableDisplay() {
+            const rows = getTableRows();
+            paginate(rows);
+        }
+
+        // On initial load
+        updateTableDisplay();
+    });
 </script>
+
 
 
 {% endblock %}
