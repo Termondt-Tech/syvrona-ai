@@ -1,4 +1,4 @@
-from datetime import datetime
+from datetime import datetime, UTC
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
@@ -54,7 +54,7 @@ def login_post():
     # if the above check passes, then we know the user has the right credentials
 
     # ✅ Update last_login timestamp
-    user.last_login = datetime.now()
+    user.last_login = datetime.now(tz=UTC)
     db.session.commit()
 
     login_user(user, remember=remember)

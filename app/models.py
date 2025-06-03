@@ -1,6 +1,6 @@
 from flask_login import UserMixin
 from . import db
-from datetime import datetime
+from datetime import datetime, UTC
 
 
 class User(UserMixin, db.Model):
@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
     last_login = db.Column(db.DateTime)
     stripe_customer_id = db.Column(db.String(100), nullable=True)
     subscription_status = db.Column(db.String(50), nullable=True)
@@ -36,7 +36,7 @@ class Conversation(db.Model):
     )
     # Optional, can be first message
     title = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
 
 
 class Message(db.Model):
@@ -56,7 +56,7 @@ class Message(db.Model):
 
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
     content = db.Column(db.Text, nullable=False)
-    created_at = db.Column(db.DateTime, default=datetime.utcnow)
+    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
 
 
 def create_conversation(user_id, title=None):
