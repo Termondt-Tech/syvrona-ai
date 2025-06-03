@@ -18,7 +18,12 @@ class AIStreamer:
         from app.models import create_message
         from app.handler.conversation_handler import get_conversation_messages
 
-        context = [{"role": "system", "content": "You are an intelligent assistant."}]
+        context = [
+            {
+                "role": "system",
+                "content": "You are an intelligent assistant."
+            }
+        ]
         context += [
             {"role": msg.role, "content": msg.content}
             for msg in get_conversation_messages(conversation_id)
@@ -50,4 +55,6 @@ class AIStreamer:
         assistant_message = create_message(
             conversation_id, "assistant", "".join(collected_chunks)
         )
-        logger.info(f"Assistant message created with ID: {assistant_message.id}")
+        logger.info(
+            f"Assistant message created with ID: {assistant_message.id}"
+        )

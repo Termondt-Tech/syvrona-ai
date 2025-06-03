@@ -1,10 +1,7 @@
-from contextlib import contextmanager
-from http import client
 import logging
 from flask import (
     Blueprint,
     Response,
-    current_app,
     flash,
     redirect,
     render_template,
@@ -15,10 +12,8 @@ from flask import (
 )
 from werkzeug.security import generate_password_hash
 from flask_login import login_required, current_user
-from openai import OpenAI
 
 import app
-from app.handler import openai_handler
 from app.handler.conversation_handler import (
     create_conversation,
     get_user_conversations,
@@ -64,7 +59,9 @@ def profile():
     }
 
     user = User.query.get(current_user.id)
-    return render_template("profile.html", user=user, price_labels=PRICE_LABELS)
+    return render_template(
+        "profile.html", user=user, price_labels=PRICE_LABELS
+    )
 
 
 @main.route("/profile/update", methods=["POST"])
@@ -82,7 +79,9 @@ def update_profile():
         current_user.name = name
         current_user.email = email
         if password:
-            password = generate_password_hash(password, method="pbkdf2", salt_length=16)
+            password = generate_password_hash(
+                password, method="pbkdf2", salt_length=16
+            )
             current_user.set_password(password)
         app.db.session.commit()
 
@@ -210,7 +209,10 @@ def view_conversation(conversation_id):
         return redirect(url_for("main.conversations"))
 
     logger.info(
-        f"Viewing conversation with ID: {conversation_id} for user: {current_user.get_id()}"
+        (
+            f"Viewing conversation with ID: {conversation_id} "
+            f"for user: {current_user.get_id()}"
+        )
     )
     return render_template(
         "view_conversation.html", conversation=convo, messages=messages
@@ -228,6 +230,9 @@ def delete_conversation_route(conversation_id):
     delete_conversation(conversation_id)
     flash("Conversation deleted.", "success")
     logger.info(
-        f"Conversation {conversation_id} deleted for user: {current_user.get_id()}"
+        (
+            f"Conversation {conversation_id} deleted for user: "
+            f"{current_user.get_id()}"
+        )
     )
     return redirect(url_for("main.conversations"))
