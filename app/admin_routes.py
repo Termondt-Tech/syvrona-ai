@@ -31,37 +31,41 @@ def toggle_user_active(user_id):
     db.session.commit()
 
     flash(
-        f"User {user.email} is now {'active' if user.is_active else 'inactive'}.", "success")
+        f"User {user.email} is now {'active' if user.is_active else 'inactive'}.",
+        "success",
+    )
     return redirect(url_for("admin.user_list"))
 
 
 # --- New: User Detail Route ---
-@admin.route('/user/<int:user_id>', methods=['GET', 'POST'])
+@admin.route("/user/<int:user_id>", methods=["GET", "POST"])
 def user_detail(user_id):
 
     PRICE_LABELS = {
-        os.getenv('STRIPE_PRICE_ID_PRO_MONTHLY'): 'Pro Monthly ($9.99/mo)',
-        os.getenv('STRIPE_PRICE_ID_PRO_YEARLY'): 'Pro Yearly ($99/year)',
+        os.getenv("STRIPE_PRICE_ID_PRO_MONTHLY"): "Pro Monthly ($9.99/mo)",
+        os.getenv("STRIPE_PRICE_ID_PRO_YEARLY"): "Pro Yearly ($99/year)",
     }
 
     user = User.query.get_or_404(user_id)
 
-    if request.method == 'POST':
-        if 'deactivate' in request.form:
+    if request.method == "POST":
+        if "deactivate" in request.form:
             if user.id == current_user.id:
                 flash("You can't deactivate your own account.", "error")
             else:
                 user.is_active = not user.is_active
                 db.session.commit()
                 flash(
-                    f"User {'deactivated' if not user.is_active else 'activated'} successfully.", "success")
-        elif 'delete' in request.form:
+                    f"User {'deactivated' if not user.is_active else 'activated'} successfully.",
+                    "success",
+                )
+        elif "delete" in request.form:
             if user.id == current_user.id:
                 flash("You can't delete your own account.", "error")
             else:
                 db.session.delete(user)
                 db.session.commit()
                 flash("User deleted successfully.", "success")
-                return redirect(url_for('admin.user_list'))
+                return redirect(url_for("admin.user_list"))
 
-    return render_template('admin/user_view.html', user=user, price_labels=PRICE_LABELS)
+    return render_template("admin/user_view.html", user=user, price_labels=PRICE_LABELS)

@@ -2,10 +2,10 @@ from openai import OpenAI
 
 import os
 
+
 def chat(message):
     client = OpenAI()
-    messages = [ {"role": "system", "content": 
-                  "You are a intelligent assistant."} ]
+    messages = [{"role": "system", "content": "You are a intelligent assistant."}]
     if message:
         messages.append(
             {"role": "user", "content": message},
@@ -16,12 +16,8 @@ def chat(message):
         return reply
         messages.append({"role": "assistant", "content": reply})
 
+
 if __name__ == "__main__":
     while True:
         message = input("User : ")
         chat(message)
-
-
-
-
-

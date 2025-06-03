@@ -16,8 +16,7 @@ class OpenAIStreamer:
         logger.info(f"Current Conversation ID: {conversation_id}")
         logger.info(f"User message: {message}")
 
-        messages = [
-            {"role": "system", "content": "You are an intelligent assistant."}]
+        messages = [{"role": "system", "content": "You are an intelligent assistant."}]
 
         conversation_history = get_conversation_messages(conversation_id)
 
@@ -28,16 +27,13 @@ class OpenAIStreamer:
 
         if message:
             # create new user message in the database
-            user_message = create_message(
-                conversation_id, "user", message)
+            user_message = create_message(conversation_id, "user", message)
             logger.info(f"User message created with ID: {user_message.id}")
 
             collected_chunks = []
             messages.append({"role": "user", "content": message})
             stream = self.client.chat.completions.create(
-                model=model,
-                messages=messages,
-                stream=True
+                model=model, messages=messages, stream=True
             )
             for chunk in stream:
                 if not chunk.choices:
@@ -46,14 +42,14 @@ class OpenAIStreamer:
                     collected_chunks.append(chunk.choices[0].delta.content)
                     yield (chunk.choices[0].delta.content)
 
-        collected_string = ''.join(collected_chunks)
+        collected_string = "".join(collected_chunks)
         logger.info(f"Current User ID: {user_id}")
 
         # create new assistant message in the database
         assistant_message = create_message(
-            conversation_id, "assistant", collected_string)
-        logger.info(
-            f"Assistant message created with ID: {assistant_message.id}")
+            conversation_id, "assistant", collected_string
+        )
+        logger.info(f"Assistant message created with ID: {assistant_message.id}")
 
 
 if __name__ == "__main__":

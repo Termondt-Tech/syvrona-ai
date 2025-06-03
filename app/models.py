@@ -21,17 +21,19 @@ class User(UserMixin, db.Model):
     # For canceled or expired subscriptions
     subscription_end = db.Column(db.DateTime, nullable=True)
     conversations = db.relationship(
-        'Conversation',
-        backref='user',
+        "Conversation",
+        backref="user",
         lazy=True,
-        cascade='all, delete-orphan',
-        passive_deletes=True
+        cascade="all, delete-orphan",
+        passive_deletes=True,
     )
 
 
 class Conversation(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    user_id = db.Column(db.Integer, db.ForeignKey('user.id', ondelete='CASCADE'), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
     # Optional, can be first message
     title = db.Column(db.String(255), nullable=True)
     created_at = db.Column(db.DateTime, default=datetime.utcnow)
@@ -39,16 +41,17 @@ class Conversation(db.Model):
 
 class Message(db.Model):
     id = db.Column(db.Integer, primary_key=True)
-    conversation_id = db.Column(db.Integer, db.ForeignKey(
-        'conversation.id', ondelete='CASCADE'), nullable=False)
+    conversation_id = db.Column(
+        db.Integer, db.ForeignKey("conversation.id", ondelete="CASCADE"), nullable=False
+    )
     conversation = db.relationship(
-        'Conversation',
+        "Conversation",
         backref=db.backref(
-            'messages',
-            order_by='Message.created_at',
-            cascade='all, delete-orphan',
-            passive_deletes=True
-        )
+            "messages",
+            order_by="Message.created_at",
+            cascade="all, delete-orphan",
+            passive_deletes=True,
+        ),
     )
 
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
@@ -64,8 +67,7 @@ def create_conversation(user_id, title=None):
 
 
 def create_message(conversation_id, role, content):
-    new_message = Message(conversation_id=conversation_id,
-                          role=role, content=content)
+    new_message = Message(conversation_id=conversation_id, role=role, content=content)
     db.session.add(new_message)
     db.session.commit()
     return new_message
@@ -82,14 +84,20 @@ def get_conversation(conversation_id):
 
 
 def get_conversation_messages(conversation_id):
-    messages = Message.query.filter_by(
-        conversation_id=conversation_id).order_by(Message.created_at).all()
+    messages = (
+        Message.query.filter_by(conversation_id=conversation_id)
+        .order_by(Message.created_at)
+        .all()
+    )
     return messages
 
 
 def get_conversation_messages_by_role(conversation_id, role):
-    messages = Message.query.filter_by(
-        conversation_id=conversation_id, role=role).order_by(Message.created_at).all()
+    messages = (
+        Message.query.filter_by(conversation_id=conversation_id, role=role)
+        .order_by(Message.created_at)
+        .all()
+    )
     return messages
 
 

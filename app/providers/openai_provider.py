@@ -7,12 +7,15 @@ from app.models import create_message
 
 logger = logging.getLogger(__name__)
 
+
 class OpenAIProvider(AIProvider):
     def __init__(self):
         self.client = OpenAI()
 
     def stream_response(self, message, user_id, conversation_id, model):
-        logger.info(f"OpenAIProvider: User ID {user_id}, Conversation ID {conversation_id}")
+        logger.info(
+            f"OpenAIProvider: User ID {user_id}, Conversation ID {conversation_id}"
+        )
         logger.info(f"User message: {message}")
 
         context = []
@@ -29,9 +32,7 @@ class OpenAIProvider(AIProvider):
 
             try:
                 stream = self.client.chat.completions.create(
-                    model=model,
-                    messages=context,
-                    stream=True
+                    model=model, messages=context, stream=True
                 )
 
                 for chunk in stream:
@@ -43,4 +44,3 @@ class OpenAIProvider(AIProvider):
             except Exception as e:
                 logger.error(f"OpenAI stream error: {e}")
                 raise
-

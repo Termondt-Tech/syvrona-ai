@@ -8,12 +8,15 @@ from app.providers.base_provider import AIProvider
 
 logger = logging.getLogger(__name__)
 
+
 class AnthropicProvider(AIProvider):
     def __init__(self):
         self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
 
     def stream_response(self, message, user_id, conversation_id, model):
-        logger.info(f"AnthropicProvider: User ID {user_id}, Conversation ID {conversation_id}")
+        logger.info(
+            f"AnthropicProvider: User ID {user_id}, Conversation ID {conversation_id}"
+        )
         logger.info(f"User message: {message}")
 
         conversation_history = get_conversation_messages(conversation_id)
@@ -24,10 +27,7 @@ class AnthropicProvider(AIProvider):
         messages = []
         for msg in conversation_history:
             if msg.role in ["user", "assistant"]:
-                messages.append({
-                    "role": msg.role,
-                    "content": msg.content
-                })
+                messages.append({"role": msg.role, "content": msg.content})
 
         if message:
             messages.append({"role": "user", "content": message})
@@ -43,7 +43,9 @@ class AnthropicProvider(AIProvider):
                 ) as stream:
                     for chunk in stream:
                         if chunk.type == "content_block_delta":
-                            text = chunk.delta.text  # ✅ FIX: Access `text` as attribute, not with .get()
+                            text = (
+                                chunk.delta.text
+                            )  # ✅ FIX: Access `text` as attribute, not with .get()
                             collected_chunks.append(text)
                             yield text
             except Exception as e:
