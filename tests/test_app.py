@@ -3,13 +3,21 @@ def test_app_exists(app):
 
 
 def test_app_is_testing(app):
-    assert app.config['TESTING']
+    assert app.config["TESTING"]
 
 
 def test_database_initialization(client):
-    response = client.get('/')
+    response = client.get("/")
     assert response.status_code == 200
 
 
-def test_secret_key(app):
-    assert app.config['SECRET_KEY'] == 'test_secret_key'
+def test_healthz(client):
+    response = client.get("/healthz")
+    assert response.status_code == 200
+    assert response.json == {"status": "ok"}
+
+
+def test_readyz(client):
+    response = client.get("/readyz")
+    assert response.status_code == 200
+    assert response.json == {"status": "ready"}

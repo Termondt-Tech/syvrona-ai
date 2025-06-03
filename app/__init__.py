@@ -16,9 +16,11 @@ login_manager = LoginManager()
 logger = logging.getLogger(__name__)
 
 
-def create_app():
+def create_app(config=None):
     app = Flask(__name__)
     app.config.from_object(Config)
+    if config:
+        app.config.update(config)
 
     db.init_app(app)
     logger.info("Database initialized")
@@ -26,15 +28,16 @@ def create_app():
     logger.info("Migration initialized")
 
     login_manager.init_app(app)
-    login_manager.login_view = 'auth.login'
+    login_manager.login_view = "auth.login"
     logger.info("Login manager initialized")
 
     configure_logging()
     logger.info("Logging configured")
 
     logger.info("App configuration:")
-    logger.info("SQLALCHEMY_DATABASE_URI: %s",
-                app.config.get('SQLALCHEMY_DATABASE_URI'))
+    logger.info(
+        "SQLALCHEMY_DATABASE_URI: %s", app.config.get("SQLALCHEMY_DATABASE_URI")
+    )
 
     from .models import User
 
@@ -43,15 +46,25 @@ def create_app():
         return User.query.get(int(user_id))
 
     from .routes import main as main_blueprint
+
     app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
+
     app.register_blueprint(auth_blueprint)
 
     from .admin_routes import admin as admin_blueprint  # Adjust import path as needed
+
     app.register_blueprint(admin_blueprint)
 
     from .billing import billing as billing_blueprint  # Adjust import path as needed
+
     app.register_blueprint(billing_blueprint)
+
+    from .health_routes import (
+        health as health_blueprint,
+    )  # Adjust import path as needed
+
+    app.register_blueprint(health_blueprint)
 
     return app
