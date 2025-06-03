@@ -1,5 +1,3 @@
-from flask_login import current_user
-from functools import wraps
 from datetime import datetime
 from flask import Blueprint, flash, redirect, render_template, request, url_for
 from flask_login import login_required, login_user, logout_user
@@ -42,7 +40,8 @@ def login_post():
     user = User.query.filter_by(email=email).first()
 
     # check if the user actually exists
-    # take the user-supplied password, hash it, and compare it to the hashed password in the database
+    # take the user-supplied password, hash it,
+    # and compare it to the hashed password in the database
     if (
         not user
         or not check_password_hash(user.password, password)
@@ -86,13 +85,14 @@ def signup_post():
     # if this returns a user, then the email already exists in database
     user = User.query.filter_by(email=email).first()
 
-    if (
-        user
-    ):  # if a user is found, we want to redirect back to signup page so user can try again
+    if user:
+        # if a user is found, we want to redirect back to signup page
+        # so user can try again
         flash("Email address already exists", "error")
         return redirect(url_for("auth.signup"))
 
-    # create a new user with the form data. Hash the password so the plaintext version isn't saved.
+    # create a new user with the form data. Hash the password so the plaintext version
+    # isn't saved.
     new_user = User(
         email=email,
         name=name,

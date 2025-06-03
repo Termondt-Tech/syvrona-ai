@@ -8,7 +8,9 @@ def app():
     app = create_app(
         {
             "TESTING": True,
-            "SQLALCHEMY_DATABASE_URI": "sqlite:///:memory:",  # Use in-memory DB for tests
+            "SQLALCHEMY_DATABASE_URI": (
+                "sqlite:///:memory:"  # Use in-memory DB for tests
+            ),
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
         }
     )

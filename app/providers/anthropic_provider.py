@@ -2,7 +2,6 @@ import os
 import logging
 from anthropic import Anthropic
 
-from app.models import create_message
 from app.handler.conversation_handler import get_conversation_messages
 from app.providers.base_provider import AIProvider
 

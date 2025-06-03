@@ -3,7 +3,6 @@ import logging
 from openai import OpenAI
 from app.providers.base_provider import AIProvider
 from app.handler.conversation_handler import get_conversation_messages
-from app.models import create_message
 
 logger = logging.getLogger(__name__)
 

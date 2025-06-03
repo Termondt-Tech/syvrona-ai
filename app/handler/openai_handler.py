@@ -1,7 +1,5 @@
 from openai import OpenAI
 
-import os
-
 
 def chat(message):
     client = OpenAI()

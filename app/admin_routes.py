@@ -56,7 +56,8 @@ def user_detail(user_id):
                 user.is_active = not user.is_active
                 db.session.commit()
                 flash(
-                    f"User {'deactivated' if not user.is_active else 'activated'} successfully.",
+                    f"User {'deactivated' if not user.is_active else 'activated'} "
+                    "successfully.",
                     "success",
                 )
         elif "delete" in request.form:
