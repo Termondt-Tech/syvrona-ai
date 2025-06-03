@@ -16,11 +16,7 @@ def create_conversation(user_id, title=None):
 
 
 def generate_conversation_title(initial_prompt):
-    title = (
-        initial_prompt[:60] + "..."
-        if len(initial_prompt) > 60
-        else initial_prompt
-    )
+    title = initial_prompt[:60] + "..." if len(initial_prompt) > 60 else initial_prompt
     return title
 
 
@@ -31,11 +27,7 @@ def get_conversation_messages(conversation_id):
 
 def get_user_conversations(user_id):
     conversations = db_get_user_conversations(user_id)
-    conversations = sorted(
-        conversations,
-        key=lambda x: x.created_at,
-        reverse=True
-    )
+    conversations = sorted(conversations, key=lambda x: x.created_at, reverse=True)
     # Sort conversations by created_at in descending order
     return conversations
 

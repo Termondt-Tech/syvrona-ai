@@ -59,9 +59,7 @@ def profile():
     }
 
     user = User.query.get(current_user.id)
-    return render_template(
-        "profile.html", user=user, price_labels=PRICE_LABELS
-    )
+    return render_template("profile.html", user=user, price_labels=PRICE_LABELS)
 
 
 @main.route("/profile/update", methods=["POST"])
@@ -79,9 +77,7 @@ def update_profile():
         current_user.name = name
         current_user.email = email
         if password:
-            password = generate_password_hash(
-                password, method="pbkdf2", salt_length=16
-            )
+            password = generate_password_hash(password, method="pbkdf2", salt_length=16)
             current_user.set_password(password)
         app.db.session.commit()
 
