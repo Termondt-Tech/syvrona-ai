@@ -6,14 +6,8 @@ from app.models import User
 import logging
 from . import db
 import stripe
-import os
+from .constants import STRIPE_PRICE_IDS
 
-
-# Map your internal plan codes to Stripe Price IDs
-STRIPE_PRICE_IDS = {
-    "pro_monthly": os.getenv("STRIPE_PRICE_ID_PRO_MONTHLY"),
-    "pro_yearly": os.getenv("STRIPE_PRICE_ID_PRO_YEARLY"),
-}
 
 auth = Blueprint("auth", __name__)
 
@@ -120,7 +114,7 @@ def signup_post():
             payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             mode="subscription",
-            allow_promotion_codes=True,
+            allow_promotion_codes=False,
             success_url=url_for("main.profile", _external=True)
             + "?session_id={CHECKOUT_SESSION_ID}",
             cancel_url=url_for("main.profile", _external=True),

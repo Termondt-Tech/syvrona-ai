@@ -25,9 +25,17 @@
     <p><strong>Status:</strong> {{ user.subscription_status|capitalize }}</p>
     {% if user.subscription_status == 'active' %}
     <a href="{{ url_for('billing.manage_subscription') }}" class="btn-primary">Manage Subscription</a>
+    {% else %}
+      <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe</a>
     {% endif %}
   </div>
+  {% else %}
+  <div class="subscription-info">
+    <p>You do not have an active subscription.</p>
+    <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe Now</a>
+  </div>
   {% endif %}
+
 
 
   <p class="form-description">

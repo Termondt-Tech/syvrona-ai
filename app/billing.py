@@ -1,11 +1,12 @@
 import logging
-from flask import Blueprint, request, jsonify, redirect, url_for
+from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
 from flask_login import current_user, login_required
 import stripe
 from . import db
 from .models import User
 from datetime import datetime
 import os
+from .constants import STRIPE_PRICE_IDS
 
 logger = logging.getLogger(__name__)
 
@@ -15,6 +16,7 @@ billing = Blueprint("billing", __name__)
 
 
 @billing.route("/create-checkout-session", methods=["POST"])
+@login_required
 def create_checkout_session():
     # Ensure user is authenticated
     if not current_user.is_authenticated:
@@ -116,3 +118,35 @@ def manage_subscription():
         return_url=url_for("main.profile", _external=True),
     )
     return redirect(session.url)
+
+
+@billing.route("/subscribe", methods=["GET", "POST"])
+@login_required
+def subscribe():
+    if request.method == "POST":
+        plan = request.form.get("plan")
+        user = db.session.get(User, current_user.id)
+
+        if not user.stripe_customer_id:
+            customer = stripe.Customer.create(
+                email=user.email, name=user.name, metadata={"user_id": user.id}
+            )
+            user.stripe_customer_id = customer.id
+            db.session.commit()
+
+        if plan in STRIPE_PRICE_IDS:
+            price_id = STRIPE_PRICE_IDS[plan]
+            session = stripe.checkout.Session.create(
+                customer=user.stripe_customer_id,
+                payment_method_types=["card"],
+                line_items=[{"price": price_id, "quantity": 1}],
+                mode="subscription",
+                allow_promotion_codes=False,
+                success_url=url_for("main.profile", _external=True)
+                + "?session_id={CHECKOUT_SESSION_ID}",
+                cancel_url=url_for("main.profile", _external=True),
+            )
+            flash("Successfully subscribed.", "success")
+            return redirect(session.url)
+    else:
+        return render_template("subscribe.html")

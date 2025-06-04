@@ -25,7 +25,7 @@ from app.handler.conversation_handler import (
 from app.models import User
 from app.decorators import require_active_subscription
 from . import db
-import os
+from .constants import PRICE_LABELS
 
 
 # Create a Blueprint named 'main'
@@ -54,11 +54,6 @@ def terms():
 @main.route("/profile")
 @login_required
 def profile():
-    PRICE_LABELS = {
-        os.getenv("STRIPE_PRICE_ID_PRO_MONTHLY"): "Pro Monthly ($9.99/mo)",
-        os.getenv("STRIPE_PRICE_ID_PRO_YEARLY"): "Pro Yearly ($99/year)",
-        "free": "Free Plan (Limited Features)",
-    }
 
     user = db.session.get(User, current_user.id)
 
