@@ -115,13 +115,18 @@ def stripe_webhook():
                 )
                 # For canceled, prefer ended_at if present, otherwise fall back
                 if subscription["status"] == "canceled":
-                    user.subscription_end = datetime.fromtimestamp(
-                        subscription.get("ended_at", item["current_period_end"])
-                    )
+                    ended_at = subscription.get("ended_at")
+                    if ended_at:
+                        user.subscription_end = datetime.fromtimestamp(ended_at)
+                    else:
+                        user.subscription_end = datetime.fromtimestamp(
+                            item["current_period_end"]
+                        )
                 else:
                     user.subscription_end = datetime.fromtimestamp(
                         item["current_period_end"]
                     )
+
             else:
                 # If no items present, clear subscription plan and dates
                 user.subscription_plan = None
@@ -131,7 +136,8 @@ def stripe_webhook():
             db.session.commit()
             logger.info(
                 (
-                    f"Updated user id={user.id}: new status={user.subscription_status}, "
+                    f"Updated user id={user.id}: "
+                    f"new status={user.subscription_status}, "
                     f"plan={user.subscription_plan}"
                 )
             )
