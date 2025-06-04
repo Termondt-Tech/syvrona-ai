@@ -94,18 +94,52 @@ def stripe_webhook():
         subscription = event["data"]["object"]
         logger.info(f"Processing subscription event: {subscription}")
         stripe_customer_id = subscription["customer"]
+
+        logger.info(f"Stripe event for customer: {stripe_customer_id}")
+
         user = User.query.filter_by(stripe_customer_id=stripe_customer_id).first()
         if user:
-            logger.info(f"Updating user {user.id} subscription info")
-            user.subscription_status = subscription["status"]  # e.g., "active"
-            user.subscription_plan = subscription["items"]["data"][0]["price"]["id"]
-
-            item = subscription["items"]["data"][0]
-            user.subscription_start = datetime.fromtimestamp(
-                item["current_period_start"]
+            logger.info(
+                f"User found: id={user.id}, email={user.email}, "
+                f"old status={user.subscription_status}"
             )
-            user.subscription_end = datetime.fromtimestamp(item["current_period_end"])
+            user.subscription_status = subscription["status"]  # e.g., "active"
+
+            # Get subscription item data safely
+            items = subscription.get("items", {}).get("data", [])
+            if items:
+                item = items[0]
+                user.subscription_plan = item["price"]["id"]
+                user.subscription_start = datetime.fromtimestamp(
+                    item["current_period_start"]
+                )
+                # For canceled, prefer ended_at if present, otherwise fall back
+                if subscription["status"] == "canceled":
+                    user.subscription_end = datetime.fromtimestamp(
+                        subscription.get("ended_at", item["current_period_end"])
+                    )
+                else:
+                    user.subscription_end = datetime.fromtimestamp(
+                        item["current_period_end"]
+                    )
+            else:
+                # If no items present, clear subscription plan and dates
+                user.subscription_plan = None
+                user.subscription_start = None
+                user.subscription_end = None
+
             db.session.commit()
+            logger.info(
+                (
+                    f"Updated user id={user.id}: new status={user.subscription_status}, "
+                    f"plan={user.subscription_plan}"
+                )
+            )
+
+        else:
+            logger.warning(
+                f"No user found for Stripe customer ID: {stripe_customer_id}"
+            )
 
     return "", 200
 
