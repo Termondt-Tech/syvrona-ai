@@ -82,13 +82,12 @@ def stripe_webhook():
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
         logger.info(f"checkout.session.completed: {session}")
-        # You can fetch customer/subscription from session['customer']
-        # Optionally fetch subscription object if needed
+        # (No subscription info here, handled in the next block)
 
-    if (
-        event["type"] == "customer.subscription.created"
-        or event["type"] == "customer.subscription.updated"
-        or event["type"] == "customer.subscription.deleted"
+    if event["type"] in (
+        "customer.subscription.created",
+        "customer.subscription.updated",
+        "customer.subscription.deleted",
     ):
         subscription = event["data"]["object"]
         logger.info(f"Processing subscription event: {subscription}")
@@ -98,12 +97,12 @@ def stripe_webhook():
             logger.info(f"Updating user {user.id} subscription info")
             user.subscription_status = subscription["status"]  # e.g., "active"
             user.subscription_plan = subscription["items"]["data"][0]["price"]["id"]
+
+            item = subscription["items"]["data"][0]
             user.subscription_start = datetime.fromtimestamp(
-                subscription["current_period_start"]
+                item["current_period_start"]
             )
-            user.subscription_end = datetime.fromtimestamp(
-                subscription["current_period_end"]
-            )
+            user.subscription_end = datetime.fromtimestamp(item["current_period_end"])
             db.session.commit()
 
     return "", 200
