@@ -4,6 +4,7 @@ from anthropic import Anthropic
 
 from app.handler.conversation_handler import get_conversation_messages
 from app.providers.base_provider import AIProvider
+from app.model_registry import get_model_metadata
 
 logger = logging.getLogger(__name__)
 
@@ -30,7 +31,9 @@ class AnthropicProvider(AIProvider):
 
         if message:
             messages.append({"role": "user", "content": message})
-
+            # Only Anthropic needs this logic:
+            metadata = get_model_metadata(model)
+            max_tokens = metadata.get("max_tokens", 4096)  # default fallback
             collected_chunks = []
 
             try:
@@ -38,7 +41,7 @@ class AnthropicProvider(AIProvider):
                     model=model,
                     system=system_prompt,
                     messages=messages,
-                    max_tokens=1024,
+                    max_tokens=max_tokens,
                 ) as stream:
                     for chunk in stream:
                         if chunk.type == "content_block_delta":

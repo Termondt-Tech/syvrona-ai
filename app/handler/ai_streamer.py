@@ -1,6 +1,6 @@
 # ai_streamer.py
 import logging
-from app.model_registry import MODEL_REGISTRY
+from app.model_registry import get_model_metadata
 from app.providers.openai_provider import OpenAIProvider
 from app.providers.anthropic_provider import AnthropicProvider
 
@@ -28,7 +28,9 @@ class AIStreamer:
         logger.info(f"User message created with ID: {user_message.id}")
         collected_chunks = []
 
-        provider_key = MODEL_REGISTRY.get(model)
+        metadata = get_model_metadata(model)
+        provider_key = metadata.get("provider")
+
         if not provider_key:
             raise ValueError(f"No provider registered for model '{model}'")
 

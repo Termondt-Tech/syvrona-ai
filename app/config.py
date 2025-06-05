@@ -5,6 +5,12 @@ class Config:
     SECRET_KEY = os.getenv("SECRET_KEY")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+
+    STRIPE_PRICE_IDS = {
+        "pro_monthly": os.getenv("STRIPE_PRICE_ID_PRO_MONTHLY"),
+        "pro_yearly": os.getenv("STRIPE_PRICE_ID_PRO_YEARLY"),
+    }
+
     DEBUG = False
     TESTING = False
     if not SQLALCHEMY_DATABASE_URI:

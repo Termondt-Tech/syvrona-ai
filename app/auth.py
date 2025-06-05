@@ -1,12 +1,19 @@
 from datetime import datetime, UTC
-from flask import Blueprint, flash, redirect, render_template, request, url_for
+from flask import (
+    Blueprint,
+    flash,
+    redirect,
+    render_template,
+    request,
+    url_for,
+    current_app,
+)
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from app.models import User
 import logging
 from . import db
 import stripe
-from .constants import STRIPE_PRICE_IDS
 
 
 auth = Blueprint("auth", __name__)
@@ -74,6 +81,14 @@ def signup_post():
     email = request.form.get("email")
     name = request.form.get("name")
     password = request.form.get("password")
+    confirm_password = request.form.get("confirm_password")
+    if not email or not name or not password or not confirm_password:
+        flash("All fields are required.", "error")
+        return redirect(url_for("auth.signup"))
+    elif password != confirm_password:
+        flash("Passwords do not match.", "error")
+        return redirect(url_for("auth.signup"))
+
     plan = request.form.get("plan", "free")
 
     # if this returns a user, then the email already exists in database
@@ -106,9 +121,11 @@ def signup_post():
     flash("Thanks for signing up!", "success")
     login_user(new_user)  # log in the user after signup
 
+    price_ids = current_app.config.get("STRIPE_PRICE_IDS", {})
+
     # If paid plan, create checkout session and redirect to Stripe
-    if plan in STRIPE_PRICE_IDS:
-        price_id = STRIPE_PRICE_IDS[plan]
+    if plan in price_ids:
+        price_id = price_ids[plan]
         session = stripe.checkout.Session.create(
             customer=new_user.stripe_customer_id,
             payment_method_types=["card"],

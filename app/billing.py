@@ -1,12 +1,21 @@
 import logging
-from flask import Blueprint, flash, render_template, request, jsonify, redirect, url_for
+from flask import (
+    Blueprint,
+    flash,
+    render_template,
+    request,
+    jsonify,
+    redirect,
+    url_for,
+    current_app,
+)
 from flask_login import current_user, login_required
 import stripe
 from . import db
 from .models import User
 from datetime import datetime
 import os
-from .constants import STRIPE_PRICE_IDS
+
 
 logger = logging.getLogger(__name__)
 
@@ -166,6 +175,7 @@ def subscribe():
     if request.method == "POST":
         plan = request.form.get("plan")
         user = db.session.get(User, current_user.id)
+        price_ids = current_app.config.get("STRIPE_PRICE_IDS", {})
 
         if not user.stripe_customer_id:
             customer = stripe.Customer.create(
@@ -174,8 +184,8 @@ def subscribe():
             user.stripe_customer_id = customer.id
             db.session.commit()
 
-        if plan in STRIPE_PRICE_IDS:
-            price_id = STRIPE_PRICE_IDS[plan]
+        if plan in price_ids:
+            price_id = price_ids[plan]
             session = stripe.checkout.Session.create(
                 customer=user.stripe_customer_id,
                 payment_method_types=["card"],
