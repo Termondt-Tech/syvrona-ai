@@ -2,6 +2,7 @@
 {% block header %}
 <title>{{ conversation.title }}</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/conversation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -13,6 +14,7 @@
         <div class="{{ msg.role }}-message">
             <strong>{{ msg.role.capitalize() }}:</strong>
             <div class="msg-content">{{ msg.content }}</div>
+            <span class="model-label">{{ msg.model }}</span>
         </div>
         {% else %}
         <p>No messages in this conversation.</p>

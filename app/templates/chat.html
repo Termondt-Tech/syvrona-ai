@@ -3,6 +3,7 @@
 {% block header %}
 <title>Chat – Syvrona</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 {% endblock %}
 
 
@@ -14,6 +15,7 @@
         <div class="{{ msg.role }}-message">
             <strong>{{ msg.role.capitalize() }}:</strong>
             <div class="msg-content">{{ msg.content }}</div>
+            <span class="model-label">{{ msg.model }}</span>
         </div>
         {% endfor %}
     </div>
@@ -59,7 +61,11 @@
 
         const userDiv = document.createElement("div");
         userDiv.className = "user-message";
-        userDiv.innerHTML = marked.parse(input.value);
+        userDiv.innerHTML = `
+            <strong>User:</strong>
+            <div class="msg-content">${marked.parse(input.value)}</div>
+            <span class="model-label">${modelSelector.value}</span>
+            `;
         body.appendChild(userDiv);
         body.scrollTop = body.scrollHeight;
 
@@ -73,7 +79,15 @@
         let output = "";
         const assistantDiv = document.createElement("div");
         assistantDiv.className = "assistant-message";
+        assistantDiv.innerHTML = `
+            <strong>Assistant:</strong>
+            <div class="msg-content"></div>
+            <span class="model-label">${modelSelector.value}</span>
+            `;
         body.appendChild(assistantDiv);
+
+        const assistantMsgContent = assistantDiv.querySelector('.msg-content');
+
 
         while (true) {
             const { done, value } = await reader.read();
@@ -81,7 +95,7 @@
 
             const chunk = new TextDecoder().decode(value);
             output += chunk;
-            assistantDiv.innerHTML = marked.parse(output);
+            assistantMsgContent.innerHTML = marked.parse(output);
             body.scrollTop = body.scrollHeight;
         }
 

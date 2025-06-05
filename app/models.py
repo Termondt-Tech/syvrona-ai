@@ -56,6 +56,7 @@ class Message(db.Model):
 
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
     content = db.Column(db.Text, nullable=False)
+    model = db.Column(db.String(50), nullable=True)  # e.g., 'gpt-3.5-turbo'
     created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
 
 
@@ -66,8 +67,10 @@ def create_conversation(user_id, title=None):
     return new_conversation
 
 
-def create_message(conversation_id, role, content):
-    new_message = Message(conversation_id=conversation_id, role=role, content=content)
+def create_message(conversation_id, role, content, model):
+    new_message = Message(
+        conversation_id=conversation_id, role=role, content=content, model=model
+    )
     db.session.add(new_message)
     db.session.commit()
     return new_message

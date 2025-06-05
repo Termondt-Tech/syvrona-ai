@@ -134,3 +134,16 @@ pre#body {
     height: 1px;
     overflow: hidden;
 }
+
+.model-label {
+    display: block;
+    /* Or inline-block, as you like */
+    font-size: 0.75em;
+    color: #888;
+    text-align: right;
+    margin-top: 2px;
+    margin-bottom: 0.5em;
+    font-style: italic;
+    letter-spacing: 0.03em;
+    user-select: all;
+}

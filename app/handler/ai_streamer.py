@@ -18,16 +18,6 @@ class AIStreamer:
         from app.models import create_message
         from app.handler.conversation_handler import get_conversation_messages
 
-        context = [{"role": "system", "content": "You are an intelligent assistant."}]
-        context += [
-            {"role": msg.role, "content": msg.content}
-            for msg in get_conversation_messages(conversation_id)
-        ]
-
-        user_message = create_message(conversation_id, "user", message)
-        logger.info(f"User message created with ID: {user_message.id}")
-        collected_chunks = []
-
         metadata = get_model_metadata(model)
         provider_key = metadata.get("provider")
 
@@ -36,9 +26,18 @@ class AIStreamer:
 
         provider = self.providers[provider_key]
 
-        provider = self.providers[provider_key]
         logger.info(f"Using provider '{provider_key}' for model '{model}'")
         logger.info("Calling provider.stream_response...")
+
+        context = [{"role": "system", "content": "You are an intelligent assistant."}]
+        context += [
+            {"role": msg.role, "content": msg.content}
+            for msg in get_conversation_messages(conversation_id)
+        ]
+
+        user_message = create_message(conversation_id, "user", message, model)
+        logger.info(f"User message created with ID: {user_message.id}")
+        collected_chunks = []
 
         try:
             for chunk in provider.stream_response(
@@ -50,6 +49,6 @@ class AIStreamer:
             logger.error(f"Error in provider.stream_response: {e}")
 
         assistant_message = create_message(
-            conversation_id, "assistant", "".join(collected_chunks)
+            conversation_id, "assistant", "".join(collected_chunks), model
         )
         logger.info(f"Assistant message created with ID: {assistant_message.id}")
