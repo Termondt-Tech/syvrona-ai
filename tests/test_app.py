@@ -45,7 +45,7 @@ def test_register_new_user(client):
                 "name": "Test User",
                 "password": "StrongPass123",
                 "plan": "free",
-                "confirm": "StrongPass123",
+                "confirm_password": "StrongPass123",
             },
             follow_redirects=True,
         )
@@ -72,6 +72,7 @@ def test_signup_paid_plan_redirects_to_stripe(client):
                 "name": "Test Paid",
                 "password": "StrongPassword1!",
                 "plan": "pro_monthly",  # <-- must match your config!
+                "confirm_password": "StrongPassword1!",
             },
             follow_redirects=False,
         )
