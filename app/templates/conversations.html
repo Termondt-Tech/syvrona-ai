@@ -36,7 +36,7 @@
             <tr data-title="{{ convo.title|e }}"
                 data-created="{{ convo.created_at.isoformat() if convo.created_at else '' }}">
                 <td>
-                    <form action="{{ url_for('main.edit_conversation_title', conversation_id=convo.id) }}" method="POST"
+                    <form action="{{ url_for('chat.edit_conversation_title', conversation_id=convo.id) }}" method="POST"
                         class="edit-title-form">
                         <input type="text" name="title" value="{{ convo.title }}" />
                         <button type="submit" class="btn btn-small">Rename</button>
@@ -50,9 +50,9 @@
                         <button class="dropdown-toggle" type="button" aria-haspopup="true" aria-expanded="false"
                             title="Actions">&#8942;</button>
                         <div class="dropdown-menu">
-                            <a href="{{ url_for('main.view_conversation', conversation_id=convo.id) }}">View</a>
-                            <a href="{{ url_for('main.resume_conversation', conversation_id=convo.id) }}">Resume</a>
-                            <form action="{{ url_for('main.delete_conversation_route', conversation_id=convo.id) }}"
+                            <a href="{{ url_for('chat.view_conversation', conversation_id=convo.id) }}">View</a>
+                            <a href="{{ url_for('chat.resume_conversation', conversation_id=convo.id) }}">Resume</a>
+                            <form action="{{ url_for('chat.delete_conversation_route', conversation_id=convo.id) }}"
                                 method="POST" class="action-confirm-form" data-convo-id="{{ convo.id }}"
                                 data-confirm-title="Delete Conversation"
                                 data-confirm-message="Are you sure you want to delete this conversation?">

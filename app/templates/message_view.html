@@ -1,0 +1,43 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Message Details – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="chat-container" style="max-width:650px;margin:2rem auto;">
+    <h1 class="main-title" style="margin-bottom:1.2em;">Message Details</h1>
+    <div class="{{ message.role }}-message" id="msg-{{ message.id }}" style="margin-bottom:1.5em;">
+        <strong>{{ message.role.capitalize() }}:</strong>
+        <div class="msg-content">{{ message.content }}</div>
+        <span class="model-label">{{ message.model }}</span>
+        <div class="tag-list" style="margin-top:0.7em;">
+            {% for tag in message.tags %}
+                <a href="{{ url_for('chat.tagged_messages', tag_id=tag.id) }}" class="tag-pill">{{ tag.name }}</a>
+            {% endfor %}
+        </div>
+        <div class="msg-date" style="margin-top:0.7em;color:#888;font-size:0.98em;">
+            {{ message.created_at.strftime('%Y-%m-%d %I:%M %p') }}
+        </div>
+    </div>
+    <div class="message-actions" style="display:flex;gap:0.5em;margin-bottom:1.5em;">
+        <a href="{{ url_for('chat.view_conversation', conversation_id=conversation.id) }}#msg-{{ message.id }}" class="btn btn-primary">
+            Go to this message in conversation
+        </a>
+        {% if back_to_tag_id %}
+        <a href="{{ url_for('chat.tagged_messages', tag_id=back_to_tag_id) }}" class="btn btn-secondary">
+            See all messages tagged {{ back_to_tag_name }}
+        </a>
+        {% endif %}
+    </div>
+</main>
+<script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+<script>
+    // Render markdown using marked.js, matching chat UI
+    const contentBlock = document.querySelector(".msg-content");
+    if (contentBlock) {
+        contentBlock.innerHTML = marked.parse(contentBlock.textContent);
+    }
+</script>
+{% endblock %}

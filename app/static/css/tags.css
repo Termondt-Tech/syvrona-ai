@@ -1,0 +1,136 @@
+.no-tags-guidance {
+    background: #f7fafc;
+    border: 1px solid #e0e0e0;
+    padding: 1.5rem 2rem;
+    border-radius: 10px;
+    color: #444;
+    max-width: 600px;
+    margin: 0 auto 2rem auto;
+    font-size: 1.09rem;
+    text-align: center;
+}
+
+.no-tags-guidance strong {
+    color: #222;
+    font-size: 1.13rem;
+    display: block;
+    margin-bottom: 0.4rem;
+}
+
+.tag-list-container {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 1rem;
+    justify-content: flex-start;
+}
+
+.tag-item {
+    background: #eef6fb;
+    border: 1px solid #c4e1f8;
+    border-radius: 7px;
+    padding: 0.6rem 1rem;
+    font-size: 1rem;
+    display: flex;
+    align-items: center;
+    gap: 0.8em;
+}
+
+.tag-label {
+    font-weight: 500;
+    color: #1877b2;
+    padding-right: 0.5em;
+}
+
+.tag-count {
+    color: #666;
+    font-size: 0.98em;
+}
+
+.tagged-messages-page {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+.tag-pill {
+    display: inline-block;
+    padding: 0.3em 1em;
+    border-radius: 16px;
+    background: #eef2fb;
+    color: #183153;
+    border: 1px solid #dbeafe;
+    font-weight: 500;
+    font-size: 1em;
+}
+
+.message-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+}
+
+.message-card {
+    margin-bottom: 1.5em;
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 10px;
+    padding: 1.2em 1.3em;
+    box-shadow: 0 2px 8px 0 rgba(60,80,130,0.06);
+}
+
+.message-meta {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    font-size: 0.98em;
+    margin-bottom: 0.55em;
+    color: #4954ac;
+}
+
+.msg-role {
+    font-weight: 500;
+    color: #4954ac;
+}
+.msg-date {
+    color: #718096;
+}
+.meta-sep {
+    color: #bbb;
+}
+.msg-convo {
+    color: #46505a;
+}
+.msg-convo a {
+    color: #314f7c;
+    text-decoration: underline;
+    font-weight: 500;
+}
+
+.msg-content-preview {
+    font-size: 1.08em;
+    color: #1a253c;
+    white-space: pre-line;
+}
+
+.no-messages {
+    margin-top: 2.2em;
+    padding: 2em 1em;
+    text-align: center;
+    color: #444;
+    background: #f8fafc;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+}
+.no-messages .tip {
+    font-size: 0.97em;
+    color: #778;
+    margin-top: 0.6em;
+}
+@media (max-width: 600px) {
+    .tagged-messages-page {
+        max-width: 99vw;
+        padding: 0 0.5em;
+    }
+    .message-card {
+        padding: 1em 0.6em;
+    }
+}

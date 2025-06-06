@@ -67,4 +67,8 @@ def create_app(config=None):
 
     app.register_blueprint(health_blueprint)
 
+    from app.chat import chat as chat_blueprint
+
+    app.register_blueprint(chat_blueprint)
+
     return app

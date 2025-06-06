@@ -1,0 +1,37 @@
+{% extends "base.html" %}
+{% block header %}
+<title>My Tags – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content" style="max-width:600px;margin:0 auto;">
+    <h1 class="main-title" style="margin-bottom:1.5rem;">My Tags</h1>
+    {% if not tags %}
+        <div class="no-tags-guidance" style="margin-top:2rem; padding:1.5em; background:#f8fafc; border-radius:8px; border:1px solid #e2e8f0;">
+            <p style="font-size:1.15em;margin-bottom:0.5em;">You haven’t added any tags yet.</p>
+            <div style="color:#46505a;font-size:1em;">
+                <strong>How to use tags:</strong><br>
+                <ul style="margin:0.5em 0 0 1.3em;">
+                  <li>Add tags to any message in your chat conversations.</li>
+                  <li>Click the <span style="border:1px solid #bbb;padding:0 0.3em;border-radius:4px;background:#f9f9f9;font-weight:500;">+</span> icon next to any message, start typing, and select or create a tag.</li>
+                  <li>Tags help you organize, filter, and quickly find important messages later.</li>
+                </ul>
+            </div>
+        </div>
+    {% else %}
+        <ul class="tag-list" style="list-style:none;padding:0;margin-top:2rem;">
+            {% for tag, count in tags %}
+            <li style="margin-bottom:0.75em;">
+                <a class="tag-pill"
+                   href="{{ url_for('chat.tagged_messages', tag_id=tag.id) }}"
+                   style="display:inline-block; min-width:88px; padding:0.4em 0.9em; border-radius:18px; background:#eef2fb; border:1px solid #dbeafe; color:#183153; font-weight:500; text-decoration:none; margin-right:0.7em;">
+                    {{ tag.name }}
+                    <span class="tag-count" style="background:#c7d5ec;color:#314f7c;font-size:0.95em;padding:0.1em 0.5em; border-radius:12px; margin-left:0.7em;">{{ count }}</span>
+                </a>
+            </li>
+            {% endfor %}
+        </ul>
+    {% endif %}
+</main>
+{% endblock %}

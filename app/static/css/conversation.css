@@ -301,3 +301,15 @@
 #page-size:focus {
   border-color: #0ea5e9;
 }
+/* Highlighted message for tag navigation */
+.highlighted-message {
+    background: #ffe566 !important;
+    box-shadow: 0 0 6px 2px #f1eab7;
+    transition: background 1.2s, box-shadow 1.2s;
+    animation: syvrona-flash 2.2s 1;
+}
+@keyframes syvrona-flash {
+    0% { background: #ffe566; }
+    80% { background: #f1eab7; }
+    100% { background: none; }
+}

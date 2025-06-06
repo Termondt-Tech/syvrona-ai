@@ -1,0 +1,38 @@
+{% extends "base.html" %}
+{% block header %}
+<title>My Tags – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
+{% endblock %}
+{% block content %}
+<main class="main-content tagged-messages-page">
+    <h1 class="main-title">
+        Messages Tagged:
+        <span class="tag-pill">{{ tag.name }}</span>
+    </h1>
+    {% if messages %}
+    <ul class="message-list">
+        {% for msg, convo in messages %}
+        <li class="message-card">
+            <div class="message-meta">
+                <span class="msg-role">{{ msg.role.capitalize() }}</span>
+                <span class="msg-date">{{ msg.created_at.strftime('%Y-%m-%d %I:%M %p') }}</span>
+                <span class="meta-sep">|</span>
+                <span class="msg-convo">
+                    in <a href="{{ url_for('chat.view_message', message_id=msg.id, tag=tag.id) }}">{{ convo.title or
+                        'Untitled' }}</a>
+                </span>
+            </div>
+            <div class="msg-content-preview">
+                {{ msg.content|truncate(180) }}
+            </div>
+        </li>
+        {% endfor %}
+    </ul>
+    {% else %}
+    <div class="no-messages">
+        <p>No messages found for this tag.</p>
+        <div class="tip">Try tagging a message in your conversations and revisit this page.</div>
+    </div>
+    {% endif %}
+</main>
+{% endblock %}

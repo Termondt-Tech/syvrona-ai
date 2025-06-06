@@ -11,7 +11,7 @@ class User(UserMixin, db.Model):
     name = db.Column(db.String(1000))
     is_admin = db.Column(db.Boolean, default=False)
     is_active = db.Column(db.Boolean, default=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
     last_login = db.Column(db.DateTime)
     stripe_customer_id = db.Column(db.String(100), nullable=True)
     subscription_status = db.Column(db.String(50), nullable=True)
@@ -36,7 +36,35 @@ class Conversation(db.Model):
     )
     # Optional, can be first message
     title = db.Column(db.String(255), nullable=True)
-    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+
+
+message_tags = db.Table(
+    "message_tags",
+    db.Column(
+        "message_id",
+        db.Integer,
+        db.ForeignKey("message.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
+class Tag(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    name = db.Column(db.String(50), nullable=False)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+
+    user = db.relationship("User", backref=db.backref("tags", lazy=True))
+    __table_args__ = (db.UniqueConstraint("user_id", "name", name="uix_user_tag_name"),)
 
 
 class Message(db.Model):
@@ -57,7 +85,9 @@ class Message(db.Model):
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
     content = db.Column(db.Text, nullable=False)
     model = db.Column(db.String(50), nullable=True)  # e.g., 'gpt-3.5-turbo'
-    created_at = db.Column(db.DateTime, default=datetime.now(tz=UTC))
+    tags = db.relationship("Tag", secondary=message_tags, backref="messages")
+    is_favorite = db.Column(db.Boolean, default=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
 
 
 def create_conversation(user_id, title=None):
