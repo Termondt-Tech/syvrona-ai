@@ -114,3 +114,7 @@
 .btn-secondary { background: #94a3b8; color: #fff; }
 
 @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+
+.mt-1 {
+    margin-top: 1rem !important;
+}

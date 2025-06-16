@@ -10,6 +10,9 @@ from flask import (
 )
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
+from . import mail
+from flask_mail import Message
+from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.models import User
 import logging
 from . import db
@@ -19,6 +22,24 @@ import stripe
 auth = Blueprint("auth", __name__)
 
 logger = logging.getLogger(__name__)
+
+
+def generate_reset_token(email):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
+
+
+def confirm_reset_token(token, expiration=3600):
+    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    try:
+        email = serializer.loads(
+            token,
+            salt=current_app.config['SECURITY_PASSWORD_SALT'],
+            max_age=expiration
+        )
+    except (SignatureExpired, BadSignature):
+        return None
+    return email
 
 
 @auth.route("/login")
@@ -112,12 +133,17 @@ def signup_post():
     db.session.add(new_user)
     db.session.commit()
 
+    logger.info(f"New user created: {new_user.email}")
+
     customer = stripe.Customer.create(
         email=new_user.email, name=new_user.name, metadata={"user_id": new_user.id}
     )
+
+    logger.info(f"Stripe customer created: {customer.id} for user: {new_user.email}")
     new_user.stripe_customer_id = customer.id
     new_user.last_login = datetime.now()
     db.session.commit()
+    logger.info(f"User {new_user.email} Stripe customer ID saved.")
     flash("Thanks for signing up!", "success")
     login_user(new_user)  # log in the user after signup
 
@@ -146,3 +172,61 @@ def signup_post():
 
     flash("Signup successful. You are now logged in.", "success")
     return redirect(url_for("main.profile"))
+
+
+@auth.route('/forgot-password', methods=['GET', 'POST'])
+def forgot_password():
+    if request.method == 'POST':
+        logger.info("Password reset requested.")
+        email = request.form['email']
+        user = User.query.filter_by(email=email).first()
+        if user:
+            logger.info(f"Password reset link requested for user: {user.email}")
+            token = generate_reset_token(user.email)
+            reset_url = url_for('auth.reset_password', token=token, _external=True)
+            # Send reset email
+            msg = Message("Syvrona Password Reset",
+                          recipients=[user.email])
+            msg.body = (
+                f"To reset your password, visit the following link: {reset_url}\n\n"
+                "If you didn't request this, ignore this email."
+            )
+            mail.send(msg)
+            flash('A password reset link has been sent to your email.', 'info')
+        else:
+            # Avoid leaking info; always show same message.
+            flash('A password reset link has been sent to your email.', 'info')
+        return redirect(url_for('auth.login'))
+    return render_template('forgot_password.html')
+
+
+@auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+def reset_password(token):
+    email = confirm_reset_token(token)
+    if not email:
+        flash('The password reset link is invalid or has expired.', 'danger')
+        return redirect(url_for('auth.forgot_password'))
+
+    if request.method == 'POST':
+        password = request.form['password']
+        confirm_password = request.form['confirm_password']
+
+        if password != confirm_password:
+            flash('Passwords do not match. Please try again.', 'danger')
+            return render_template('reset_password.html', token=token)
+
+        user = User.query.filter_by(email=email).first()
+        if user:
+            user.password = generate_password_hash(
+                password, method="pbkdf2", salt_length=16
+            )
+            db.session.commit()
+            logger.info(f"Password reset successful for user: {user.email}")
+            flash('Your password has been updated. Please log in.', 'success')
+            return redirect(url_for('auth.login'))
+        else:
+            logger.warning(f"Password reset attempted for non-existent user: {email}")
+            flash('User not found.', 'danger')
+            return redirect(url_for('auth.forgot_password'))
+
+    return render_template('reset_password.html', token=token)

@@ -41,7 +41,7 @@
                 {% if current_user.is_admin or current_user.subscription_status == 'active' %}
                 <a href="{{ url_for('chat.new_chat') }}">Chat</a>
                 <a href="{{ url_for('chat.conversations') }}">Conversations</a>
-                <a href="{{ url_for('chat.my_tags') }}">My Tags</a>
+                <a href="{{ url_for('chat.my_tags') }}">Tags</a>
                 {% else %}
                 {% endif %}
                 <a href="{{ url_for('main.profile') }}">Profile</a>
