@@ -1,6 +1,8 @@
 services:
   web:
     build: .
+    env_file:
+      - .env
     ports:
       - 5001:5000
     healthcheck:
@@ -11,13 +13,6 @@ services:
       start_period: 10s
     depends_on:
       - mysql
-    environment:
-      - FLASK_APP=${FLASK_APP}
-      - FLASK_ENV=${FLASK_ENV}
-      - FLASK_RUN_HOST=${FLASK_RUN_HOST}
-      - FLASK_RUN_PORT=${FLASK_RUN_PORT}
-      - DATABASE_URL=${DATABASE_URL}
-      - SECRET_KEY=${SECRET_KEY}
   mysql:
     image: mysql:8.0
     restart: always
