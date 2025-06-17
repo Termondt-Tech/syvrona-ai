@@ -26,6 +26,14 @@ class Config:
     MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")  # Store this securely in your env!
     MAIL_DEFAULT_SENDER = ("Syvrona Support", "info@termondttech.com")
 
+    FEATURE_FLAGS = {
+        "FREE_TRIAL_ENABLED": (
+            os.environ.get("FREE_TRIAL_ENABLED", "false").lower() == "true"
+        ),
+        "FREE_TRIAL_DAYS": int(os.environ.get("FREE_TRIAL_DAYS", 0)),
+        # Add future flags here
+    }
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

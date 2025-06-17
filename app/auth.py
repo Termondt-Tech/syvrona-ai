@@ -17,6 +17,7 @@ from app.models import User
 import logging
 from . import db
 import stripe
+from app.feature_flags import is_feature_enabled, get_feature_config
 
 
 auth = Blueprint("auth", __name__)
@@ -25,17 +26,15 @@ logger = logging.getLogger(__name__)
 
 
 def generate_reset_token(email):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
-    return serializer.dumps(email, salt=current_app.config['SECURITY_PASSWORD_SALT'])
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
+    return serializer.dumps(email, salt=current_app.config["SECURITY_PASSWORD_SALT"])
 
 
 def confirm_reset_token(token, expiration=3600):
-    serializer = URLSafeTimedSerializer(current_app.config['SECRET_KEY'])
+    serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
         email = serializer.loads(
-            token,
-            salt=current_app.config['SECURITY_PASSWORD_SALT'],
-            max_age=expiration
+            token, salt=current_app.config["SECURITY_PASSWORD_SALT"], max_age=expiration
         )
     except (SignatureExpired, BadSignature):
         return None
@@ -86,7 +85,13 @@ def login_post():
 
 @auth.route("/signup")
 def signup():
-    return render_template("signup.html")
+    free_trial_enabled = is_feature_enabled("FREE_TRIAL_ENABLED")
+    free_trial_days = get_feature_config("FREE_TRIAL_DAYS", 7)
+    return render_template(
+        "signup.html",
+        free_trial_enabled=free_trial_enabled,
+        free_trial_days=free_trial_days,
+    )
 
 
 @auth.route("/logout")
@@ -103,6 +108,7 @@ def signup_post():
     name = request.form.get("name")
     password = request.form.get("password")
     confirm_password = request.form.get("confirm_password")
+
     if not email or not name or not password or not confirm_password:
         flash("All fields are required.", "error")
         return redirect(url_for("auth.signup"))
@@ -152,11 +158,20 @@ def signup_post():
     # If paid plan, create checkout session and redirect to Stripe
     if plan in price_ids:
         price_id = price_ids[plan]
+
+        free_trial_enabled = is_feature_enabled("FREE_TRIAL_ENABLED")
+        free_trial_days = get_feature_config("FREE_TRIAL_DAYS", 0)
+
+        subscription_data = {}
+        if free_trial_enabled and free_trial_days > 0:
+            subscription_data["trial_period_days"] = free_trial_days
+
         session = stripe.checkout.Session.create(
             customer=new_user.stripe_customer_id,
             payment_method_types=["card"],
             line_items=[{"price": price_id, "quantity": 1}],
             mode="subscription",
+            subscription_data=subscription_data,
             allow_promotion_codes=False,
             success_url=url_for("main.profile", _external=True)
             + "?session_id={CHECKOUT_SESSION_ID}",
@@ -174,46 +189,45 @@ def signup_post():
     return redirect(url_for("main.profile"))
 
 
-@auth.route('/forgot-password', methods=['GET', 'POST'])
+@auth.route("/forgot-password", methods=["GET", "POST"])
 def forgot_password():
-    if request.method == 'POST':
+    if request.method == "POST":
         logger.info("Password reset requested.")
-        email = request.form['email']
+        email = request.form["email"]
         user = User.query.filter_by(email=email).first()
         if user:
             logger.info(f"Password reset link requested for user: {user.email}")
             token = generate_reset_token(user.email)
-            reset_url = url_for('auth.reset_password', token=token, _external=True)
+            reset_url = url_for("auth.reset_password", token=token, _external=True)
             # Send reset email
-            msg = Message("Syvrona Password Reset",
-                          recipients=[user.email])
+            msg = Message("Syvrona Password Reset", recipients=[user.email])
             msg.body = (
                 f"To reset your password, visit the following link: {reset_url}\n\n"
                 "If you didn't request this, ignore this email."
             )
             mail.send(msg)
-            flash('A password reset link has been sent to your email.', 'info')
+            flash("A password reset link has been sent to your email.", "info")
         else:
             # Avoid leaking info; always show same message.
-            flash('A password reset link has been sent to your email.', 'info')
-        return redirect(url_for('auth.login'))
-    return render_template('forgot_password.html')
+            flash("A password reset link has been sent to your email.", "info")
+        return redirect(url_for("auth.login"))
+    return render_template("forgot_password.html")
 
 
-@auth.route('/reset-password/<token>', methods=['GET', 'POST'])
+@auth.route("/reset-password/<token>", methods=["GET", "POST"])
 def reset_password(token):
     email = confirm_reset_token(token)
     if not email:
-        flash('The password reset link is invalid or has expired.', 'danger')
-        return redirect(url_for('auth.forgot_password'))
+        flash("The password reset link is invalid or has expired.", "danger")
+        return redirect(url_for("auth.forgot_password"))
 
-    if request.method == 'POST':
-        password = request.form['password']
-        confirm_password = request.form['confirm_password']
+    if request.method == "POST":
+        password = request.form["password"]
+        confirm_password = request.form["confirm_password"]
 
         if password != confirm_password:
-            flash('Passwords do not match. Please try again.', 'danger')
-            return render_template('reset_password.html', token=token)
+            flash("Passwords do not match. Please try again.", "danger")
+            return render_template("reset_password.html", token=token)
 
         user = User.query.filter_by(email=email).first()
         if user:
@@ -222,11 +236,11 @@ def reset_password(token):
             )
             db.session.commit()
             logger.info(f"Password reset successful for user: {user.email}")
-            flash('Your password has been updated. Please log in.', 'success')
-            return redirect(url_for('auth.login'))
+            flash("Your password has been updated. Please log in.", "success")
+            return redirect(url_for("auth.login"))
         else:
             logger.warning(f"Password reset attempted for non-existent user: {email}")
-            flash('User not found.', 'danger')
-            return redirect(url_for('auth.forgot_password'))
+            flash("User not found.", "danger")
+            return redirect(url_for("auth.forgot_password"))
 
-    return render_template('reset_password.html', token=token)
+    return render_template("reset_password.html", token=token)

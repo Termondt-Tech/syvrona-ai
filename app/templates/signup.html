@@ -10,6 +10,13 @@
 {% block content %}
 <main class="form-container">
     <h1 class="form-title">Register</h1>
+    {% if free_trial_enabled %}
+    <!-- 7-Day Free Trial Banner (Syvrona colors) -->
+    <div class="trial-banner">
+        Start your <strong>{{ free_trial_days }}-day free trial</strong> – full access, no charge today. Cancel anytime.
+    </div>
+    {% endif %}
+
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
     {% for category, message in messages %}
@@ -53,6 +60,13 @@
                         <div class="plan-title">Pro Monthly</div>
                         <div class="plan-price">$9.99<span class="plan-period">/month</span></div>
                         <div class="plan-desc">Full features, billed monthly</div>
+                        {% if free_trial_enabled %}
+                        <!-- Trial "pill" on each plan card -->
+                        <span class="trial-pill">
+                            {{ free_trial_days }}-day free trial
+                        </span>
+                        {% endif %}
+
                     </div>
                 </label>
                 <label class="plan-card">
@@ -61,6 +75,13 @@
                         <div class="plan-title">Pro Yearly <span class="badge-best">Best Value</span></div>
                         <div class="plan-price">$99<span class="plan-period">/year</span></div>
                         <div class="plan-desc">Full features, best value</div>
+                        {% if free_trial_enabled %}
+                        <!-- Trial "pill" on each plan card -->
+                        <span class="trial-pill">
+                            {{ free_trial_days }}-day free trial
+                        </span>
+                        {% endif %}
+
                     </div>
                 </label>
             </div>
@@ -77,27 +98,39 @@
         <div class="form-actions">
             <button class="btn-primary" type="submit">Sign Up</button>
         </div>
+        {% if free_trial_enabled %}
+        <!-- Note under signup button -->
+        <div style="
+    font-size: 0.94rem;
+    color: #6A7685;
+    margin-top: 0.7rem;
+    text-align: center;
+">
+            Your card won't be charged until your free trial ends. Cancel anytime.
+        </div>
+        {% endif %}
+
     </form>
     {% include "_modal.html" %}
 </main>
 <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
 <script>
-document.addEventListener('DOMContentLoaded', function () {
-    const form = document.querySelector('form[action="/signup"]');
-    form.addEventListener('submit', async function (e) {
-        const password = form.querySelector('input[name="password"]').value;
-        const confirm = form.querySelector('input[name="confirm_password"]').value;
-        if (password !== confirm) {
-            e.preventDefault();
-            await showConfirmModal(
-                "Passwords Do Not Match",
-                "The password and confirm password fields do not match. Please re-enter them.",
-                {mode: "alert"}
-            );
-            form.querySelector('input[name="confirm_password"]').focus();
-        }
+    document.addEventListener('DOMContentLoaded', function () {
+        const form = document.querySelector('form[action="/signup"]');
+        form.addEventListener('submit', async function (e) {
+            const password = form.querySelector('input[name="password"]').value;
+            const confirm = form.querySelector('input[name="confirm_password"]').value;
+            if (password !== confirm) {
+                e.preventDefault();
+                await showConfirmModal(
+                    "Passwords Do Not Match",
+                    "The password and confirm password fields do not match. Please re-enter them.",
+                    { mode: "alert" }
+                );
+                form.querySelector('input[name="confirm_password"]').focus();
+            }
+        });
     });
-});
 </script>
 
 {% endblock %}
