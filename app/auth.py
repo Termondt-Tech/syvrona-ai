@@ -10,14 +10,13 @@ from flask import (
 )
 from flask_login import login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
-from . import mail
-from flask_mail import Message
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.models import User
 import logging
 from . import db
 import stripe
 from app.feature_flags import is_feature_enabled, get_feature_config
+from app.utils import send_mailgun_message
 
 
 auth = Blueprint("auth", __name__)
@@ -200,12 +199,13 @@ def forgot_password():
             token = generate_reset_token(user.email)
             reset_url = url_for("auth.reset_password", token=token, _external=True)
             # Send reset email
-            msg = Message("Syvrona Password Reset", recipients=[user.email])
-            msg.body = (
+            subject = "Syvrona Password Reset"
+            text = (
                 f"To reset your password, visit the following link: {reset_url}\n\n"
                 "If you didn't request this, ignore this email."
             )
-            mail.send(msg)
+            send_mailgun_message(user.email, subject, text)
+
             flash("A password reset link has been sent to your email.", "info")
         else:
             # Avoid leaking info; always show same message.

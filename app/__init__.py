@@ -3,7 +3,6 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
-from flask_mail import Mail
 
 
 from app.config import Config
@@ -16,8 +15,6 @@ migrate = Migrate()  # ← create Migrate instance
 login_manager = LoginManager()
 
 logger = logging.getLogger(__name__)
-
-mail = Mail()  # Create the mail object
 
 
 def create_app(config=None):
@@ -34,8 +31,6 @@ def create_app(config=None):
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     logger.info("Login manager initialized")
-
-    mail.init_app(app)  # Initialize Flask-Mail
 
     configure_logging()
     logger.info("Logging configured")

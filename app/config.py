@@ -19,13 +19,11 @@ class Config:
     if not SECRET_KEY:
         raise RuntimeError("SECRET_KEY must be set for all environments.")
 
-    MAIL_SERVER = "mail.termondttech.com"
-    MAIL_PORT = 465
-    MAIL_USE_SSL = True
-    MAIL_USERNAME = os.getenv("MAIL_USERNAME")  # info@termondttech.com
-    MAIL_PASSWORD = os.getenv("MAIL_PASSWORD")  # Store this securely in your env!
-    MAIL_DEFAULT_SENDER = ("Syvrona Support", "info@termondttech.com")
-
+    MAILGUN_DOMAIN = os.getenv("MAILGUN_DOMAIN")
+    MAILGUN_API_KEY = os.getenv("MAILGUN_API_KEY")
+    MAILGUN_FROM_EMAIL = os.getenv(
+        "MAILGUN_FROM_EMAIL", f"Syvrona Support <mailgun@{MAILGUN_DOMAIN}>"
+    )
     FEATURE_FLAGS = {
         "FREE_TRIAL_ENABLED": (
             os.environ.get("FREE_TRIAL_ENABLED", "false").lower() == "true"
