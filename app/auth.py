@@ -200,10 +200,7 @@ def forgot_password():
             reset_url = url_for("auth.reset_password", token=token, _external=True)
             # Send reset email
             subject = "Syvrona Password Reset"
-            text = (
-                f"To reset your password, visit the following link: {reset_url}\n\n"
-                "If you didn't request this, ignore this email."
-            )
+            text = render_template("email/password_reset.txt", reset_url=reset_url)
             send_mailgun_message(user.email, subject, text)
 
             flash("A password reset link has been sent to your email.", "info")
