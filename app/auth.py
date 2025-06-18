@@ -201,8 +201,8 @@ def forgot_password():
             # Send reset email
             subject = "Syvrona Password Reset"
             text = render_template("email/password_reset.txt", reset_url=reset_url)
-            send_mailgun_message(user.email, subject, text)
-
+            html = render_template("email/password_reset.html", reset_url=reset_url)
+            send_mailgun_message(user.email, subject, text, html=html)
             flash("A password reset link has been sent to your email.", "info")
         else:
             # Avoid leaking info; always show same message.
