@@ -27,6 +27,7 @@ class User(UserMixin, db.Model):
         cascade="all, delete-orphan",
         passive_deletes=True,
     )
+    verified = db.Column(db.Boolean, default=False)
 
 
 class Conversation(db.Model):

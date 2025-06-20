@@ -1,0 +1,20 @@
+Welcome to Syvrona!
+
+Hi {{ user.name }},
+
+Thanks for signing up for Syvrona — your platform for AI-driven automation and productivity.
+
+Please confirm your email address to help us keep your account secure and ensure you receive important updates and password reset emails.
+
+Confirm your email: {{ confirm_url }}
+
+{% if free_trial_enabled and free_trial_days > 0 %}
+Enjoy your {{ free_trial_days }}-day free trial! You’ll have full access to Syvrona after you complete your subscription setup.
+{% else %}
+You’ll have full access to Syvrona after you complete your subscription setup.
+{% endif %}
+
+If you need help, contact Syvrona Support at info@termondttech.com.
+
+— The Syvrona Team
+Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.

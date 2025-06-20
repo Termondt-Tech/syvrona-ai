@@ -57,6 +57,16 @@
         a clean,
         focused chat experience with memory support and custom enhancements.
     </p>
+    {% if free_trial_enabled and free_trial_days > 0 %}
+    <div class="free-trial-promo">
+        <span class="promo-icon">🎉</span>
+        <strong>Start your {{ free_trial_days }}-day Free Trial!</strong>
+        <span class="promo-details">Enjoy full access to all Syvrona features. Your card won't be charged until your
+            free trial ends. Cancel anytime during your trial—no risk, no obligation.
+        </span>
+        <a href="{{ url_for('auth.signup') }}" class="btn-primary promo-btn">Try Syvrona Free</a>
+    </div>
+    {% endif %}
     <p>
         Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface—making it
         ideal for professionals, creatives, and everyday users alike.
@@ -83,15 +93,28 @@
         </ul>
     </section>
     <div class="cta-section" style="text-align: center; margin: 2.5rem 0;">
-        <a href="/signup" class="btn-primary cta-btn">Subscribe Now</a>
-        <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
-            Start your Syvrona journey in minutes.
-        </p>
-    </div>
-    <p>
-        Syvrona is currently available for personal and exploratory use. Future versions may introduce new features,
-        customization options, and expanded access based on user feedback and evolving needs.
-    </p>
+        <div class="cta-section" style="text-align: center; margin: 2.5rem 0;">
+            {% if free_trial_enabled and free_trial_days > 0 %}
+            <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Start Free Trial</a>
+            <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
+                No charge today. Cancel anytime during your {{ free_trial_days }}-day trial.
+            </p>
+            {% else %}
+            <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Subscribe Now</a>
+            <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
+                Start your Syvrona journey in minutes.
+            </p>
+            {% endif %}
+        </div>
+
+       <p>
+    Syvrona powers creativity and productivity for individuals and teams alike. 
+    Interested in advanced business, enterprise, or self-hosted options? <a href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit Termondt Tech to learn more.</strong></a>
+</p>
+
+
+
+
 </main>
 
 

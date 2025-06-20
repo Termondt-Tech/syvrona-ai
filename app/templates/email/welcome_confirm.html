@@ -1,0 +1,52 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Welcome to Syvrona – Confirm Your Email</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
+    .container { max-width: 500px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.06); padding: 32px; }
+    .logo { margin-bottom: 28px; text-align: center; }
+    .btn { display:inline-block; background:#2563eb; color:#fff; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; }
+    .footer { color:#788; font-size:12px; margin-top:30px; text-align:center; }
+    .small { font-size: 11px; color: #aaa; margin-top: 16px; text-align: center;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://syvrona.com/static/images/syvrona-logo-darktext-transparent-100.png" alt="Syvrona" width="100" height="auto" style="display:block; margin:0 auto;">
+    </div>
+    <h2>Welcome to Syvrona!</h2>
+    <p>Hello {{ user.name }},</p>
+    <p>
+      Thanks for signing up for <strong>Syvrona</strong> — your platform for AI-driven automation and productivity.
+    </p>
+    <p>
+      <strong>Please confirm your email address</strong> to help us keep your account secure and ensure you receive important updates and password reset emails.
+    </p>
+    <p style="text-align:center;">
+      <a href="{{ confirm_url }}" class="btn">Confirm Your Email Address</a>
+    </p>
+    <p>If the button above doesn't work, copy and paste this link into your browser:</p>
+    <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
+    {% if free_trial_enabled and free_trial_days > 0 %}
+    <p>
+      <strong>Enjoy your {{ free_trial_days }}-day free trial!</strong>  
+      You’ll have full access to Syvrona after you complete your subscription setup.
+    </p>
+    {% else %}
+    <p>
+      You’ll have full access to Syvrona after you complete your subscription setup.
+    </p>
+    {% endif %}
+    <p>If you need help, contact Syvrona Support at <a href="mailto:info@termondttech.com">info@termondttech.com</a>.</p>
+    <div class="footer">
+      — The Syvrona Team
+      <div class="small">
+        Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

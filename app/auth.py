@@ -8,15 +8,16 @@ from flask import (
     url_for,
     current_app,
 )
-from flask_login import login_required, login_user, logout_user
+from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
+from app.constants import PRICE_LABELS
+from app.handler.signup_handler import SignupHandler
 from app.models import User
 import logging
 from . import db
-import stripe
 from app.feature_flags import is_feature_enabled, get_feature_config
-from app.utils import send_mailgun_message
+from app.utils import confirm_token, generate_confirmation_token, send_mailgun_message
 
 
 auth = Blueprint("auth", __name__)
@@ -79,7 +80,7 @@ def login_post():
 
     login_user(user, remember=remember)
     flash("Login successful.", "success")
-    return redirect(url_for("main.profile"))
+    return redirect(url_for("auth.profile"))
 
 
 @auth.route("/signup")
@@ -102,90 +103,17 @@ def logout():
 
 @auth.route("/signup", methods=["POST"])
 def signup_post():
-    # code to validate and add user to database goes here
-    email = request.form.get("email")
-    name = request.form.get("name")
-    password = request.form.get("password")
-    confirm_password = request.form.get("confirm_password")
-
-    if not email or not name or not password or not confirm_password:
-        flash("All fields are required.", "error")
-        return redirect(url_for("auth.signup"))
-    elif password != confirm_password:
-        flash("Passwords do not match.", "error")
-        return redirect(url_for("auth.signup"))
-
-    plan = request.form.get("plan", "free")
-
-    # if this returns a user, then the email already exists in database
-    user = User.query.filter_by(email=email).first()
-
-    if user:
-        # if a user is found, we want to redirect back to signup page
-        # so user can try again
-        flash("Email address already exists", "error")
-        return redirect(url_for("auth.signup"))
-
-    # create a new user with the form data. Hash the password so the plaintext version
-    # isn't saved.
-    new_user = User(
-        email=email,
-        name=name,
-        password=generate_password_hash(password, method="pbkdf2", salt_length=16),
+    handler = SignupHandler(
+        email=request.form.get("email"),
+        name=request.form.get("name"),
+        password=request.form.get("password"),
+        plan=request.form.get("plan", "free"),
+        confirm_password=request.form.get("confirm_password"),
     )
-
-    # add the new user to the database
-    db.session.add(new_user)
-    db.session.commit()
-
-    logger.info(f"New user created: {new_user.email}")
-
-    customer = stripe.Customer.create(
-        email=new_user.email, name=new_user.name, metadata={"user_id": new_user.id}
-    )
-
-    logger.info(f"Stripe customer created: {customer.id} for user: {new_user.email}")
-    new_user.stripe_customer_id = customer.id
-    new_user.last_login = datetime.now()
-    db.session.commit()
-    logger.info(f"User {new_user.email} Stripe customer ID saved.")
-    flash("Thanks for signing up!", "success")
-    login_user(new_user)  # log in the user after signup
-
-    price_ids = current_app.config.get("STRIPE_PRICE_IDS", {})
-
-    # If paid plan, create checkout session and redirect to Stripe
-    if plan in price_ids:
-        price_id = price_ids[plan]
-
-        free_trial_enabled = is_feature_enabled("FREE_TRIAL_ENABLED")
-        free_trial_days = get_feature_config("FREE_TRIAL_DAYS", 0)
-
-        subscription_data = {}
-        if free_trial_enabled and free_trial_days > 0:
-            subscription_data["trial_period_days"] = free_trial_days
-
-        session = stripe.checkout.Session.create(
-            customer=new_user.stripe_customer_id,
-            payment_method_types=["card"],
-            line_items=[{"price": price_id, "quantity": 1}],
-            mode="subscription",
-            subscription_data=subscription_data,
-            allow_promotion_codes=False,
-            success_url=url_for("main.profile", _external=True)
-            + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=url_for("main.profile", _external=True),
-        )
-        return redirect(session.url)
-
-    # If free plan, record subscription and redirect to profile
-    new_user.subscription_status = "active"
-    new_user.subscription_plan = "free"
-    new_user.subscription_start = datetime.now()
-    db.session.commit()
-
-    flash("Signup successful. You are now logged in.", "success")
-    return redirect(url_for("main.profile"))
+    response = handler.process()
+    if handler.new_user:
+        login_user(handler.new_user)
+    return response
 
 
 @auth.route("/forgot-password", methods=["GET", "POST"])
@@ -241,3 +169,136 @@ def reset_password(token):
             return redirect(url_for("auth.forgot_password"))
 
     return render_template("reset_password.html", token=token)
+
+
+@auth.route("/confirm-email/<token>")
+def confirm_email(token):
+    email = confirm_token(token)
+    if not email:
+        flash("The confirmation link is invalid or has expired.", "danger")
+        return redirect(url_for("auth.login"))
+
+    user = User.query.filter_by(email=email).first_or_404()
+    if user.verified:
+        flash("Account already confirmed. Please login.", "success")
+    else:
+        user.verified = True
+        db.session.commit()
+        flash("You have confirmed your account. Thanks!", "success")
+    return redirect(url_for("auth.login"))
+
+
+@auth.route("/resend_verification", methods=["GET"])
+@login_required
+def resend_verification():
+    user = current_user
+    if user.verified:
+        flash("Your email is already verified.", "success")
+        return redirect(url_for("auth.profile"))
+
+    token = generate_confirmation_token(user.email)
+    confirm_url = url_for("auth.confirm_email", token=token, _external=True)
+
+    subject = "Syvrona – Please Confirm Your Email"
+    text_body = render_template(
+        "email/confirm_email.txt",
+        user=user,
+        confirm_url=confirm_url,
+    )
+    html_body = render_template(
+        "email/confirm_email.html",
+        user=user,
+        confirm_url=confirm_url,
+    )
+    send_mailgun_message(to=user.email, subject=subject, text=text_body, html=html_body)
+
+    flash("Verification email sent. Please check your inbox.", "success")
+    return redirect(url_for("auth.profile"))
+
+
+@auth.route("/profile")
+@login_required
+def profile():
+
+    user = db.session.get(User, current_user.id)
+
+    return render_template("profile.html", user=user, price_labels=PRICE_LABELS)
+
+
+@auth.route("/profile/update", methods=["POST"])
+@login_required
+def update_profile():
+    try:
+        name = request.form.get("username")
+        email = request.form.get("email")
+        password = request.form.get("password")
+        confirm_password = request.form.get("confirm_password")
+        user = current_user
+
+        if not name or not email:
+            flash("Name and email are required.", "warning")
+            return redirect(url_for("auth.profile"))
+        if password and password != confirm_password:
+            flash("Passwords do not match.", "warning")
+            return redirect(url_for("auth.profile"))
+
+        email_changed = user.email != email
+        user.name = name
+
+        if email_changed:
+            # Check if the new email is already in use by someone else
+            existing_user = db.session.query(User).filter_by(email=email).first()
+            if existing_user:
+                flash("Email address already in use.", "warning")
+                return redirect(url_for("auth.profile"))
+
+            logger.info(
+                f"Updating email for user: {user.get_id()} "
+                f"from {user.email} to {email}"
+            )
+            user.email = email
+            user.verified = False  # Mark as unverified
+            db.session.commit()
+
+            # Send confirmation email to new address
+            from app.utils import send_mailgun_message, generate_confirmation_token
+
+            confirm_token = generate_confirmation_token(email)
+            confirm_url = url_for(
+                "auth.confirm_email", token=confirm_token, _external=True
+            )
+            subject = "Confirm Your New Email Address"
+            text_body = render_template(
+                "email/confirm_email.txt",
+                user=user,
+                confirm_url=confirm_url,
+            )
+            html_body = render_template(
+                "email/confirm_email.html",
+                user=user,
+                confirm_url=confirm_url,
+            )
+            send_mailgun_message(
+                to=email,
+                subject=subject,
+                text=text_body,
+                html=html_body,
+            )
+            flash(
+                "Profile updated. Please check your new email to confirm your address.",
+                "info",
+            )
+        else:
+            if password:
+                hashed_password = generate_password_hash(
+                    password, method="pbkdf2", salt_length=16
+                )
+                user.set_password(hashed_password)
+            db.session.commit()
+            flash("Profile updated successfully!", "success")
+
+        return redirect(url_for("auth.profile"))
+    except Exception as e:
+        logger.error(f"Error updating profile: {e}")
+        flash("Error updating profile.", "error")
+        return redirect(url_for("auth.profile"))

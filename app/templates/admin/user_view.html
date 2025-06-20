@@ -27,7 +27,6 @@
             <li><strong>Created:</strong> {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</li>
             <li><strong>Admin:</strong> {{ 'Yes' if user.is_admin else 'No' }}</li>
             <li><strong>Active:</strong> {{ 'Yes' if user.is_active else 'No' }}</li>
-            <li><strong>Joined:</strong> {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</li>
             <li><strong>Last Login:</strong> {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</li>
             <li><strong>Stripe Customer ID:</strong> {{ user.stripe_customer_id or 'N/A' }}</li>
             <li><strong>Subscription Status:</strong> {{ user.subscription_status }}</li>

@@ -3,6 +3,7 @@
 {% block header %}
 <title>Profile – Syvrona</title>
 <meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/profile.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -26,12 +27,12 @@
     {% if user.subscription_status == 'active' %}
     <a href="{{ url_for('billing.manage_subscription') }}" class="btn-primary">Manage Subscription</a>
     {% else %}
-      <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe</a>
+    <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe</a>
     {% endif %}
   </div>
   {% else %}
   <div class="subscription-info">
-    <p>You do not have an active subscription.</p>
+    <p>Subscribe to unlock Syvrona features.</p>
     <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe Now</a>
   </div>
   {% endif %}
@@ -53,8 +54,15 @@
       <div class="control">
         <input class="input" type="email" id="email" name="email" value="{{ user.email }}" required>
       </div>
+       {% if user.verified %}
+    <div class="email-status verified">✔ Verified</div>
+  {% else %}
+    <div class="email-status unverified">
+      Unverified –
+      <a href="{{ url_for('auth.resend_verification') }}" class="resend-link">Resend confirmation email</a>
     </div>
-
+  {% endif %}
+    </div>
     <div class="form-group">
       <label class="label" for="password">New Password</label>
       <div class="control">

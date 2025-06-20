@@ -1,0 +1,15 @@
+Your Syvrona Email Address Was Changed
+
+Hello {{ user.name }},
+
+This is a security notice that the email address for your Syvrona account was recently changed.
+
+Previous email: {{ old_email }}
+New email: {{ new_email }}
+
+If you did not request or authorize this change, please contact Syvrona Support immediately at info@termondttech.com.
+
+—
+The Syvrona Team
+
+Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.

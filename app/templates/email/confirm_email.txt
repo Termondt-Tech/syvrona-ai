@@ -1,0 +1,16 @@
+Confirm Your New Email Address – Syvrona
+
+Hello {{ user.name }},
+
+We received a request to update the email address for your Syvrona account.
+
+To complete this change, please confirm your new email address by clicking the link below:
+
+{{ confirm_url }}
+
+If you did not request this change, please contact Syvrona Support immediately at info@termondttech.com.
+
+—
+The Syvrona Team
+
+Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.

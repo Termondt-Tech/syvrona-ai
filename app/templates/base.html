@@ -44,7 +44,7 @@
                 <a href="{{ url_for('chat.my_tags') }}">Tags</a>
                 {% else %}
                 {% endif %}
-                <a href="{{ url_for('main.profile') }}">Profile</a>
+                <a href="{{ url_for('auth.profile') }}">Profile</a>
 
                 {% if current_user.is_admin %}
                 <a href="{{ url_for('admin.user_list') }}" class="admin-link">Admin</a>

@@ -28,7 +28,7 @@ def require_active_subscription(f):
             return f(*args, **kwargs)
         if current_user.subscription_status != "active":
             flash("You need an active subscription to access this feature.", "error")
-            return redirect(url_for("main.profile"))
+            return redirect(url_for("auth.profile"))
         return f(*args, **kwargs)
 
     return decorated_function

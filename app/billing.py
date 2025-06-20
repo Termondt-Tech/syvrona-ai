@@ -164,7 +164,7 @@ def stripe_webhook():
 def manage_subscription():
     session = stripe.billing_portal.Session.create(
         customer=current_user.stripe_customer_id,
-        return_url=url_for("main.profile", _external=True),
+        return_url=url_for("auth.profile", _external=True),
     )
     return redirect(session.url)
 
@@ -192,9 +192,9 @@ def subscribe():
                 line_items=[{"price": price_id, "quantity": 1}],
                 mode="subscription",
                 allow_promotion_codes=False,
-                success_url=url_for("main.profile", _external=True)
+                success_url=url_for("auth.profile", _external=True)
                 + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=url_for("main.profile", _external=True),
+                cancel_url=url_for("auth.profile", _external=True),
             )
             flash("Successfully subscribed.", "success")
             return redirect(session.url)
