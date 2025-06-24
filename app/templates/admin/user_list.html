@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<main class="main-content">
+<main class="main-content main-content-wide">
     <h1 class="page-title">Registered Users</h1>
     {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
@@ -26,8 +26,32 @@
                     <th>Email</th>
                     <th>Admin</th>
                     <th>Active</th>
-                    <th>Joined</th>
-                    <th>Last Login</th>
+                    <th>
+                        <a
+                            href="{{ url_for('admin.user_list', sort='created_at', direction='asc' if sort != 'created_at' or direction == 'desc' else 'desc') }}">
+                            Joined
+                            {% if sort == 'created_at' %}
+                            {% if direction == 'asc' %}
+                            ▲
+                            {% else %}
+                            ▼
+                            {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a
+                            href="{{ url_for('admin.user_list', sort='last_login', direction='asc' if sort != 'last_login' or direction == 'desc' else 'desc') }}">
+                            Last Login
+                            {% if sort == 'last_login' %}
+                            {% if direction == 'asc' %}
+                            ▲
+                            {% else %}
+                            ▼
+                            {% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
                     <th>Action</th>
                 </tr>
             </thead>

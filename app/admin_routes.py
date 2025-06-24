@@ -14,8 +14,22 @@ admin = Blueprint("admin", __name__, url_prefix="/admin")
 @login_required
 @admin_required
 def user_list():
-    users = User.query.all()
-    return render_template("admin/user_list.html", users=users)
+    # Supported sort columns, use dict to map query param to SQLAlchemy column
+    sort_columns = {
+        "created_at": User.created_at,
+        "last_login": User.last_login,
+    }
+    sort = request.args.get("sort", "created_at")
+    direction = request.args.get("direction", "desc")
+
+    # Validate sort key
+    sort_column = sort_columns.get(sort, User.created_at)
+    if direction == "asc":
+        users = User.query.order_by(sort_column.asc()).all()
+    else:
+        users = User.query.order_by(sort_column.desc()).all()
+
+    return render_template("admin/user_list.html", users=users, sort=sort, direction=direction)
 
 
 @admin.route("/users/<int:user_id>/toggle-active", methods=["POST"])
