@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Ticket #{{ ticket.id }} – Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
+{% endblock %}
+{% block content %}
+<main class="form-container">
+    <h1 class="form-title">Ticket #{{ ticket.id }} – {{ ticket.subject|e }}</h1>
+    {% include "_flash.html" %}
+    <div class="ticket-meta">
+        <dl>
+            <dt>Name:</dt>
+            <dd>
+                {% if ticket.user %}
+                {{ ticket.user.name }}
+                {% else %}
+                <span style="color:#888;">[deleted user #{{ ticket.user_id }}]</span>
+                {% endif %}
+            </dd>
+
+            <dt>Email:</dt>
+            <dd>
+                {% if ticket.user %}
+                {{ ticket.user.email }}
+                {% else %}
+                <span style="color:#888;">—</span>
+                {% endif %}
+            </dd>
+
+            <dt>Type:</dt>
+            <dd>{{ ticket.type|capitalize }}</dd>
+
+            <dt>Status:</dt>
+            <dd>
+                <span class="support-status support-status-{{ ticket.status|lower }}">
+                    {{ ticket.status|capitalize }}
+                </span>
+            </dd>
+
+            <dt>Created:</dt>
+            <dd>{{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+            <dt>Last Updated:</dt>
+            <dd>{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+        </dl>
+    </div>
+
+    <form method="POST" class="status-form" style="margin-bottom: 1.5rem;">
+        <label for="status"><strong>Status:</strong></label>
+        <select name="status" id="status">
+            {% for s in ['open', 'pending', 'resolved', 'closed'] %}
+            <option value="{{ s }}" {% if ticket.status==s %}selected{% endif %}>{{ s.capitalize() }}</option>
+            {% endfor %}
+        </select>
+        <button type="submit" name="set_status" class="btn btn-secondary" style="margin-left: 1rem;">Update</button>
+    </form>
+
+    <h2 style="font-size:1.15rem; font-weight:600; margin-bottom:1rem; color:#2563eb;">Conversation</h2>
+    <div class="support-thread">
+        {% for msg in messages %}
+        <div class="support-message support-message-{{ msg.sender_type }}">
+            <div class="support-message-meta">
+                <span class="support-message-sender">
+                    {% if msg.sender_type == 'user' %}
+                    User
+                    {% elif msg.sender_type == 'admin' %}
+                    Staff
+                    {% else %}
+                    {{ msg.sender_type|capitalize }}
+                    {% endif %}
+                </span>
+                <span class="support-message-date">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="support-message-content">{{ msg.body | e }}</div>
+        </div>
+        {% endfor %}
+    </div>
+    {% if ticket.status != "closed" %}
+    <form method="POST" style="margin-top:2rem;">
+        <div class="form-group">
+            <label for="message">Reply as staff</label>
+            <textarea name="message" id="message" class="support-textarea" rows="5" required
+                placeholder="Type your reply here"></textarea>
+        </div>
+        <div class="form-actions">
+            <button class="btn-primary" type="submit">Send Reply</button>
+        </div>
+    </form>
+    {% else %}
+    <div style="text-align:center; color:#64748b; margin-top:2rem;">
+        <em>This ticket is closed. You can no longer reply.</em>
+    </div>
+    {% endif %}
+    <div style="text-align:center; margin-top:2.5rem;">
+        <a href="{{ url_for('admin.tickets') }}" style="color:#2563eb;">&larr; Back to All Tickets</a>
+    </div>
+</main>
+{% endblock %}

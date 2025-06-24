@@ -1,10 +1,11 @@
 # admin_routes.py
 import os
 from flask import Blueprint, render_template, redirect, url_for, flash, request
-from app.models import User
+from app.models import Ticket, TicketMessage, User
 from app.decorators import admin_required
 from flask_login import login_required, current_user
 from app import db
+from app.utils import send_staff_reply_alert
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
@@ -70,3 +71,69 @@ def user_detail(user_id):
                 return redirect(url_for("admin.user_list"))
 
     return render_template("admin/user_view.html", user=user, price_labels=PRICE_LABELS)
+
+
+@admin.route("/tickets")
+@login_required
+@admin_required
+def tickets():
+    # Get filter params
+    status = request.args.get("status", "")
+    type_ = request.args.get("type", "")
+    query = Ticket.query
+
+    if status:
+        query = query.filter(Ticket.status.ilike(status))
+    if type_:
+        query = query.filter(Ticket.type.ilike(type_))
+    tickets = query.order_by(Ticket.last_updated.desc()).all()
+    return render_template(
+        "admin/ticket_list.html",
+        tickets=tickets,
+        filter_status=status,
+        filter_type=type_,
+    )
+
+
+@admin.route("/tickets/<int:ticket_id>", methods=["GET", "POST"])
+@login_required
+@admin_required
+def ticket_detail(ticket_id):
+    from flask import request, redirect, url_for, flash
+    from datetime import datetime, timezone
+
+    ticket = Ticket.query.get_or_404(ticket_id)
+    messages = ticket.messages  # Already ordered if you set order_by
+
+    if request.method == "POST":
+        # Handle status update
+        if "set_status" in request.form:
+            new_status = request.form.get("status")
+            if new_status in ["open", "pending", "resolved", "closed"]:
+                ticket.status = new_status
+                ticket.last_updated = datetime.now(timezone.utc)
+                db.session.commit()
+                flash(f"Ticket status set to {new_status}.", "success")
+                return redirect(url_for("admin.ticket_detail", ticket_id=ticket.id))
+
+        # Handle staff reply
+        elif ticket.status != "closed":
+            body = request.form.get("message", "").strip()
+            if not body:
+                flash("Message cannot be empty.", "error")
+            else:
+                msg = TicketMessage(
+                    ticket_id=ticket.id,
+                    sender_id=current_user.id,
+                    sender_type="admin",
+                    body=body,
+                )
+                db.session.add(msg)
+                ticket.last_updated = datetime.now(timezone.utc)
+                db.session.commit()
+                # Optionally send alert to user
+                send_staff_reply_alert(ticket, msg)
+                flash("Reply posted.", "success")
+                return redirect(url_for("admin.ticket_detail", ticket_id=ticket.id))
+
+    return render_template("admin/ticket_detail.html", ticket=ticket, messages=messages)

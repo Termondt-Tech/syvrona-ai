@@ -1,0 +1,76 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>Support Ticket #{{ ticket.id }} – Syvrona</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/forms.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="form-container">
+    <h1 class="form-title">Ticket #{{ ticket.id }}</h1>
+    {% with messages = get_flashed_messages(with_categories=True) %}
+    {% if messages %}
+    {% for category, message in messages %}
+    <div class="flash-message flash-{{ category|lower }}">
+        {{ message }}
+    </div>
+    {% endfor %}
+    {% endif %}
+    {% endwith %}
+    <div style="margin-bottom:1.5rem;">
+        <span style="font-weight:600;">Type:</span> {{ ticket.type|capitalize }}<br>
+        <span style="font-weight:600;">Subject:</span> {{ ticket.subject|e }}<br>
+        <span style="font-weight:600;">Status:</span>
+        <span class="support-status support-status-{{ ticket.status|lower }}">
+            {{ ticket.status|capitalize }}
+        </span>
+        <br>
+        <span style="font-weight:600;">Created:</span> {{ ticket.created_at.strftime('%Y-%m-%d %H:%M') }}<br>
+        <span style="font-weight:600;">Last Updated:</span> {{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}
+    </div>
+
+    <h2 style="font-size:1.15rem; font-weight:600; margin-bottom:1rem; color:#2563eb;">Conversation</h2>
+    <div class="support-thread">
+        {% for msg in ticket.messages %}
+        <div class="support-message support-message-{{ msg.sender_type }}">
+            <div class="support-message-meta">
+                <span class="support-message-sender">
+                    {% if msg.sender_type == 'user' %}
+                    You
+                    {% elif msg.sender_type == 'admin' %}
+                    Support
+                    {% else %}
+                    {{ msg.sender_type|capitalize }}
+                    {% endif %}
+                </span>
+                <span class="support-message-date">{{ msg.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="support-message-content">{{ msg.body | e }}</div>
+        </div>
+        {% endfor %}
+
+    </div>
+
+    {% if ticket.status != "closed" %}
+    <form method="POST" style="margin-top:2rem;">
+        <div class="form-group">
+            <label for="message">Reply</label>
+            <textarea name="message" id="message" class="support-textarea" rows="5" required
+                placeholder="Type your reply here"></textarea>
+        </div>
+        <div class="form-actions">
+            <button class="btn-primary" type="submit">Send Reply</button>
+        </div>
+    </form>
+    {% else %}
+    <div style="text-align:center; color:#64748b; margin-top:2rem;">
+        <em>This ticket is closed. You can no longer reply.</em>
+    </div>
+    {% endif %}
+    <div style="text-align:center; margin-top:2.5rem;">
+        <a href="{{ url_for('support.list_tickets') }}" style="color:#2563eb;">&larr; Back to My Tickets</a>
+    </div>
+</main>
+{% endblock %}

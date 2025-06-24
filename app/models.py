@@ -98,6 +98,48 @@ def create_conversation(user_id, title=None):
     return new_conversation
 
 
+class Ticket(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    type = db.Column(db.String(20), nullable=False)  # 'support', 'feature'
+    subject = db.Column(db.String(255))
+    status = db.Column(
+        db.String(20), default="open"
+    )  # 'open', 'pending', 'resolved', 'closed'
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+    closed_at = db.Column(db.DateTime, nullable=True)
+    last_updated = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(tz=UTC),
+        onupdate=lambda: datetime.now(tz=UTC),
+    )
+    messages = db.relationship(
+        "TicketMessage",
+        backref="ticket",
+        cascade="all, delete-orphan",
+        order_by="TicketMessage.created_at",
+        lazy=True,
+    )
+    user = db.relationship("User", backref="tickets", foreign_keys=[user_id])
+
+    def close(self):
+        self.status = "closed"
+        self.closed_at = datetime.now(tz=UTC)
+
+
+class TicketMessage(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    ticket_id = db.Column(
+        db.Integer, db.ForeignKey("ticket.id", ondelete="CASCADE"), nullable=False
+    )
+    sender_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    sender_type = db.Column(db.String(20), nullable=False)  # 'user', 'admin', 'ai'
+    body = db.Column(db.Text, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+
+
 def create_message(conversation_id, role, content, model):
     new_message = Message(
         conversation_id=conversation_id, role=role, content=content, model=model

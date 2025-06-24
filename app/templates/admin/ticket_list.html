@@ -1,0 +1,81 @@
+{% extends "base.html" %}
+{% block header %}
+<title>All Support Tickets – Admin</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
+{% endblock %}
+{% block content %}
+<main class="main-content main-content-wide">
+    <h1 class="main-title">All Support Tickets</h1>
+    {% include "_flash.html" %}
+    <form method="get" class="ticket-filters">
+    <label>
+        Status:
+        <select name="status">
+            <option value="">All</option>
+            {% for s in ['Open', 'Pending', 'Closed', 'Resolved'] %}
+            <option value="{{ s }}" {% if filter_status == s %}selected{% endif %}>{{ s }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <label>
+        Type:
+        <select name="type">
+            <option value="">All</option>
+            {% for t in ['Support', 'Feature'] %}
+            <option value="{{ t }}" {% if filter_type == t %}selected{% endif %}>{{ t }}</option>
+            {% endfor %}
+        </select>
+    </label>
+    <button type="submit" class="btn-primary" style="margin-left:1em;">Filter</button>
+    {% if filter_status or filter_type %}
+        <a href="{{ url_for('admin.tickets') }}" class="btn-secondary" style="margin-left:0.6em;">Clear</a>
+    {% endif %}
+</form>
+
+    {% if tickets %}
+    <div class="support-table-responsive">
+        <table class="support-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Name</th>
+                    <th>Type</th>
+                    <th>Subject</th>
+                    <th>Status</th>
+                    <th>Last Updated</th>
+                    <th></th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for ticket in tickets %}
+                <tr>
+                    <td>{{ ticket.id }}</td>
+                    <td>
+                        {% if ticket.user %}
+                            {{ ticket.user.name }}
+                        {% else %}
+                            <span style="color: #888;">[deleted]</span>
+                        {% endif %}
+                    </td>
+                    <td>{{ ticket.type|capitalize }}</td>
+                    <td>{{ ticket.subject|e }}</td>
+                    <td>
+                        <span class="support-status support-status-{{ ticket.status|lower }}">
+                            {{ ticket.status|capitalize }}
+                        </span>
+                    </td>
+                    <td>{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.ticket_detail', ticket_id=ticket.id) }}" class="support-ticket-link">View</a>
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+    </div>
+    {% else %}
+        <p style="text-align:center; margin-top:2rem;">No support tickets found.</p>
+    {% endif %}
+</main>
+{% endblock %}

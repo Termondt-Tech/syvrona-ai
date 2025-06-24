@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html>
+<head>
+  <meta charset="utf-8">
+  <title>Syvrona – New Message on Support Ticket</title>
+  <style>
+    body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
+    .container { max-width: 500px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.06); padding: 32px; }
+    .logo { margin-bottom: 28px; text-align: center; }
+    .btn { display:inline-block; background:#2563eb; color:#fff; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; }
+    .footer { color:#788; font-size:12px; margin-top:30px; text-align:center; }
+    .small { font-size: 11px; color: #aaa; margin-top: 16px; text-align: center;}
+    .meta { font-size: 14px; color: #555; margin: 18px 0 10px 0;}
+    .message-box { background:#f1f5f9; border-radius:6px; padding:16px; margin:18px 0; color:#263238;}
+  </style>
+</head>
+<body>
+  <div class="container">
+    <div class="logo">
+      <img src="https://syvrona.com/static/images/syvrona-logo-darktext-transparent-100.png" alt="Syvrona" width="100" style="display:block; margin:0 auto;">
+    </div>
+    <h2>New Message on Support Ticket</h2>
+    <p>
+      <strong>Ticket #{{ ticket.id }}</strong><br>
+      <span class="meta">Subject:</span> {{ ticket.subject|e }}<br>
+      <span class="meta">From:</span> {{ ticket.user.email if ticket.user else 'User ID #' ~ ticket.user_id }}
+    </p>
+    <div class="message-box">
+      <strong>User message:</strong><br>
+      {{ msg.body|e }}
+    </div>
+    <p>
+      View the full conversation in the admin portal:<br>
+      <a href="{{ link }}" class="btn">View Ticket</a>
+    </p>
+    <div class="footer">
+      — The Syvrona Team
+      <div class="small">
+        Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.
+      </div>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,16 @@
+New Message on Support Ticket – Syvrona
+
+Ticket #{{ ticket.id }}
+Subject: {{ ticket.subject }}
+From: {{ ticket.user.email if ticket.user else 'User ID #' ~ ticket.user_id }}
+
+User message:
+{{ msg.body }}
+
+View the full conversation in the admin portal:
+{{ link }}
+
+—
+The Syvrona Team
+
+Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.

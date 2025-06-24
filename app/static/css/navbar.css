@@ -88,3 +88,83 @@
         margin: 0 0 0 1.5rem;
     }
 }
+
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background: none;
+    border: none;
+    font: inherit;
+    color: #374151;
+    font-weight: 500;
+    margin-left: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+}
+
+.dropbtn:focus,
+.dropbtn:hover {
+    color: #2563eb;
+    outline: none;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    min-width: 180px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    border-radius: 0.5rem;
+    z-index: 100;
+    flex-direction: column;
+    gap: 0;
+    padding: 0.5rem 0;
+}
+
+.dropdown-content a {
+    color: #374151;
+    padding: 0.6rem 1.2rem;
+    display: block;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.dropdown-content a:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+}
+
+/* Show dropdown on hover - desktop only */
+@media (min-width: 769px) {
+    .dropdown:hover .dropdown-content,
+    .dropdown:focus-within .dropdown-content {
+        display: block;
+    }
+    .dropbtn::after {
+        content: "";
+    }
+}
+
+/* On mobile, use open class */
+@media (max-width: 768px) {
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        background: transparent;
+        min-width: 0;
+        border-radius: 0;
+        padding: 0;
+    }
+    .dropdown-content a {
+        padding-left: 2rem;
+    }
+    .dropdown.open .dropdown-content {
+        display: block;
+    }
+}

@@ -1,0 +1,21 @@
+Support Reply to Your Ticket – Syvrona
+
+Hello{{ ' ' + ticket.user.name if ticket.user and ticket.user.name else '' }},
+
+Our team has replied to your support ticket.
+
+Subject: {{ ticket.subject }}
+Ticket #: {{ ticket.id }}
+
+Staff reply:
+{{ msg.body }}
+
+You can reply or view your ticket at any time using the link below:
+{{ link }}
+
+Please do not reply to this email. Replies are handled via your Syvrona support portal.
+
+—
+The Syvrona Team
+
+Syvrona is a product of Termondt Tech LLC. Syvrona Support is managed by the Termondt Tech team.

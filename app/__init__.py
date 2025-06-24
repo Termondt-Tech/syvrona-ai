@@ -47,29 +47,26 @@ def create_app(config=None):
         return User.query.get(int(user_id))
 
     from .routes import main as main_blueprint
-
     app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
-
     app.register_blueprint(auth_blueprint)
 
     from .admin_routes import admin as admin_blueprint  # Adjust import path as needed
-
     app.register_blueprint(admin_blueprint)
 
     from .billing import billing as billing_blueprint  # Adjust import path as needed
-
     app.register_blueprint(billing_blueprint)
 
     from .health_routes import (
         health as health_blueprint,
     )  # Adjust import path as needed
-
     app.register_blueprint(health_blueprint)
 
     from app.chat import chat as chat_blueprint
-
     app.register_blueprint(chat_blueprint)
+
+    from .support import support as support_blueprint
+    app.register_blueprint(support_blueprint)
 
     return app

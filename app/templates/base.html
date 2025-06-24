@@ -26,9 +26,10 @@
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container">
-            <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}"
-                alt="Syvrona AI Chat Logo" class="logo-image">
-
+            <a href="{{ url_for('main.index') }}">
+                <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}"
+                    alt="Syvrona AI Chat Logo" class="logo-image">
+            </a>
             <!-- Hamburger button -->
             <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
                 ☰
@@ -36,26 +37,57 @@
 
             <!-- Nav links -->
             <nav class="nav-links" id="navLinks">
-                <a href="{{ url_for('main.index') }}">Home</a>
+                {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status ==
+                'active') %}
+                <div class="dropdown">
+                    <button class="dropbtn">AI Assistant ▾</button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('chat.new_chat') }}">Chat</a>
+                        <a href="{{ url_for('chat.conversations') }}">Conversations</a>
+                        <a href="{{ url_for('chat.my_tags') }}">Tags</a>
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Support Dropdown -->
                 {% if current_user.is_authenticated %}
-                {% if current_user.is_admin or current_user.subscription_status == 'active' %}
-                <a href="{{ url_for('chat.new_chat') }}">Chat</a>
-                <a href="{{ url_for('chat.conversations') }}">Conversations</a>
-                <a href="{{ url_for('chat.my_tags') }}">Tags</a>
-                {% else %}
-                {% endif %}
-                <a href="{{ url_for('auth.profile') }}">Profile</a>
-
-                {% if current_user.is_admin %}
-                <a href="{{ url_for('admin.user_list') }}" class="admin-link">Admin</a>
+                <div class="dropdown">
+                    <button class="dropbtn">Support ▾</button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('support.list_tickets') }}">My Tickets</a>
+                        <a href="{{ url_for('support.submit_ticket') }}">Submit Ticket</a>
+                        <!-- <a href="#">FAQ</a> -->
+                    </div>
+                </div>
                 {% endif %}
 
-                <a href="{{ url_for('auth.logout') }}">Logout</a>
+                <!-- Admin Dropdown -->
+                {% if current_user.is_authenticated and current_user.is_admin %}
+                <div class="dropdown">
+                    <button class="dropbtn">Admin ▾</button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('admin.user_list') }}">User List</a>
+                        <a href="{{ url_for('admin.tickets') }}">All Tickets</a>
+                        <!-- More admin tools... -->
+                    </div>
+                </div>
+                {% endif %}
+
+                <!-- Profile Dropdown -->
+                {% if current_user.is_authenticated %}
+                <div class="dropdown profile-dropdown">
+                    <button class="dropbtn">{{ current_user.name or "Profile" }} ▾</button>
+                    <div class="dropdown-content">
+                        <a href="{{ url_for('auth.profile') }}">Profile</a>
+                        <a href="{{ url_for('auth.logout') }}">Logout</a>
+                    </div>
+                </div>
                 {% else %}
                 <a href="{{ url_for('auth.login') }}">Login</a>
                 <a href="{{ url_for('auth.signup') }}">Sign Up</a>
                 {% endif %}
             </nav>
+
         </div>
     </header>
 
@@ -82,7 +114,23 @@
         menuToggle.addEventListener('click', () => {
             navLinks.classList.toggle('open');
         });
+
+        // Dropdown toggle for mobile
+        document.querySelectorAll('.dropdown .dropbtn').forEach(btn => {
+            btn.addEventListener('click', function (e) {
+                if (window.innerWidth < 769) {
+                    e.preventDefault();
+                    const parent = this.parentElement;
+                    // Close other open dropdowns
+                    document.querySelectorAll('.dropdown.open').forEach(dd => {
+                        if (dd !== parent) dd.classList.remove('open');
+                    });
+                    parent.classList.toggle('open');
+                }
+            });
+        });
     </script>
+
 
 </body>
 

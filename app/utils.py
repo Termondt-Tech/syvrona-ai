@@ -1,5 +1,5 @@
 # utils.py
-from flask import current_app
+from flask import current_app, render_template, url_for
 import requests
 from itsdangerous import URLSafeTimedSerializer
 
@@ -35,10 +35,44 @@ def confirm_token(token, expiration=3600):
     serializer = URLSafeTimedSerializer(current_app.config["SECRET_KEY"])
     try:
         email = serializer.loads(
-            token,
-            salt=current_app.config["SECURITY_PASSWORD_SALT"],
-            max_age=expiration
+            token, salt=current_app.config["SECURITY_PASSWORD_SALT"], max_age=expiration
         )
     except Exception:
         return False
     return email
+
+
+def send_new_ticket_alert(ticket):
+    link = url_for("admin.ticket_detail", ticket_id=ticket.id, _external=True)
+    subject = f"[Syvrona Support] New Ticket Submitted: #{ticket.id} – {ticket.subject}"
+    text = render_template("email/ticket_new_admin.txt", ticket=ticket, link=link)
+    html = render_template("email/ticket_new_admin.html", ticket=ticket, link=link)
+    send_mailgun_message("info@termondttech.com", subject, text, html)
+
+
+def send_new_ticket_message_alert(ticket, msg):
+    link = url_for("admin.ticket_detail", ticket_id=ticket.id, _external=True)
+    subject = f"[Syvrona Support] New Reply on Ticket #{ticket.id}: {ticket.subject}"
+    text = render_template(
+        "email/ticket_message_admin.txt", ticket=ticket, msg=msg, link=link
+    )
+    html = render_template(
+        "email/ticket_message_admin.html", ticket=ticket, msg=msg, link=link
+    )
+    send_mailgun_message("info@termondttech.com", subject, text, html)
+
+
+def send_staff_reply_alert(ticket, msg):
+    if not ticket.user or not ticket.user.email:
+        return
+    link = url_for("support.view_ticket", ticket_id=ticket.id, _external=True)
+    subject = (
+        f"Syvrona Support: Response to Your Ticket #{ticket.id} – {ticket.subject}"
+    )
+    text = render_template(
+        "email/ticket_staff_reply.txt", ticket=ticket, msg=msg, link=link
+    )
+    html = render_template(
+        "email/ticket_staff_reply.html", ticket=ticket, msg=msg, link=link
+    )
+    send_mailgun_message(ticket.user.email, subject, text, html)
