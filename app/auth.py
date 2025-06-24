@@ -103,6 +103,11 @@ def logout():
 
 @auth.route("/signup", methods=["POST"])
 def signup_post():
+    honeypot = request.form.get('middle_name', '')
+    if honeypot:
+        # If the honeypot field is filled, it's likely a bot submission
+        logger.warning("Honeypot field filled—possible bot: %r", request.form)
+        return redirect(url_for("auth.signup"))
     handler = SignupHandler(
         email=request.form.get("email"),
         name=request.form.get("name"),

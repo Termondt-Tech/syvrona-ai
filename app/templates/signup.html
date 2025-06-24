@@ -113,7 +113,10 @@
             You’ll be redirected to securely complete your subscription.
         </div>
         {% endif %}
-
+        <div style="display:none;">
+            <label>If you are human, leave this blank:</label>
+            <input type="text" name="middle_name" autocomplete="off">
+        </div>
     </form>
     {% include "_modal.html" %}
 </main>

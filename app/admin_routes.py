@@ -29,7 +29,9 @@ def user_list():
     else:
         users = User.query.order_by(sort_column.desc()).all()
 
-    return render_template("admin/user_list.html", users=users, sort=sort, direction=direction)
+    return render_template(
+        "admin/user_list.html", users=users, sort=sort, direction=direction
+    )
 
 
 @admin.route("/users/<int:user_id>/toggle-active", methods=["POST"])
