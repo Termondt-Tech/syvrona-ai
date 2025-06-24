@@ -95,6 +95,11 @@
                 </div>
             </label>
         </div>
+         <div style="display:none;">
+            <label>If you are human, leave this blank:</label>
+            <input type="text" name="middle_name" autocomplete="off">
+        </div>
+        {{ hcaptcha }}
         <div class="form-actions">
             <button class="btn-primary" type="submit">Continue to Payment</button>
         </div>
@@ -113,10 +118,6 @@
             You’ll be redirected to securely complete your subscription.
         </div>
         {% endif %}
-        <div style="display:none;">
-            <label>If you are human, leave this blank:</label>
-            <input type="text" name="middle_name" autocomplete="off">
-        </div>
     </form>
     {% include "_modal.html" %}
 </main>

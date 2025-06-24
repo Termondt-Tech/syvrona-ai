@@ -32,6 +32,10 @@ class Config:
         # Add future flags here
     }
 
+    HCAPTCHA_ENABLED = os.getenv("HCAPTCHA_ENABLED", "false").lower() == "true"
+    HCAPTCHA_SITE_KEY = os.getenv("HCAPTCHA_SITE_KEY")
+    HCAPTCHA_SECRET_KEY = os.getenv("HCAPTCHA_SECRET_KEY")
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

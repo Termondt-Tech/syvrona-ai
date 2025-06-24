@@ -38,10 +38,15 @@
                 Remember me
             </label>
         </div>
+        <div style="display:none;">
+            <label>If you are human, leave this blank:</label>
+            <input type="text" name="middle_name" autocomplete="off">
+        </div>
+        {{ hcaptcha }}
         <div class="form-actions">
             <button class="btn-primary" type="submit">Login</button>
         </div>
-         <div class="form-group mt-1" style="text-align: center;">
+        <div class="form-group mt-1" style="text-align: center;">
             <a href="{{ url_for('auth.forgot_password') }}">Forgot your password?</a>
         </div>
 

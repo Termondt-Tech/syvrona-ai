@@ -15,6 +15,7 @@ from app.constants import PRICE_LABELS
 from app.handler.signup_handler import SignupHandler
 from app.models import User
 import logging
+from app import hcaptcha
 from . import db
 from app.feature_flags import is_feature_enabled, get_feature_config
 from app.utils import confirm_token, generate_confirmation_token, send_mailgun_message
@@ -57,6 +58,16 @@ def login_post():
     email = request.form.get("email")
     password = request.form.get("password")
     remember = True if request.form.get("remember") else False
+    honeypot = request.form.get('middle_name', '')
+
+    if honeypot:
+        # If the honeypot field is filled, it's likely a bot submission
+        logger.warning("Honeypot field filled—possible bot: %r", request.form)
+        return redirect(url_for("auth.login"))
+
+    if not hcaptcha.verify():
+        flash("Captcha failed. Please try again.", "error")
+        return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(email=email).first()
 
@@ -108,6 +119,11 @@ def signup_post():
         # If the honeypot field is filled, it's likely a bot submission
         logger.warning("Honeypot field filled—possible bot: %r", request.form)
         return redirect(url_for("auth.signup"))
+
+    if not hcaptcha.verify():
+        flash("Captcha failed. Please try again.", "error")
+        return redirect(url_for("auth.signup"))
+
     handler = SignupHandler(
         email=request.form.get("email"),
         name=request.form.get("name"),

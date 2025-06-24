@@ -3,6 +3,7 @@ from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager
+from flask_hcaptcha import hCaptcha
 
 
 from app.config import Config
@@ -15,6 +16,8 @@ migrate = Migrate()  # ← create Migrate instance
 login_manager = LoginManager()
 
 logger = logging.getLogger(__name__)
+
+hcaptcha = hCaptcha()
 
 
 def create_app(config=None):
@@ -34,6 +37,8 @@ def create_app(config=None):
 
     configure_logging()
     logger.info("Logging configured")
+
+    hcaptcha.init_app(app)
 
     logger.info("App configuration:")
     logger.info(
