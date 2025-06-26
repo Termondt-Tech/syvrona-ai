@@ -13,7 +13,16 @@ from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.constants import PRICE_LABELS
 from app.handler.signup_handler import SignupHandler
-from app.models import User
+from app.models import (
+    Conversation,
+    Message,
+    Notification,
+    NotificationRead,
+    Tag,
+    Ticket,
+    User,
+    message_tags,
+)
 import logging
 from app import hcaptcha
 from . import db
@@ -58,16 +67,17 @@ def login_post():
     email = request.form.get("email")
     password = request.form.get("password")
     remember = True if request.form.get("remember") else False
-    honeypot = request.form.get('middle_name', '')
+    honeypot = request.form.get("middle_name", "")
 
     if honeypot:
         # If the honeypot field is filled, it's likely a bot submission
         logger.warning("Honeypot field filled—possible bot: %r", request.form)
         return redirect(url_for("auth.login"))
 
-    if not hcaptcha.verify():
-        flash("Captcha failed. Please try again.", "error")
-        return redirect(url_for("auth.login"))
+    if current_app.config.get("HCAPTCHA_ENABLED", False):
+        if not hcaptcha.verify():
+            flash("Captcha failed. Please try again.", "error")
+            return redirect(url_for("auth.login"))
 
     user = User.query.filter_by(email=email).first()
 
@@ -91,7 +101,7 @@ def login_post():
 
     login_user(user, remember=remember)
     flash("Login successful.", "success")
-    return redirect(url_for("auth.profile"))
+    return redirect(url_for("auth.dashboard_view"))
 
 
 @auth.route("/signup")
@@ -114,15 +124,16 @@ def logout():
 
 @auth.route("/signup", methods=["POST"])
 def signup_post():
-    honeypot = request.form.get('middle_name', '')
+    honeypot = request.form.get("middle_name", "")
     if honeypot:
         # If the honeypot field is filled, it's likely a bot submission
         logger.warning("Honeypot field filled—possible bot: %r", request.form)
         return redirect(url_for("auth.signup"))
 
-    if not hcaptcha.verify():
-        flash("Captcha failed. Please try again.", "error")
-        return redirect(url_for("auth.signup"))
+    if current_app.config.get("HCAPTCHA_ENABLED", False):
+        if not hcaptcha.verify():
+            flash("Captcha failed. Please try again.", "error")
+            return redirect(url_for("auth.login"))
 
     handler = SignupHandler(
         email=request.form.get("email"),
@@ -243,6 +254,8 @@ def profile():
 
     user = db.session.get(User, current_user.id)
 
+    logger.info(f"Rendering preferences for user: {user.preferences}")
+
     return render_template("profile.html", user=user, price_labels=PRICE_LABELS)
 
 
@@ -323,3 +336,252 @@ def update_profile():
         logger.error(f"Error updating profile: {e}")
         flash("Error updating profile.", "error")
         return redirect(url_for("auth.profile"))
+
+
+@auth.route("/profile/preferences", methods=["POST"])
+@login_required
+def update_preferences():
+    prefs = dict(current_user.preferences) if current_user.preferences else {}
+
+    # Always create a new dict to avoid reference issues
+    email_prefs = {}
+
+    email_prefs["ticket_reply"] = "email_ticket_reply" in request.form
+    email_prefs["system"] = "email_system" in request.form
+    email_prefs["marketing"] = "email_marketing" in request.form
+
+    prefs["email_notifications"] = email_prefs
+
+    current_user.preferences = prefs
+    logger.info(f"Saving preferences: {prefs}")
+    db.session.commit()
+
+    flash("Your preferences have been updated.", "success")
+    return redirect(url_for("auth.profile"))
+
+
+@auth.route("/notifications")
+@login_required
+def notifications():
+    # --- Query Params ---
+    filter_type = request.args.get("filter", "all")  # all, unread, read, archived
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
+
+    # --- All notifications for user (broadcast and targeted) ---
+    notifications_query = Notification.query.filter(
+        (Notification.for_user_id.is_(None))
+        | (Notification.for_user_id == current_user.id)
+    ).order_by(Notification.created_at.desc())
+
+    # --- Read & archived IDs ---
+    read_rows = NotificationRead.query.filter_by(user_id=current_user.id).all()
+    read_ids = {
+        nr.notification_id for nr in read_rows if not getattr(nr, "archived", False)
+    }
+    archived_ids = {
+        nr.notification_id for nr in read_rows if getattr(nr, "archived", False)
+    }
+
+    # --- Filtering ---
+    if filter_type == "unread":
+        notifications_query = notifications_query.filter(
+            ~Notification.id.in_(read_ids), ~Notification.id.in_(archived_ids)
+        )
+    elif filter_type == "read":
+        notifications_query = notifications_query.filter(
+            Notification.id.in_(read_ids), ~Notification.id.in_(archived_ids)
+        )
+    elif filter_type == "archived":
+        notifications_query = notifications_query.filter(
+            Notification.id.in_(archived_ids)
+        )
+    else:  # "all"
+        notifications_query = notifications_query.filter(
+            ~Notification.id.in_(archived_ids)
+        )
+
+    notifications_pagination = notifications_query.paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    return render_template(
+        "notifications.html",
+        notifications=notifications_pagination.items,
+        read_ids=read_ids,
+        archived_ids=archived_ids,
+        filter_type=filter_type,
+        notifications_pagination=notifications_pagination,
+        per_page=per_page,
+    )
+
+
+@auth.route("/notifications/<int:notification_id>/read", methods=["POST"])
+@login_required
+def mark_notification_read(notification_id):
+
+    # Don't duplicate rows (enforce unique constraint)
+    existing = NotificationRead.query.filter_by(
+        notification_id=notification_id, user_id=current_user.id
+    ).first()
+    if not existing:
+        nr = NotificationRead(notification_id=notification_id, user_id=current_user.id)
+        db.session.add(nr)
+        db.session.commit()
+    return redirect(url_for("auth.notifications"))
+
+
+@auth.route("/notifications/<int:notification_id>/archive", methods=["POST"])
+@login_required
+def archive_notification(notification_id):
+    from app.models import NotificationRead, db
+
+    nr = NotificationRead.query.filter_by(
+        notification_id=notification_id, user_id=current_user.id
+    ).first()
+    if nr:
+        nr.archived = True
+    else:
+        nr = NotificationRead(
+            notification_id=notification_id,
+            user_id=current_user.id,
+            archived=True,
+        )
+        db.session.add(nr)
+    db.session.commit()
+    flash("Notification archived.", "success")
+    return redirect(url_for("auth.notifications"))
+
+
+@auth.route("/notifications/archive_all", methods=["POST"])
+@login_required
+def archive_all_notifications():
+    from app.models import Notification, NotificationRead, db
+
+    # Find all active (not archived) notifications for the user
+    # (Consider only those visible in the main list)
+    notif_ids = [
+        n.id
+        for n in Notification.query.filter(
+            (Notification.for_user_id.is_(None))
+            | (Notification.for_user_id == current_user.id)
+        ).all()
+    ]
+    existing = NotificationRead.query.filter(
+        NotificationRead.user_id == current_user.id,
+        NotificationRead.notification_id.in_(notif_ids),
+    ).all()
+    existing_ids = {nr.notification_id for nr in existing}
+    # Archive existing
+    for nr in existing:
+        nr.archived = True
+    # Create new NotificationRead rows for any un-archived notifications
+    for nid in notif_ids:
+        if nid not in existing_ids:
+            db.session.add(
+                NotificationRead(
+                    notification_id=nid, user_id=current_user.id, archived=True
+                )
+            )
+    db.session.commit()
+    flash("All notifications archived.", "success")
+    return redirect(url_for("auth.notifications"))
+
+
+@auth.route("/dashboard")
+@login_required
+def dashboard_view():
+    # Last 5 conversations
+    recent_convos = (
+        Conversation.query.filter_by(user_id=current_user.id)
+        .order_by(Conversation.created_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    # Unread notifications
+    notifications = (
+        Notification.query.filter(
+            (Notification.for_user_id.is_(None))
+            | (Notification.for_user_id == current_user.id)
+        )
+        .order_by(Notification.created_at.desc())
+        .limit(5)
+        .all()
+    )
+    read_ids = {
+        nr.notification_id
+        for nr in NotificationRead.query.filter_by(user_id=current_user.id)
+    }
+    unread_notifications_list = [n for n in notifications if n.id not in read_ids]
+
+    # Open tickets
+    open_tickets = (
+        Ticket.query.filter(
+            Ticket.user_id == current_user.id,
+            Ticket.status.in_(["open", "pending"]),
+        )
+        .order_by(Ticket.created_at.desc())
+        .limit(3)
+        .all()
+    )
+    # Get the recent tags (by most recently used in a message)
+    recent_tags = (
+        db.session.query(Tag)
+        .join(message_tags, Tag.id == message_tags.c.tag_id)
+        .join(Message, Message.id == message_tags.c.message_id)
+        .join(Conversation, Conversation.id == Message.conversation_id)
+        .filter(Conversation.user_id == current_user.id)
+        .order_by(db.func.max(Message.created_at).desc())
+        .group_by(Tag.id)
+        .limit(5)
+        .all()
+    )
+    tags_count = (
+        db.session.query(db.func.count(db.distinct(Tag.id)))
+        .join(message_tags, Tag.id == message_tags.c.tag_id)
+        .join(Message, Message.id == message_tags.c.message_id)
+        .join(Conversation, Conversation.id == Message.conversation_id)
+        .filter(Conversation.user_id == current_user.id)
+        .scalar()
+    )
+
+    # Account info
+    subscription_status = getattr(current_user, "subscription_status", None)
+    subscription_plan = getattr(current_user, "subscription_plan", None)
+
+    return render_template(
+        "dashboard.html",
+        recent_convos=recent_convos,
+        notifications=notifications,
+        read_ids=read_ids,
+        open_tickets=open_tickets,
+        subscription_status=subscription_status,
+        subscription_plan=subscription_plan,
+        unread_notifications_list=unread_notifications_list,
+        price_labels=PRICE_LABELS,
+        recent_tags=recent_tags,
+        tags_count=tags_count,
+    )
+
+
+@auth.route("/notifications/<int:notification_id>")
+@login_required
+def notification_detail(notification_id):
+    notification = Notification.query.get_or_404(notification_id)
+
+    # Make sure user can only see their notifications (or broadcasts)
+    if notification.for_user_id and notification.for_user_id != current_user.id:
+        flash("You are not authorized to view this notification.", "error")
+        return redirect(url_for("auth.notifications"))
+
+    # Mark as read if not already
+    nr = NotificationRead.query.filter_by(
+        notification_id=notification.id, user_id=current_user.id
+    ).first()
+    if not nr:
+        nr = NotificationRead(notification_id=notification.id, user_id=current_user.id)
+        db.session.add(nr)
+        db.session.commit()
+
+    return render_template("notification_detail.html", notification=notification)

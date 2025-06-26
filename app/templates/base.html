@@ -26,67 +26,79 @@
     <!-- Header / Navbar -->
     <header class="navbar">
         <div class="container">
-            <a href="{{ url_for('main.index') }}">
-                <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}"
-                    alt="Syvrona AI Chat Logo" class="logo-image">
-            </a>
-            <!-- Hamburger button -->
-            <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
-                ☰
-            </button>
-
-            <!-- Nav links -->
-            <nav class="nav-links" id="navLinks">
-                {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status ==
-                'active') %}
-                <div class="dropdown">
-                    <button class="dropbtn">AI Assistant ▾</button>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('chat.new_chat') }}">Chat</a>
-                        <a href="{{ url_for('chat.conversations') }}">Conversations</a>
-                        <a href="{{ url_for('chat.my_tags') }}">Tags</a>
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Support Dropdown -->
-                {% if current_user.is_authenticated %}
-                <div class="dropdown">
-                    <button class="dropbtn">Support ▾</button>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('support.list_tickets') }}">My Tickets</a>
-                        <a href="{{ url_for('support.submit_ticket') }}">Submit Ticket</a>
-                        <!-- <a href="#">FAQ</a> -->
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Admin Dropdown -->
-                {% if current_user.is_authenticated and current_user.is_admin %}
-                <div class="dropdown">
-                    <button class="dropbtn">Admin ▾</button>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('admin.user_list') }}">User List</a>
-                        <a href="{{ url_for('admin.tickets') }}">All Tickets</a>
-                        <!-- More admin tools... -->
-                    </div>
-                </div>
-                {% endif %}
-
-                <!-- Profile Dropdown -->
-                {% if current_user.is_authenticated %}
-                <div class="dropdown profile-dropdown">
-                    <button class="dropbtn">{{ current_user.name or "Profile" }} ▾</button>
-                    <div class="dropdown-content">
-                        <a href="{{ url_for('auth.profile') }}">Profile</a>
-                        <a href="{{ url_for('auth.logout') }}">Logout</a>
-                    </div>
-                </div>
+            {% if current_user.is_authenticated %}
+            <a href="{{ url_for('auth.dashboard_view') }}">
                 {% else %}
-                <a href="{{ url_for('auth.login') }}">Login</a>
-                <a href="{{ url_for('auth.signup') }}">Sign Up</a>
-                {% endif %}
-            </nav>
+                <a href="{{ url_for('main.index') }}">
+                    {% endif %}
+                    <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}"
+                        alt="Syvrona AI Chat Logo" class="logo-image">
+                </a>
+                <!-- Hamburger button -->
+                <button class="menu-toggle" id="menuToggle" aria-label="Toggle navigation">
+                    ☰
+                </button>
+
+                <!-- Nav links -->
+                <nav class="nav-links" id="navLinks">
+                    {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status
+                    ==
+                    'active') %}
+                    <div class="dropdown">
+                        <button class="dropbtn">AI Assistant ▾</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('chat.new_chat') }}">Chat</a>
+                            <a href="{{ url_for('chat.conversations') }}">Conversations</a>
+                            <a href="{{ url_for('chat.my_tags') }}">Tags</a>
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Support Dropdown -->
+                    {% if current_user.is_authenticated %}
+                    <div class="dropdown">
+                        <button class="dropbtn">Support ▾</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('support.list_tickets') }}">My Tickets</a>
+                            <a href="{{ url_for('support.submit_ticket') }}">Submit Ticket</a>
+                            <!-- <a href="#">FAQ</a> -->
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Admin Dropdown -->
+                    {% if current_user.is_authenticated and current_user.is_admin %}
+                    <div class="dropdown">
+                        <button class="dropbtn">Admin ▾</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('admin.user_list') }}">User List</a>
+                            <a href="{{ url_for('admin.tickets') }}">All Tickets</a>
+                            <!-- More admin tools... -->
+                            <a href="{{ url_for('admin.notification_list') }}">Notifications</a>
+
+                        </div>
+                    </div>
+                    {% endif %}
+
+                    <!-- Profile Dropdown -->
+                    {% if current_user.is_authenticated %}
+                    <div class="dropdown profile-dropdown">
+                        <button class="dropbtn">{{ current_user.name or "Profile" }} ▾</button>
+                        <div class="dropdown-content">
+                            <a href="{{ url_for('auth.profile') }}">Profile</a>
+                            <a href="{{ url_for('auth.logout') }}">Logout</a>
+                            <a href="{{ url_for('auth.notifications') }}">Notifications
+                                {% if unread_notifications > 0 %}
+                                <span class="notification-badge">{{ unread_notifications }}</span>
+                                {% endif %}
+                            </a>
+                        </div>
+                    </div>
+                    {% else %}
+                    <a href="{{ url_for('auth.login') }}">Login</a>
+                    <a href="{{ url_for('auth.signup') }}">Sign Up</a>
+                    {% endif %}
+                </nav>
 
         </div>
     </header>

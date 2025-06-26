@@ -11,15 +11,7 @@
   <h1 class="form-title">
     Welcome, {{ user.name }}!
   </h1>
-  {% with messages = get_flashed_messages(with_categories=True) %}
-  {% if messages %}
-  {% for category, message in messages %}
-  <div class="flash-message flash-{{ category|lower }}">
-    {{ message }}
-  </div>
-  {% endfor %}
-  {% endif %}
-  {% endwith %}
+  {% include "_flash.html" %}
   {% if user.subscription_status %}
   <div class="subscription-info">
     <p><strong>Plan:</strong> {{ price_labels.get(user.subscription_plan, user.subscription_plan) }}</p>
@@ -42,6 +34,8 @@
   <p class="form-description">
     Update your profile information below.
   </p>
+  {% set prefs = user.preferences or {} %}
+
   <form method="POST" action="/profile/update">
     <div class="form-group">
       <label class="label" for="username">Name</label>
@@ -54,14 +48,14 @@
       <div class="control">
         <input class="input" type="email" id="email" name="email" value="{{ user.email }}" required>
       </div>
-       {% if user.verified %}
-    <div class="email-status verified">✔ Verified</div>
-  {% else %}
-    <div class="email-status unverified">
-      Unverified –
-      <a href="{{ url_for('auth.resend_verification') }}" class="resend-link">Resend confirmation email</a>
-    </div>
-  {% endif %}
+      {% if user.verified %}
+      <div class="email-status verified">✔ Verified</div>
+      {% else %}
+      <div class="email-status unverified">
+        Unverified –
+        <a href="{{ url_for('auth.resend_verification') }}" class="resend-link">Resend confirmation email</a>
+      </div>
+      {% endif %}
     </div>
     <div class="form-group">
       <label class="label" for="password">New Password</label>
@@ -80,6 +74,34 @@
 
     <div class="form-actions">
       <button class="btn-primary" type="submit">Update Profile</button>
+    </div>
+  </form>
+  <form method="POST" action="{{ url_for('auth.update_preferences') }}" class="notification-preferences-form">
+    <h2>Email Notification Preferences</h2>
+    {% set prefs = user.preferences or {} %}
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="email_ticket_reply" {% if prefs.get('email_notifications', {}).get('ticket_reply',
+          True) %}checked{% endif %}>
+        Email me when support replies to my ticket
+      </label>
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="email_system" {% if prefs.get('email_notifications', {}).get('system', True)
+          %}checked{% endif %}>
+        Email me for important system updates
+      </label>
+    </div>
+    <div class="form-group">
+      <label>
+        <input type="checkbox" name="email_marketing" {% if prefs.get('email_notifications', {}).get('marketing', False)
+          %}checked{% endif %}>
+        Email me about news & special offers
+      </label>
+    </div>
+    <div class="form-actions">
+      <button class="btn-primary" type="submit">Save Preferences</button>
     </div>
   </form>
 </main>

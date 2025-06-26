@@ -2,7 +2,7 @@ import logging
 from flask import Flask
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
-from flask_login import LoginManager
+from flask_login import LoginManager, current_user
 from flask_hcaptcha import hCaptcha
 
 
@@ -52,26 +52,62 @@ def create_app(config=None):
         return User.query.get(int(user_id))
 
     from .routes import main as main_blueprint
+
     app.register_blueprint(main_blueprint)
 
     from .auth import auth as auth_blueprint
+
     app.register_blueprint(auth_blueprint)
 
     from .admin_routes import admin as admin_blueprint  # Adjust import path as needed
+
     app.register_blueprint(admin_blueprint)
 
     from .billing import billing as billing_blueprint  # Adjust import path as needed
+
     app.register_blueprint(billing_blueprint)
 
     from .health_routes import (
         health as health_blueprint,
     )  # Adjust import path as needed
+
     app.register_blueprint(health_blueprint)
 
     from app.chat import chat as chat_blueprint
+
     app.register_blueprint(chat_blueprint)
 
     from .support import support as support_blueprint
+
     app.register_blueprint(support_blueprint)
+
+    @app.context_processor
+    def inject_unread_notification_count():
+        from app.models import Notification, NotificationRead
+        if not current_user.is_authenticated:
+            return dict(unread_notifications=0)
+        notifications = Notification.query.filter(
+            (Notification.for_user_id.is_(None))
+            | (Notification.for_user_id == current_user.id)
+        ).all()
+        read_rows = NotificationRead.query.filter_by(user_id=current_user.id).all()
+        read_ids = {
+            nr.notification_id for nr in read_rows if not getattr(nr, "archived", False)
+        }
+        archived_ids = {
+            nr.notification_id for nr in read_rows if getattr(nr, "archived", False)
+        }
+        unread_count = len(
+            [
+                n
+                for n in notifications
+                if n.id not in read_ids and n.id not in archived_ids
+            ]
+        )
+        return dict(unread_notifications=unread_count)
+
+    @app.context_processor
+    def inject_hcaptcha_enabled():
+        return dict(HCAPTCHA_ENABLED=app.config.get('HCAPTCHA_ENABLED', False))
 
     return app

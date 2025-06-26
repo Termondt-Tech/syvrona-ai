@@ -1,5 +1,5 @@
 from functools import wraps
-from flask import redirect, url_for, flash
+from flask import redirect, request, url_for, flash
 from flask_login import current_user
 
 
@@ -22,13 +22,13 @@ def require_active_subscription(f):
     def decorated_function(*args, **kwargs):
         if not current_user.is_authenticated:
             flash("You need to be logged in to access this feature.", "error")
-            return redirect(url_for("auth.login"))
+            return redirect(url_for("auth.login", next=request.url))
         # Allow admins full access regardless of subscription status
         if current_user.is_admin:
             return f(*args, **kwargs)
         if current_user.subscription_status != "active":
-            flash("You need an active subscription to access this feature.", "error")
-            return redirect(url_for("auth.profile"))
+            flash("You need an active subscription to access this feature.", "info")
+            return redirect(url_for("billing.subscribe", next=request.url))
         return f(*args, **kwargs)
 
     return decorated_function

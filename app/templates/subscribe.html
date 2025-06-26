@@ -10,17 +10,25 @@
 {% block content %}
 <main class="form-container">
     <h1 class="form-title">Select Subscription Plan</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
+    {% include "_flash.html" %}
+    {% if free_trial_enabled %}
+    <!-- 7-Day Free Trial Banner (Syvrona colors) -->
+    <div class="trial-banner">
+        Start your <strong>{{ free_trial_days }}-day free trial</strong> – full access, no charge today. Cancel anytime.
     </div>
-    {% endfor %}
     {% endif %}
-    {% endwith %}
+    <div class="feature-list">
+        <h2 class="feature-list-title">All Pro plans include:</h2>
+        <ul>
+            <li>Unlimited AI chat and brainstorming</li>
+            <li>Conversation memory and advanced tagging</li>
+            <li>Access to all AI models and tools</li>
+            <li>Priority support and ticketing</li>
+            <li>All future feature updates</li>
+        </ul>
+    </div>
 
-    <form method="POST" action="/subscribe" class="form">    
+    <form method="POST" action="{{ url_for('billing.subscribe') }}" class="form">
         <div class="form-group plan-group">
             <label class="label" style="margin-bottom: 0.75rem;">Choose Your Plan</label>
             <div class="plan-cards">
@@ -30,6 +38,12 @@
                         <div class="plan-title">Pro Monthly</div>
                         <div class="plan-price">$9.99<span class="plan-period">/month</span></div>
                         <div class="plan-desc">Full features, billed monthly</div>
+                         {% if free_trial_enabled %}
+                        <!-- Trial "pill" on each plan card -->
+                        <span class="trial-pill">
+                            {{ free_trial_days }}-day free trial
+                        </span>
+                        {% endif %}
                     </div>
                 </label>
                 <label class="plan-card">
@@ -37,7 +51,13 @@
                     <div class="plan-card-content">
                         <div class="plan-title">Pro Yearly <span class="badge-best">Best Value</span></div>
                         <div class="plan-price">$99<span class="plan-period">/year</span></div>
-                        <div class="plan-desc">Full features, best value</div>
+                        <div class="plan-desc">Save 17% compared to monthly</div>
+                         {% if free_trial_enabled %}
+                        <!-- Trial "pill" on each plan card -->
+                        <span class="trial-pill">
+                            {{ free_trial_days }}-day free trial
+                        </span>
+                        {% endif %}
                     </div>
                 </label>
             </div>
@@ -53,6 +73,10 @@
         </div>
         <div class="form-actions">
             <button class="btn-primary" type="submit">Subscribe</button>
+        </div>
+        <div class="secure-footer">
+            <span class="secure-icon" aria-hidden="true">🔒</span> Secure checkout &nbsp; | &nbsp;
+            <a href="{{ url_for('auth.dashboard_view') }}">Return to Dashboard</a>
         </div>
     </form>
 </main>

@@ -1,0 +1,49 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Create Notification – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+{% block content %}
+<main class="form-container">
+    <h1 class="page-title">Create Notification</h1>
+    {% include "_flash.html" %}
+    <form method="POST" class="admin-form notification-form">
+        <div class="form-group">
+            <label for="title" class="label">Title</label>
+            <input type="text" class="input" id="title" name="title" required maxlength="100"
+                value="{{ formdata.title if formdata.title is defined else '' }}">
+        </div>
+        <div class="form-group">
+            <label for="body" class="label">Message</label>
+            <textarea class="input" id="body" name="body" required
+                rows="4">{{ formdata.body if formdata.body is defined else '' }}</textarea>
+
+        </div>
+        <div class="form-group">
+            <label for="type" class="label">Type</label>
+            <select id="type" name="type" class="input">
+                <option value="system" {% if formdata.type=='system' %}selected{% endif %}>System</option>
+                <option value="marketing" {% if formdata.type=='marketing' %}selected{% endif %}>Marketing</option>
+            </select>
+
+        </div>
+        <div class="form-group">
+            <label for="for_user_id" class="label">Send To</label>
+            <select id="for_user_id" name="for_user_id" class="input">
+                <option value="" {% if not formdata.for_user_id %}selected{% endif %}>All Users</option>
+                {% for user in users %}
+                <option value="{{ user.id }}" {% if formdata.for_user_id==user.id|string %}selected{% endif %}>
+                    {{ user.email }} ({{ user.name }})
+                </option>
+                {% endfor %}
+            </select>
+
+        </div>
+        <div class="form-actions">
+            <button type="submit" class="btn-primary">Create & Send</button>
+            <a href="{{ url_for('admin.notification_list') }}" class="btn-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+{% endblock %}

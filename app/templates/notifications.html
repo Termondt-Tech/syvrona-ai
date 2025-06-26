@@ -1,0 +1,100 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>Notifications – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <h1 class="page-title">Notifications</h1>
+    {% include "_flash.html" %}
+    <div class="notifications-toolbar table-actions-bar">
+        <div>
+            <form method="get" class="filter-form" style="display:inline;">
+                <label for="filter" style="font-weight:500;">Show&nbsp;</label>
+                <select name="filter" id="filter" onchange="this.form.submit()" class="input input-small">
+                    <option value="all" {% if filter_type=="all" %}selected{% endif %}>All</option>
+                    <option value="unread" {% if filter_type=="unread" %}selected{% endif %}>Unread</option>
+                    <option value="read" {% if filter_type=="read" %}selected{% endif %}>Read</option>
+                    <option value="archived" {% if filter_type=="archived" %}selected{% endif %}>Archived</option>
+                </select>
+            </form>
+            <form method="post" action="{{ url_for('auth.archive_all_notifications') }}" style="display:inline;">
+                <button type="submit" class="btn-secondary btn-small">Archive All</button>
+            </form>
+        </div>
+        <form method="get" class="per-page-form" style="display:inline;">
+            <label for="per_page" style="font-weight:500;">Show&nbsp;</label>
+            <select name="per_page" id="per_page" onchange="this.form.submit()" class="input input-small">
+                {% for n in [10, 25, 50, 100] %}
+                <option value="{{ n }}" {% if per_page==n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+            </select>
+            <span>per page</span>
+            <input type="hidden" name="filter" value="{{ filter_type }}">
+        </form>
+    </div>
+
+
+    <div class="notifications-list">
+        {% if notifications %}
+        <div class="notifications-toolbar">
+            <form method="POST" action="{{ url_for('auth.archive_all_notifications') }}" style="display:inline;">
+                <button type="submit" class="btn-secondary btn-small">Archive All</button>
+            </form>
+        </div>
+
+        {% for n in notifications %}
+        <div class="notification-item {% if n.id not in read_ids %}unread{% endif %}">
+            <div class="notification-header">
+                <span class="notification-title">{{ n.title }}</span>
+                <span class="notification-date">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            </div>
+            <div class="notification-body">
+                {{ n.body[:80] ~ ('…' if n.body|length > 80 else '') }}
+                {% if n.body|length > 80 %}
+                <a href="{{ url_for('auth.notification_detail', notification_id=n.id) }}"
+                    class="btn-link view-link">View</a>
+                {% endif %}
+                {% if n.ticket_id %}
+                <br>
+                <a href="{{ url_for('support.view_ticket', ticket_id=n.ticket_id) }}" class="btn-link ticket-link">View
+                    Ticket</a>
+                {% endif %}
+            </div>
+
+            <div class="notification-actions">
+                {% if n.id not in read_ids %}
+                <form method="POST" action="{{ url_for('auth.mark_notification_read', notification_id=n.id) }}"
+                    class="mark-read-form" style="display:inline">
+                    <button type="submit" class="btn-secondary btn-small">Mark as Read</button>
+                </form>
+                {% endif %}
+                <form method="POST" action="{{ url_for('auth.archive_notification', notification_id=n.id) }}"
+                    class="archive-form" style="display:inline">
+                    <button type="submit" class="btn-secondary btn-small">Archive</button>
+                </form>
+            </div>
+
+
+        </div>
+        {% endfor %}
+        <div class="pagination-controls">
+            {% if notifications_pagination.has_prev %}
+            <a
+                href="{{ url_for('auth.notifications', page=notifications_pagination.prev_num, per_page=per_page, filter=filter_type) }}">Previous</a>
+            {% endif %}
+            <span>Page {{ notifications_pagination.page }} of {{ notifications_pagination.pages }}</span>
+            {% if notifications_pagination.has_next %}
+            <a
+                href="{{ url_for('auth.notifications', page=notifications_pagination.next_num, per_page=per_page, filter=filter_type) }}">Next</a>
+            {% endif %}
+        </div>
+
+        {% else %}
+        <div class="empty-message">No notifications yet.</div>
+        {% endif %}
+    </div>
+</main>
+{% endblock %}

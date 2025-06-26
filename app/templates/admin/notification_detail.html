@@ -1,0 +1,77 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Notification #{{ notification.id }} – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+{% block content %}
+<main class="main-content">
+    <h1 class="page-title">Notification #{{ notification.id }}</h1>
+    <div class="notification-detail-card">
+        <dl>
+            <dt>Title:</dt>
+            <dd>{{ notification.title|e }}</dd>
+
+            <dt>Type:</dt>
+            <dd>{{ notification.type or "—" }}</dd>
+
+            <dt>Message:</dt>
+            <dd>{{ notification.body|e }}</dd>
+
+            <dt>Audience:</dt>
+            <dd>
+                {% if notification.for_user_id %}
+                {% set user = users[notification.for_user_id] if notification.for_user_id in users else None %}
+                {% if user %}
+                {{ user.name if user.name else user.email }}
+                {% if user.name and user.email %}
+                &lt;{{ user.email }}&gt;
+                {% endif %}
+                {% else %}
+                Unknown User (ID #{{ notification.for_user_id }})
+                {% endif %}
+                {% else %}
+                All Users
+                {% endif %}
+            </dd>
+
+            <dt>Linked Ticket:</dt>
+            <dd>
+                {% if notification.ticket_id %}
+                <a href="{{ url_for('admin.ticket_detail', ticket_id=notification.ticket_id) }}">
+                    Ticket #{{ notification.ticket_id }}
+                </a>
+                {% else %}
+                —
+                {% endif %}
+            </dd>
+
+            <dt>Created At:</dt>
+            <dd>{{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</dd>
+
+            <dt>Sent By:</dt>
+            <dd>
+                {% if notification.sent_by %}
+                {% set admin_user = users[notification.sent_by] if notification.sent_by in users else None %}
+                {% if admin_user %}
+                {{ admin_user.name if admin_user.name else admin_user.email }}
+                {% if admin_user.name and admin_user.email %}
+                &lt;{{ admin_user.email }}&gt;
+                {% endif %}
+                {% else %}
+                Unknown Admin (ID #{{ notification.sent_by }})
+                {% endif %}
+                {% else %}
+                System
+                {% endif %}
+            </dd>
+
+        </dl>
+
+        <div class="admin-actions" style="margin-top:2rem;">
+            <a href="{{ url_for('admin.notification_list') }}" class="btn-secondary">Back to Notifications</a>
+            <!-- Add archive/delete buttons here if needed -->
+        </div>
+    </div>
+</main>
+{% endblock %}

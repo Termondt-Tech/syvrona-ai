@@ -76,3 +76,150 @@
     background-color: #dc3545;
     color: white;
 }
+/* Notification Detail Card */
+.notification-detail-card {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.08);
+    padding: 2em;
+    margin-bottom: 2em;
+    max-width: 600px;
+}
+
+.notification-detail-card dl {
+    display: grid;
+    grid-template-columns: max-content 1fr;
+    row-gap: 1.2em;
+    column-gap: 2em;
+}
+
+.notification-detail-card dt {
+    font-weight: 600;
+    color: #2563eb;
+    margin-bottom: 0.2em;
+}
+
+.notification-detail-card dd {
+    margin: 0 0 0.4em 0;
+    color: #374151;
+    word-break: break-word;
+}
+
+/* Notification Form Styles */
+.notification-form .form-group {
+    margin-bottom: 1.3em;
+}
+.notification-form label {
+    font-weight: 500;
+    color: #2563eb;
+}
+.notification-form .input,
+.notification-form textarea,
+.notification-form select {
+    width: 100%;
+    padding: 0.6em 0.8em;
+    font-size: 1em;
+    border: 1px solid #d1d5db;
+    border-radius: 6px;
+    background: #f8fafc;
+    margin-top: 0.3em;
+}
+.notification-form textarea {
+    min-height: 90px;
+    resize: vertical;
+}
+.notification-form .form-actions {
+    display: flex;
+    gap: 1em;
+    align-items: center;
+}
+
+/* Flash messages (if you want more visual pop) */
+.flash-message {
+    margin-bottom: 1em;
+    padding: 1em;
+    border-radius: 8px;
+    font-weight: 500;
+}
+.flash-success {
+    background: #e6f5ec;
+    color: #168a1a;
+}
+.flash-error {
+    background: #ffe6e6;
+    color: #c0392b;
+}
+
+/* Notification badge for tables (if you want to distinguish type) */
+.badge-system {
+    background: #2563eb;
+    color: #fff;
+}
+.badge-marketing {
+    background: #eab308;
+    color: #fff;
+}
+.badge-ticket {
+    background: #9333ea;
+    color: #fff;
+}
+.badge-none {
+    background-color: #e5e7eb; /* light gray to match your tables */
+    color: #6b7280;            /* subtle dark gray for text */
+    border: 1px solid #d1d5db; /* soft border for clarity */
+}
+
+/* Per-Page Selector Form */
+.per-page-form {
+    display: flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 1em;
+    margin-top: 0;
+}
+
+.input.input-small {
+    width: 60px;
+    padding: 4px 8px;
+    font-size: 1em;
+}
+
+/* Pagination Controls */
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    justify-content: flex-end;
+    margin: 1.3em 0 0 0;
+}
+
+.pagination-controls a,
+.pagination-controls span {
+    font-size: 1em;
+    padding: 0.3em 0.8em;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #2563eb;
+    background: #f3f6fd;
+    margin-right: 4px;
+}
+
+.pagination-controls span {
+    background: transparent;
+    color: #374151;
+    font-weight: 500;
+}
+.table-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2em;
+    margin-bottom: 1em;
+}
+.table-actions-bar .btn-primary {
+    margin-bottom: 0; /* Remove any unwanted spacing */
+}
+.table-actions-bar .per-page-form {
+    margin-bottom: 0;
+    margin-top: 0;
+}

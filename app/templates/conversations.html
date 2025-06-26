@@ -6,16 +6,8 @@
 
 {% block content %}
 <main class="main-content">
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
     <h1 class="main-title">My Conversations</h1>
+    {% include "_flash.html" %}
     <table class="conversation-table" id="conversation-table">
         <thead>
             <tr>

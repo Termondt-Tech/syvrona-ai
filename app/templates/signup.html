@@ -17,15 +17,7 @@
     </div>
     {% endif %}
 
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+   {% include "_flash.html" %}
 
     <form method="POST" action="/signup">
 
@@ -95,11 +87,14 @@
                 </div>
             </label>
         </div>
-         <div style="display:none;">
+        <div style="display:none;">
             <label>If you are human, leave this blank:</label>
             <input type="text" name="middle_name" autocomplete="off">
         </div>
+        {% if HCAPTCHA_ENABLED %}
         {{ hcaptcha }}
+        {% endif %}
+
         <div class="form-actions">
             <button class="btn-primary" type="submit">Continue to Payment</button>
         </div>

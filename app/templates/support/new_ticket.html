@@ -2,7 +2,8 @@
 
 {% block header %}
 <title>Submit Support Ticket – Syvrona</title>
-<meta name="description" content="Contact Syvrona support. Submit a support or feature request and get a personal response.">
+<meta name="description"
+    content="Contact Syvrona support. Submit a support or feature request and get a personal response.">
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
 {% endblock %}
@@ -10,15 +11,7 @@
 {% block content %}
 <main class="form-container">
     <h1 class="form-title">Submit a Support Ticket</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {% include "_flash.html" %}
 
     <form method="POST" action="{{ url_for('support.submit_ticket') }}">
         <div class="form-group">
@@ -30,11 +23,13 @@
         </div>
         <div class="form-group">
             <label for="subject">Subject</label>
-            <input type="text" name="subject" id="subject" maxlength="255" required placeholder="Brief summary" class="form-control">
+            <input type="text" name="subject" id="subject" maxlength="255" required placeholder="Brief summary"
+                class="form-control">
         </div>
         <div class="form-group">
             <label for="message">Message</label>
-            <textarea name="message" id="message" rows="7" required placeholder="Describe your issue or request" class="support-textarea"></textarea>
+            <textarea name="message" id="message" rows="7" required placeholder="Describe your issue or request"
+                class="support-textarea"></textarea>
         </div>
         <div class="form-actions">
             <button class="btn-primary" type="submit">Submit Ticket</button>

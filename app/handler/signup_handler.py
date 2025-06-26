@@ -100,9 +100,9 @@ class SignupHandler:
                 mode="subscription",
                 subscription_data=subscription_data,
                 allow_promotion_codes=False,
-                success_url=url_for("auth.profile", _external=True)
+                success_url=url_for("auth.dashboard_view", _external=True)
                 + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=url_for("auth.profile", _external=True),
+                cancel_url=url_for("auth.dashboard_view", _external=True),
             )
             return redirect(session.url)
         else:

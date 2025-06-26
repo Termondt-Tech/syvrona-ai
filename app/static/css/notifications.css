@@ -1,0 +1,105 @@
+.notifications-list {
+  margin-top: 24px;
+}
+
+.notification-item {
+  background: #fff;
+  border-radius: 9px;
+  box-shadow: 0 2px 7px rgba(0,0,0,0.04);
+  padding: 18px 22px;
+  margin-bottom: 16px;
+  border-left: 5px solid #2563eb;
+  transition: background 0.18s;
+}
+
+.notification-item.unread {
+  background: #e8f0fe;
+  font-weight: 600;
+}
+
+.notification-header {
+  display: flex;
+  justify-content: space-between;
+  margin-bottom: 6px;
+}
+
+.notification-title {
+  font-weight: 500;
+}
+
+.notification-date {
+  font-size: 0.96em;
+  color: #888;
+}
+
+.mark-read-form {
+  margin-top: 10px;
+}
+
+.btn-small {
+  font-size: 0.94em;
+  padding: 4px 13px;
+  border-radius: 7px;
+}
+.notification-actions {
+  display: flex;
+  gap: 12px;
+  margin-top: 12px;
+  flex-wrap: wrap;
+}
+
+.notification-actions form {
+  margin: 0;
+  /* Remove margin/breaks so forms flow horizontally */
+}
+
+/* On small screens, stack vertically */
+@media (max-width: 600px) {
+  .notification-actions {
+    flex-direction: column;
+    gap: 7px;
+    align-items: stretch;
+  }
+}
+
+.notifications-toolbar {
+  margin-bottom: 22px;  /* Or whatever spacing you want */
+}
+
+.table-actions-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 2em;
+    margin-bottom: 1em;
+}
+.filter-form,
+.per-page-form {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.5em;
+    margin-bottom: 0;
+    margin-top: 0;
+}
+.pagination-controls {
+    display: flex;
+    align-items: center;
+    gap: 1em;
+    justify-content: flex-end;
+    margin: 1.3em 0 0 0;
+}
+.pagination-controls a,
+.pagination-controls span {
+    font-size: 1em;
+    padding: 0.3em 0.8em;
+    border-radius: 6px;
+    text-decoration: none;
+    color: #2563eb;
+    background: #f3f6fd;
+    margin-right: 4px;
+}
+.pagination-controls span {
+    background: transparent;
+    color: #374151;
+    font-weight: 500;
+}

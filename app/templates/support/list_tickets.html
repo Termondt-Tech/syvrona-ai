@@ -9,15 +9,7 @@
 {% block content %}
 <main class="main-content">
     <h1 class="form-title">My Support Tickets</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {% include "_flash.html" %}
 
     <div class="support-table-actions">
         <a href="{{ url_for('support.submit_ticket') }}" class="btn-primary">+ New Ticket</a>
@@ -47,7 +39,8 @@
                     </td>
                     <td>{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
-                        <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}" class="support-ticket-link">View</a>
+                        <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}"
+                            class="support-ticket-link">View</a>
                     </td>
                 </tr>
                 {% endfor %}
@@ -55,7 +48,7 @@
         </table>
     </div>
     {% else %}
-        <p style="text-align:center; margin-top:2rem;">You have not submitted any support tickets yet.</p>
+    <p style="text-align:center; margin-top:2rem;">You have not submitted any support tickets yet.</p>
     {% endif %}
 </main>
 {% endblock %}

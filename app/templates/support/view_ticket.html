@@ -10,15 +10,7 @@
 {% block content %}
 <main class="form-container">
     <h1 class="form-title">Ticket #{{ ticket.id }}</h1>
-    {% with messages = get_flashed_messages(with_categories=True) %}
-    {% if messages %}
-    {% for category, message in messages %}
-    <div class="flash-message flash-{{ category|lower }}">
-        {{ message }}
-    </div>
-    {% endfor %}
-    {% endif %}
-    {% endwith %}
+    {% include "_flash.html" %}
     <div style="margin-bottom:1.5rem;">
         <span style="font-weight:600;">Type:</span> {{ ticket.type|capitalize }}<br>
         <span style="font-weight:600;">Subject:</span> {{ ticket.subject|e }}<br>

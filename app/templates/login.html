@@ -42,7 +42,10 @@
             <label>If you are human, leave this blank:</label>
             <input type="text" name="middle_name" autocomplete="off">
         </div>
+        {% if HCAPTCHA_ENABLED %}
         {{ hcaptcha }}
+        {% endif %}
+
         <div class="form-actions">
             <button class="btn-primary" type="submit">Login</button>
         </div>

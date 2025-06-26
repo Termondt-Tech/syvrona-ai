@@ -1,0 +1,26 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Notification #{{ notification.id }} – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/notifications.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <h1 class="page-title">{{ notification.title|e }}</h1>
+    <div class="notification-detail-card">
+        <div class="notification-body">
+            {{ notification.body | e }}
+        </div>
+        <div class="notification-meta">
+            <span><strong>Type:</strong> {{ notification.type|capitalize }}</span><br>
+            <span><strong>Sent:</strong> {{ notification.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+            {% if notification.ticket_id %}
+                <br><a href="{{ url_for('support.view_ticket', ticket_id=notification.ticket_id) }}">Related Ticket</a>
+            {% endif %}
+        </div>
+        <div style="margin-top:1.5em;">
+            <a href="{{ url_for('auth.notifications') }}" class="btn-secondary">Back to Notifications</a>
+        </div>
+    </div>
+</main>
+{% endblock %}

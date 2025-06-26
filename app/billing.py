@@ -11,6 +11,8 @@ from flask import (
 )
 from flask_login import current_user, login_required
 import stripe
+
+from app.feature_flags import get_feature_config, is_feature_enabled
 from . import db
 from .models import User
 from datetime import datetime
@@ -172,6 +174,9 @@ def manage_subscription():
 @billing.route("/subscribe", methods=["GET", "POST"])
 @login_required
 def subscribe():
+    next_url = request.args.get("next")
+    free_trial_enabled = is_feature_enabled("FREE_TRIAL_ENABLED")
+    free_trial_days = get_feature_config("FREE_TRIAL_DAYS", 7)
     if request.method == "POST":
         plan = request.form.get("plan")
         user = db.session.get(User, current_user.id)
@@ -186,17 +191,27 @@ def subscribe():
 
         if plan in price_ids:
             price_id = price_ids[plan]
+            subscription_data = {}
+            if free_trial_enabled and free_trial_days > 0:
+                subscription_data["trial_period_days"] = free_trial_days
+
             session = stripe.checkout.Session.create(
                 customer=user.stripe_customer_id,
                 payment_method_types=["card"],
                 line_items=[{"price": price_id, "quantity": 1}],
                 mode="subscription",
+                subscription_data=subscription_data,
                 allow_promotion_codes=False,
-                success_url=url_for("auth.profile", _external=True)
+                success_url=url_for("auth.dashboard_view", _external=True)
                 + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=url_for("auth.profile", _external=True),
+                cancel_url=url_for("auth.dashboard_view", _external=True),
             )
             flash("Successfully subscribed.", "success")
             return redirect(session.url)
     else:
-        return render_template("subscribe.html")
+        return render_template(
+            "subscribe.html",
+            next_url=next_url,
+            free_trial_enabled=free_trial_enabled,
+            free_trial_days=free_trial_days,
+        )

@@ -1,0 +1,106 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Notifications – Syvrona Admin</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/admin.css') }}">
+<meta name="robots" content="noindex, nofollow">
+{% endblock %}
+{% block content %}
+<main class="main-content main-content-wide">
+
+    <h1 class="page-title">All Notifications</h1>
+    {% include "_flash.html" %}
+    <div class="table-actions-bar">
+        <a href="{{ url_for('admin.create_notification') }}" class="btn-primary">Create Notification</a>
+        <form method="get" class="filters-form" style="display: flex; align-items: center; gap: 1em; margin-bottom: 0;">
+            <label for="type" style="font-weight:500;">Type&nbsp;</label>
+            <select name="type" id="type" onchange="this.form.submit()" class="input input-small">
+                <option value="" {% if not notif_type %}selected{% endif %}>All</option>
+                <option value="system" {% if notif_type=='system' %}selected{% endif %}>System</option>
+                <option value="marketing" {% if notif_type=='marketing' %}selected{% endif %}>Marketing</option>
+                <option value="ticket_reply" {% if notif_type=='ticket_reply' %}selected{% endif %}>Ticket</option>
+            </select>
+            <label for="per_page" style="font-weight:500; margin-left:1.5em;">Show&nbsp;</label>
+            <select name="per_page" id="per_page" onchange="this.form.submit()" class="input input-small">
+                {% for n in [10, 25, 50, 100] %}
+                <option value="{{ n }}" {% if notifications_pagination.per_page==n %}selected{% endif %}>{{ n }}
+                </option>
+                {% endfor %}
+            </select>
+            <span>notifications per page</span>
+            {# Page param is handled in pagination links below #}
+        </form>
+    </div>
+    <div class="table-container" style="margin-top: 24px;">
+
+        <table class="styled-table">
+            <thead>
+                <tr>
+                    <th>ID</th>
+                    <th>Title</th>
+                    <th>Type</th>
+                    <th>Audience</th>
+                    <th>Sent By</th>
+                    <th>Created</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody>
+                {% for n in notifications %}
+                <tr>
+                    <td>{{ n.id }}</td>
+                    <td>{{ n.title|e }}</td>
+                    <td>{{ n.type or '—' }}</td>
+                    <td>
+                        {% if n.for_user_id %}
+                        {% set user = users[n.for_user_id] if n.for_user_id in users else None %}
+                        {% if user %}
+                        {{ user.name if user.name else user.email }}
+                        {% if user.name and user.email %}
+                        &lt;{{ user.email }}&gt;
+                        {% endif %}
+                        {% else %}
+                        Unknown User
+                        {% endif %}
+                        {% else %}
+                        All Users
+                        {% endif %}
+                    </td>
+                    <td>
+                        {% if n.sent_by %}
+                        {% set admin_user = users[n.sent_by] if n.sent_by in users else None %}
+                        {% if admin_user %}
+                        {{ admin_user.name if admin_user.name else admin_user.email }}
+                        {% if admin_user.name and admin_user.email %}
+                        &lt;{{ admin_user.email }}&gt;
+                        {% endif %}
+                        {% else %}
+                        Unknown Admin
+                        {% endif %}
+                        {% else %}
+                        System
+                        {% endif %}
+                    </td>
+                    <td>{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td>
+                        <a href="{{ url_for('admin.notification_detail', notification_id=n.id) }}"
+                            class="btn-secondary btn-small">View</a>
+                        <!-- Archive/Delete actions coming soon -->
+                    </td>
+                </tr>
+                {% endfor %}
+            </tbody>
+        </table>
+        <div class="pagination-controls">
+            {% if notifications_pagination.has_prev %}
+            <a
+                href="{{ url_for('admin.notification_list', page=notifications_pagination.prev_num, per_page=notifications_pagination.per_page, type=notif_type) }}">Previous</a>
+            {% endif %}
+            <span>Page {{ notifications_pagination.page }} of {{ notifications_pagination.pages }}</span>
+            {% if notifications_pagination.has_next %}
+            <a
+                href="{{ url_for('admin.notification_list', page=notifications_pagination.next_num, per_page=notifications_pagination.per_page, type=notif_type) }}">Next</a>
+            {% endif %}
+        </div>
+    </div>
+</main>
+{% endblock %}

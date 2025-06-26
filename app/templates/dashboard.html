@@ -1,0 +1,116 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>Dashboard – Syvrona</title>
+<link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content main-content-wide">
+    <h1 class="page-title">Welcome, {{ current_user.name }}!</h1>
+
+    <div class="dashboard-cards">
+        <!-- Quick Start -->
+        <section class="dashboard-card quickstart">
+            <h2>Quick Start</h2>
+            <a href="{{ url_for('chat.new_chat') }}" class="btn-primary">Start a New Chat</a>
+        </section>
+
+        <!-- Notifications -->
+        <section class="dashboard-card notifications">
+            <h2>Notifications</h2>
+            {% if unread_notifications_list %}
+            <ul>
+                {% for n in unread_notifications_list %}
+                <li>
+                    <span class="notification-title">{{ n.title }}</span>
+                    <span class="notification-date">{{ n.created_at.strftime('%Y-%m-%d %H:%M') }}</span>
+                    <a href="{{ url_for('auth.notifications') }}">View</a>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div>No unread notifications.</div>
+            {% endif %}
+        </section>
+
+
+
+        <!-- Recent Conversations -->
+        <section class="dashboard-card recent-convos">
+            <h2>Recent Conversations</h2>
+            {% if recent_convos %}
+            <ul>
+                {% for c in recent_convos %}
+                <li>
+                    <a href="{{ url_for('chat.view_conversation', conversation_id=c.id) }}">{{ c.title or "Untitled"
+                        }}</a>
+                    <span class="conversation-date">{{ c.created_at.strftime('%Y-%m-%d') }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('chat.conversations') }}" class="btn-link">View All</a>
+            {% else %}
+            <div>No recent conversations yet.</div>
+            {% endif %}
+        </section>
+         <!-- Recent Tags -->
+        <section class="dashboard-card tags">
+            <h2>Recent Tags</h2>
+            {% if recent_tags %}
+            <div class="tag-list">
+                {% for tag in recent_tags %}
+                <a href="{{ url_for('chat.my_tags', tag=tag.name) }}" class="tag-badge">{{ tag.name }}</a>
+                {% endfor %}
+            </div>
+            {% if tags_count > recent_tags|length %}
+            <a href="{{ url_for('chat.my_tags') }}" class="btn-link">View All Tags</a>
+            {% endif %}
+            {% else %}
+            <div class="empty-message">No tags yet.</div>
+            {% endif %}
+        </section>
+
+        <!-- Support/Tickets -->
+        <section class="dashboard-card support">
+            <h2>Open Support Tickets</h2>
+            {% if open_tickets %}
+            <ul>
+                {% for t in open_tickets %}
+                <li>
+                    <a href="{{ url_for('support.view_ticket', ticket_id=t.id) }}">Ticket #{{ t.id }}: {{ t.subject
+                        }}</a>
+                    <span class="ticket-status badge badge-{{ t.status }}">{{ t.status|capitalize }}</span>
+                </li>
+                {% endfor %}
+            </ul>
+            {% else %}
+            <div>No open tickets.</div>
+            {% endif %}
+            <a href="{{ url_for('support.list_tickets') }}" class="btn-link">All Tickets</a>
+        </section>
+
+        <!-- Subscription -->
+        <section class="dashboard-card account">
+            <h2>Account Status</h2>
+            <div>
+                <strong>Plan:</strong> {{ price_labels.get(subscription_plan, subscription_plan) }}<br>
+                <strong>Status:</strong>
+                {% if subscription_status == 'active' %}
+                <span class="badge badge-active">Active</span>
+                {% elif subscription_status %}
+                <span class="badge badge-inactive">{{ subscription_status|capitalize }}</span>
+                {% else %}
+                <span class="badge badge-none">No Subscription</span>
+                {% endif %}
+            </div>
+            {% if subscription_status == 'active' %}
+            <a href="{{ url_for('billing.manage_subscription') }}" class="btn-link">Manage Subscription</a>
+            {% else %}
+            <a href="{{ url_for('billing.subscribe') }}" class="btn-link">Subscribe</a>
+            {% endif %}
+        </section>
+
+    </div>
+</main>
+{% endblock %}

@@ -28,6 +28,7 @@ class User(UserMixin, db.Model):
         passive_deletes=True,
     )
     verified = db.Column(db.Boolean, default=False)
+    preferences = db.Column(db.JSON, nullable=True)
 
 
 class Conversation(db.Model):
@@ -91,13 +92,6 @@ class Message(db.Model):
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
 
 
-def create_conversation(user_id, title=None):
-    new_conversation = Conversation(user_id=user_id, title=title)
-    db.session.add(new_conversation)
-    db.session.commit()
-    return new_conversation
-
-
 class Ticket(db.Model):
     id = db.Column(db.Integer, primary_key=True)
     user_id = db.Column(
@@ -138,6 +132,57 @@ class TicketMessage(db.Model):
     sender_type = db.Column(db.String(20), nullable=False)  # 'user', 'admin', 'ai'
     body = db.Column(db.Text, nullable=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+
+
+class Notification(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    # Sender (admin/staff) user, nullable for system messages
+    sent_by = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    # Recipient user; NULL means broadcast to all users
+    for_user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=True)
+    # Optional: Related ticket (for ticket updates)
+    ticket_id = db.Column(db.Integer, db.ForeignKey("ticket.id"), nullable=True)
+
+    title = db.Column(db.String(255), nullable=False)
+    body = db.Column(db.Text, nullable=False)
+    type = db.Column(db.String(50), nullable=False)  # e.g., 'system', 'ticket'
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+
+    # Relationships for easier navigation
+    sender = db.relationship(
+        "User", foreign_keys=[sent_by], backref="sent_notifications"
+    )
+    recipient = db.relationship(
+        "User", foreign_keys=[for_user_id], backref="received_notifications"
+    )
+    ticket = db.relationship("Ticket", backref="notifications")
+
+
+class NotificationRead(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    notification_id = db.Column(
+        db.Integer, db.ForeignKey("notification.id", ondelete="CASCADE"), nullable=False
+    )
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    read_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+
+    # Enforce uniqueness per user-notification
+    __table_args__ = (
+        db.UniqueConstraint("notification_id", "user_id", name="uix_notification_user"),
+    )
+
+    notification = db.relationship("Notification", backref="reads")
+    user = db.relationship("User", backref="notification_reads")
+    archived = db.Column(db.Boolean, default=False, nullable=False)
+
+
+def create_conversation(user_id, title=None):
+    new_conversation = Conversation(user_id=user_id, title=title)
+    db.session.add(new_conversation)
+    db.session.commit()
+    return new_conversation
 
 
 def create_message(conversation_id, role, content, model):
@@ -193,3 +238,23 @@ def delete_conversation(conversation_id):
         db.session.commit()
         return True
     return False
+
+
+# All unread notifications for a user
+def get_unread_notifications(user_id):
+    NotificationModel = Notification
+    NotificationReadModel = NotificationRead
+
+    # Subquery: notifications user has read
+    read_subquery = db.session.query(NotificationReadModel.notification_id).filter_by(
+        user_id=user_id
+    )
+    # All notifications (broadcast or targeted) not read by user
+    unread = NotificationModel.query.filter(
+        (
+            (NotificationModel.for_user_id.is_(None))
+            | (NotificationModel.for_user_id == user_id)
+        ),
+        ~NotificationModel.id.in_(read_subquery),
+    ).order_by(NotificationModel.created_at.desc())
+    return unread.all()

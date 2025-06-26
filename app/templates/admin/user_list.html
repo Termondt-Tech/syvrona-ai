@@ -19,6 +19,39 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
+    <div class="table-actions-bar">
+        <form method="get" class="filters-form" style="display: flex; align-items: center; gap: 1em; margin-bottom: 0;">
+            <label for="admin" style="font-weight:500;">Role&nbsp;</label>
+            <select name="admin" id="admin" onchange="this.form.submit()" class="input input-small">
+                <option value="" {% if not filter_admin %}selected{% endif %}>All</option>
+                <option value="yes" {% if filter_admin=='yes' %}selected{% endif %}>Admin</option>
+                <option value="no" {% if filter_admin=='no' %}selected{% endif %}>User</option>
+            </select>
+            <label for="active" style="font-weight:500; margin-left:1.2em;">Status&nbsp;</label>
+            <select name="active" id="active" onchange="this.form.submit()" class="input input-small">
+                <option value="" {% if not filter_active %}selected{% endif %}>All</option>
+                <option value="yes" {% if filter_active=='yes' %}selected{% endif %}>Active</option>
+                <option value="no" {% if filter_active=='no' %}selected{% endif %}>Inactive</option>
+            </select>
+            <label for="subscription_status" style="font-weight:500; margin-left:1.2em;">Subscription&nbsp;</label>
+            <select name="subscription_status" id="subscription_status" onchange="this.form.submit()"
+                class="input input-small">
+                <option value="" {% if not filter_subscription %}selected{% endif %}>All</option>
+                {% for status in subscription_statuses %}
+                <option value="{{ status }}" {% if filter_subscription==status %}selected{% endif %}>{{
+                    status|capitalize }}</option>
+                {% endfor %}
+            </select>
+            <label for="per_page" style="font-weight:500; margin-left:1.2em;">Show&nbsp;</label>
+            <select name="per_page" id="per_page" onchange="this.form.submit()" class="input input-small">
+                {% for n in [10, 25, 50, 100] %}
+                <option value="{{ n }}" {% if users_pagination.per_page==n %}selected{% endif %}>{{ n }}</option>
+                {% endfor %}
+            </select>
+            <span>users per page</span>
+        </form>
+    </div>
+
     <div class="table-container">
         <table class="styled-table">
             <thead>
@@ -26,6 +59,7 @@
                     <th>Email</th>
                     <th>Admin</th>
                     <th>Active</th>
+                    <th>Subscription</th>
                     <th>
                         <a
                             href="{{ url_for('admin.user_list', sort='created_at', direction='asc' if sort != 'created_at' or direction == 'desc' else 'desc') }}">
@@ -73,6 +107,12 @@
                         <span class="badge badge-inactive">Inactive</span>
                         {% endif %}
                     </td>
+                    <td>
+                        {% if user.subscription_status %}
+                        <span class="badge badge-{{ user.subscription_status|lower }}">{{ user.subscription_status|capitalize }}</span>
+                        {% else %}
+                        <span class="badge badge-none">None</span>
+                        {% endif %}
                     <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
                     <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
                     <td>
@@ -88,6 +128,18 @@
             </tbody>
         </table>
     </div>
+    <div class="pagination-controls">
+        {% if users_pagination.has_prev %}
+        <a
+            href="{{ url_for('admin.user_list', page=users_pagination.prev_num, per_page=users_pagination.per_page, admin=filter_admin, active=filter_active, sort=sort, direction=direction) }}">Previous</a>
+        {% endif %}
+        <span>Page {{ users_pagination.page }} of {{ users_pagination.pages }}</span>
+        {% if users_pagination.has_next %}
+        <a
+            href="{{ url_for('admin.user_list', page=users_pagination.next_num, per_page=users_pagination.per_page, admin=filter_admin, active=filter_active, sort=sort, direction=direction) }}">Next</a>
+        {% endif %}
+    </div>
+
 </main>
 <script>
     function confirmToggle(email, isActive) {
