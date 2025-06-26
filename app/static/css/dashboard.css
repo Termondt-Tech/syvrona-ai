@@ -12,7 +12,6 @@
     min-height: 180px;
     display: flex;
     flex-direction: column;
-    justify-content: space-between;
 }
 .dashboard-card h2 {
     font-size: 1.2em;
