@@ -258,3 +258,50 @@ def get_unread_notifications(user_id):
         ~NotificationModel.id.in_(read_subquery),
     ).order_by(NotificationModel.created_at.desc())
     return unread.all()
+
+
+def search_conversations_by_message(user_id, query, limit_per_convo=1, max_convos=50):
+    """
+    Returns (conversations, convo_to_msg), where:
+      - conversations: list of Conversation objects, sorted by most recent message
+        matching search
+      - convo_to_msg: dict {conversation_id: [Message, ...]}, with up to
+        `limit_per_convo` matching messages per convo
+    """
+    from sqlalchemy.orm import aliased
+
+    # Find all messages in user's conversations that match search
+    # (case-insensitive, partial)
+    MessageAlias = aliased(Message)
+    matches = (
+        db.session.query(MessageAlias)
+        .join(Conversation, MessageAlias.conversation_id == Conversation.id)
+        .filter(
+            Conversation.user_id == user_id, MessageAlias.content.ilike(f"%{query}%")
+        )
+        .order_by(MessageAlias.created_at.desc())
+        .all()
+    )
+
+    # Collect up to limit_per_convo per conversation
+    convo_to_msgs = {}
+    for msg in matches:
+        lst = convo_to_msgs.setdefault(msg.conversation_id, [])
+        if len(lst) < limit_per_convo:
+            lst.append(msg)
+        if len(convo_to_msgs) >= max_convos:
+            break
+
+    # Get unique conversations (in order of most recent match)
+    conversation_ids = list(convo_to_msgs.keys())
+    if not conversation_ids:
+        return [], {}
+
+    conversations = (
+        Conversation.query.filter(Conversation.id.in_(conversation_ids))
+        .order_by(Conversation.created_at.desc())
+        .all()
+    )
+    # For template convenience, map by id (could be sparse ordering if you want
+    # to preserve match recency)
+    return conversations, convo_to_msgs

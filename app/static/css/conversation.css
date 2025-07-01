@@ -313,3 +313,21 @@
     80% { background: #f1eab7; }
     100% { background: none; }
 }
+.conversation-snippet {
+    margin-top: 0.2rem;
+    font-size: 0.95em;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 0.3em 0.6em;
+    border-radius: 5px;
+    line-height: 1.4;
+    max-width: 450px;
+    word-break: break-word;
+}
+
+.search-snippet mark {
+    background: #ffe566;
+    color: #7c4700;
+    padding: 0 2px;
+    border-radius: 2px;
+}

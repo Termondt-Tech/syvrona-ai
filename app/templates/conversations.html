@@ -8,6 +8,15 @@
 <main class="main-content">
     <h1 class="main-title">My Conversations</h1>
     {% include "_flash.html" %}
+    <form class="conversation-search-row" method="GET" action="{{ url_for('chat.conversations') }}">
+        <input type="text" name="q" id="conversation-search" class="conversation-search-input"
+            placeholder="Search messages…" autocomplete="off" value="{{ search_query|e }}" aria-label="Search messages">
+        <button type="submit" class="btn btn-small">Search</button>
+        {% if search_query %}
+        <a href="{{ url_for('chat.conversations') }}" class="btn btn-link">Clear</a>
+        {% endif %}
+    </form>
+
     <table class="conversation-table" id="conversation-table">
         <thead>
             <tr>
@@ -33,6 +42,17 @@
                         <input type="text" name="title" value="{{ convo.title }}" />
                         <button type="submit" class="btn btn-small">Rename</button>
                     </form>
+                    {% if convo_to_msg and convo.id in convo_to_msg %}
+                    {% for msg in convo_to_msg[convo.id] %}
+                    <div class="conversation-snippet">
+                        <span class="search-snippet" data-md="true"
+                            data-content="{{ msg.content|truncate(180, True, '…')|e }}">{{
+                            msg.content|truncate(180, True, '…') }}</span>
+                    </div>
+                    {% endfor %}
+                    {% endif %}
+
+
                 </td>
                 <td>
                     {{ convo.created_at.strftime('%Y-%m-%d %I:%M %p') if convo.created_at else 'N/A' }}
@@ -78,6 +98,12 @@
 
 </main>
 <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
+<script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+
+<script>
+    window.SEARCH_QUERY = "{{ search_query | replace('\\', '\\\\') | replace('\n', '\\n') | replace('\r', '') | replace('"', '\\"') }}";
+
+</script>
 
 <script>
     document.addEventListener('DOMContentLoaded', function () {
@@ -309,7 +335,54 @@
 
         // On initial load
         updateTableDisplay();
+
+        // --- Snippet Markdown Render + Highlight Logic ---
+        var searchQuery = window.SEARCH_QUERY;
+        document.querySelectorAll('.search-snippet[data-md="true"]').forEach(function (el) {
+            const raw = el.getAttribute('data-content');
+            // Render markdown from the snippet
+            let html = marked.parse(raw || el.textContent || "");
+            el.innerHTML = html;
+            // Highlight search term (after markdown rendering)
+            highlightTerm(el, searchQuery);
+        });
+
+        function highlightTerm(element, phrase) {
+            if (!phrase) return;
+            const regex = new RegExp(`(${phrase.replace(/[.*+?^${}()|[\]\\]/g, '\\$&')})`, 'gi');
+            walkAndHighlight(element, regex);
+        }
+
+        // Safely walk nodes and only highlight text
+        function walkAndHighlight(node, regex) {
+            if (node.nodeType === 3) { // Text node
+                const parent = node.parentNode;
+                const frag = document.createDocumentFragment();
+                let lastIndex = 0;
+                const text = node.textContent;
+                let match;
+                while ((match = regex.exec(text)) !== null) {
+                    if (match.index > lastIndex) {
+                        frag.appendChild(document.createTextNode(text.slice(lastIndex, match.index)));
+                    }
+                    const mark = document.createElement('mark');
+                    mark.textContent = match[0];
+                    frag.appendChild(mark);
+                    lastIndex = regex.lastIndex;
+                }
+                if (lastIndex < text.length) {
+                    frag.appendChild(document.createTextNode(text.slice(lastIndex)));
+                }
+                parent.replaceChild(frag, node);
+            } else if (node.nodeType === 1 && node.childNodes) { // Element node
+                Array.from(node.childNodes).forEach(child => walkAndHighlight(child, regex));
+            }
+        }
+
     });
+
+
+
 </script>
 
 

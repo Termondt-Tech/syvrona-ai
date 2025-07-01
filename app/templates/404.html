@@ -1,0 +1,13 @@
+{% extends "base.html" %}
+{% block header %}
+<title>404 – Page Not Found | Syvrona</title>
+<meta name="robots" content="noindex, nofollow">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/error.css') }}">
+{% endblock %}
+{% block content %}
+<main class="error-container">
+  <h1 class="error-title">404 – Page Not Found</h1>
+  <p class="error-message">Sorry, we couldn't find that page. Please check the URL or return to the <a href="{{ url_for('main.index') }}">home page</a>.</p>
+  <img src="{{ url_for('static', filename='images/syvrona-logo-darktext-transparent-100.png') }}" alt="Syvrona logo" class="error-logo">
+</main>
+{% endblock %}

@@ -1,5 +1,5 @@
 import logging
-from flask import Flask
+from flask import Flask, render_template
 from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
@@ -84,6 +84,7 @@ def create_app(config=None):
     @app.context_processor
     def inject_unread_notification_count():
         from app.models import Notification, NotificationRead
+
         if not current_user.is_authenticated:
             return dict(unread_notifications=0)
         notifications = Notification.query.filter(
@@ -108,6 +109,10 @@ def create_app(config=None):
 
     @app.context_processor
     def inject_hcaptcha_enabled():
-        return dict(HCAPTCHA_ENABLED=app.config.get('HCAPTCHA_ENABLED', False))
+        return dict(HCAPTCHA_ENABLED=app.config.get("HCAPTCHA_ENABLED", False))
+
+    @app.errorhandler(404)
+    def page_not_found(e):
+        return render_template("404.html"), 404
 
     return app

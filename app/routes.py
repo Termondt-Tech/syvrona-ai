@@ -1,6 +1,7 @@
 import logging
 from flask import (
     Blueprint,
+    current_app,
     render_template,
 )
 
@@ -33,3 +34,8 @@ def privacy():
 @main.route("/terms", methods=["GET"])
 def terms():
     return render_template("terms.html")
+
+
+@main.route('/sitemap.xml')
+def sitemap():
+    return current_app.send_static_file('sitemap.xml')

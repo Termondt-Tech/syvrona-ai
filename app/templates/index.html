@@ -22,26 +22,51 @@
 
 <!-- Structured Data -->
 <script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Syvrona",
+  "operatingSystem": "All",
+  "applicationCategory": "ChatbotApplication",
+  "description": "Syvrona is an AI-powered chat assistant built for writing, thinking, and exploring ideas.",
+  "url": "https://syvrona.com/",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Termondt Tech LLC",
+    "url": "https://termondttech.com"
+  },
+  "offers": [
+  {%if free_trial_enabled and free_trial_days > 0 %}
     {
-      "@context": "https://schema.org",
-      "@type": "SoftwareApplication",
-      "name": "Syvrona",
-      "operatingSystem": "All",
-      "applicationCategory": "ChatbotApplication",
-      "offers": {
-        "@type": "Offer",
-        "price": "0",
-        "priceCurrency": "USD"
-      },
-      "description": "Syvrona is an AI-powered chat assistant built for writing, thinking, and exploring ideas.",
-      "url": "https://syvrona.com/",
-      "publisher": {
-        "@type": "Organization",
-        "name": "Termondt Tech LLC",
-        "url": "https://termondttech.com"
-      }
+      "@type": "Offer",
+      "name": "Free Trial",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "7-day free trial for all paid plans. Credit card required at signup. Cancel anytime during the trial and your card will not be charged.",
+      "eligibleDuration": "P7D", // ISO 8601 for 7 days
+      "isAccessibleForFree": false
+    },
+    {%endif %}
+    {
+      "@type": "Offer",
+      "name": "Pro Monthly",
+      "price": "9.99",
+      "priceCurrency": "USD",
+      "description": "Full-featured access, billed monthly after free trial.",
+      "priceValidUntil": "2025-12-31"
+    },
+    {
+      "@type": "Offer",
+      "name": "Pro Yearly",
+      "price": "99",
+      "priceCurrency": "USD",
+      "description": "Best value—full access, billed yearly after free trial.",
+      "priceValidUntil": "2025-12-31"
     }
-    </script>
+  ]
+}
+</script>
+
 
 <link rel="stylesheet" href="{{ url_for('static', filename='css/feature.css') }}">
 {% endblock %}
@@ -107,10 +132,12 @@
             {% endif %}
         </div>
 
-       <p>
-    Syvrona powers creativity and productivity for individuals and teams alike. 
-    Interested in advanced business, enterprise, or self-hosted options? <a href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit Termondt Tech to learn more.</strong></a>
-</p>
+        <p>
+            Syvrona powers creativity and productivity for individuals and teams alike.
+            Interested in advanced business, enterprise, or self-hosted options? <a
+                href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit Termondt
+                    Tech to learn more.</strong></a>
+        </p>
 
 
 

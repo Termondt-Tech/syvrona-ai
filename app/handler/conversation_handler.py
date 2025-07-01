@@ -5,6 +5,7 @@ from app.models import (
     get_user_conversations as db_get_user_conversations,
     update_conversation_title as db_update_conversation_title,
     delete_conversation as db_delete_conversation,
+    search_conversations_by_message as db_search_conversations_by_message,
 )
 
 
@@ -47,3 +48,10 @@ def get_conversation(conversation_id):
 def delete_conversation(conversation_id):
     db_delete_conversation(conversation_id)
     return True
+
+
+def search_conversations_by_message(user_id, query):
+    conversations, convo_to_msg = db_search_conversations_by_message(user_id, query)
+    conversations = sorted(conversations, key=lambda x: x.created_at, reverse=True)
+    # Sort conversations by created_at in descending order
+    return conversations, convo_to_msg

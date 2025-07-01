@@ -20,6 +20,7 @@ from app.handler.conversation_handler import (
     delete_conversation,
     get_conversation,
     get_user_conversations,
+    search_conversations_by_message,
     update_conversation_title,
     get_conversation_messages,
 )
@@ -89,7 +90,7 @@ def remove_tag_from_message(msg_id, tag_id):
         message.conversation.user_id != current_user.id
         or tag.user_id != current_user.id
     ):
-        abort(403)
+        abort(404)
 
     if tag in message.tags:
         message.tags.remove(tag)
@@ -123,6 +124,9 @@ def my_tags():
 def tagged_messages(tag_id):
     # Get the tag
     tag = Tag.query.get_or_404(tag_id)
+    # Ensure the tag belongs to the current user
+    if tag.user_id != current_user.get_id():
+        abort(404)
     # Get all messages for this tag (owned by user)
     messages = (
         db.session.query(Message, Conversation)
@@ -141,9 +145,12 @@ def tagged_messages(tag_id):
 @login_required
 @require_active_subscription
 def view_message(message_id):
-    from app.models import Message, Conversation
 
     message = Message.query.get_or_404(message_id)
+    # Ensure the message belongs to a conversation owned by the user
+    if message.conversation.user_id != current_user.id:
+        abort(404)
+
     conversation = Conversation.query.get_or_404(message.conversation_id)
     # Optional: get tag_id from ?tag= if coming from tagged page
     back_to_tag_id = request.args.get("tag", type=int)
@@ -165,19 +172,36 @@ def view_message(message_id):
 @require_active_subscription
 def conversations():
     user_id = current_user.get_id()
-    convos = get_user_conversations(user_id)
-    logger.info(f"User {user_id} has {len(convos)} conversations.")
+    q = request.args.get("q", "").strip()
+    if q:
+        convos, convo_to_msg = search_conversations_by_message(user_id, q)
+        search_query = q
+    else:
+        convos = get_user_conversations(user_id)
+        convo_to_msg = {}
+        search_query = ""
+        logger.info(f"User {user_id} has {len(convos)} conversations.")
+
     if not convos:
         flash("No conversations found.", "info")
         return render_template("conversations.html", conversations=[])
     # Check if the user has conversations
-    return render_template("conversations.html", conversations=convos)
+    return render_template(
+        "conversations.html",
+        conversations=convos,
+        convo_to_msg=convo_to_msg,
+        search_query=search_query,
+    )
 
 
 @chat.route("/conversation/<int:conversation_id>/edit", methods=["POST"])
 @login_required
 @require_active_subscription
 def edit_conversation_title(conversation_id):
+    convo = get_conversation(conversation_id)
+    if convo is None or convo.user_id != current_user.id:
+        abort(404)
+
     update_conversation_title(conversation_id, request.form["title"])
     logger.info(f"Conversation {conversation_id} title updated.")
     flash("Conversation title updated successfully!", "success")
@@ -194,7 +218,7 @@ def resume_conversation(conversation_id):
         flash("Conversation not found.", "error")
         return redirect(url_for("chat.conversations"))
     if conversation.user_id != current_user.id:
-        return "Unauthorized", 403
+        abort(404)  # Unauthorized access - send as 404 to avoid leaking info
     session["conversation_id"] = conversation.id
     logger.info(f"Resumed conversation with ID: {conversation_id}")
     return redirect(url_for("chat.chat_page"))
@@ -205,11 +229,8 @@ def resume_conversation(conversation_id):
 @require_active_subscription
 def view_conversation(conversation_id):
     convo = get_conversation(conversation_id)
-    if convo is None:
-        flash("Conversation not found.", "error")
-        return redirect(url_for("chat.conversations"))
-    if convo.user_id != current_user.id:
-        return "Unauthorized", 403
+    if convo is None or convo.user_id != current_user.id:
+        abort(404)  # Not found or unauthorized
 
     messages = get_conversation_messages(conversation_id)
 
@@ -234,7 +255,7 @@ def view_conversation(conversation_id):
 def delete_conversation_route(conversation_id):
     convo = get_conversation(conversation_id)
     if not convo or convo.user_id != current_user.id:
-        return "Unauthorized", 403
+        abort(404)  # Not found or unauthorized
     session.pop("conversation_id", None)  # In case it was active
     delete_conversation(conversation_id)
     flash("Conversation deleted.", "success")
@@ -251,6 +272,11 @@ def delete_conversation_route(conversation_id):
 @login_required
 @require_active_subscription
 def latest_messages(conversation_id):
+    # Ensure the conversation exists and belongs to the user
+    convo = get_conversation(conversation_id)
+    if convo is None or convo.user_id != current_user.id:
+        abort(404)
+    # Get the most recent 2 messages in reverse order (latest first)
     messages = (
         Message.query.filter_by(conversation_id=conversation_id)
         .order_by(Message.created_at.desc())

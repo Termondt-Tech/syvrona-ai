@@ -1,0 +1,23 @@
+.error-container {
+  max-width: 500px;
+  margin: 48px auto;
+  background: #fff;
+  border-radius: 12px;
+  box-shadow: 0 3px 14px rgba(0,0,0,0.06);
+  padding: 40px 32px;
+  text-align: center;
+}
+.error-logo {
+  max-width: 120px;
+  margin-bottom: 16px;
+}
+.error-title {
+  color: #1a2356;
+  font-size: 2rem;
+  margin-bottom: 0.7em;
+}
+.error-message {
+  color: #222;
+  margin-bottom: 1em;
+  font-size: 1.1em;
+}
