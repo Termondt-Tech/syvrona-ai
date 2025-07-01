@@ -22,9 +22,9 @@
                         'Untitled' }}</a>
                 </span>
             </div>
-            <div class="msg-content-preview">
-                {{ msg.content|truncate(180) }}
-            </div>
+            <div class="msg-content-preview"></div>
+            <pre class="msg-content-raw" style="display:none;">{{ msg.content|e }}</pre>
+
         </li>
         {% endfor %}
     </ul>
@@ -35,4 +35,25 @@
     </div>
     {% endif %}
 </main>
+
+<script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+
+<script>
+document.querySelectorAll('.message-card').forEach(card => {
+    const raw = card.querySelector('.msg-content-raw');
+    const preview = card.querySelector('.msg-content-preview');
+    if (raw && preview) {
+        let text = raw.textContent || "";
+        if (text.length > 180) {
+            let t = text.slice(0, 180);
+            let s = t.lastIndexOf(' ');
+            if (s > 0) t = t.slice(0, s);
+            text = t + '...';
+        }
+        preview.innerHTML = marked.parse(text);
+    }
+});
+</script>
+
+
 {% endblock %}
