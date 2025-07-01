@@ -22,7 +22,7 @@ def index():
     return render_template(
         "index.html",
         free_trial_enabled=free_trial_enabled,
-        free_trial_days=free_trial_days
+        free_trial_days=free_trial_days,
     )
 
 
@@ -36,6 +36,6 @@ def terms():
     return render_template("terms.html")
 
 
-@main.route('/sitemap.xml')
+@main.route("/sitemap.xml")
 def sitemap():
-    return current_app.send_static_file('sitemap.xml')
+    return current_app.send_static_file("sitemap.xml")

@@ -125,7 +125,7 @@ def tagged_messages(tag_id):
     # Get the tag
     tag = Tag.query.get_or_404(tag_id)
     # Ensure the tag belongs to the current user
-    if tag.user_id != current_user.get_id():
+    if tag.user_id != current_user.id:
         abort(404)
     # Get all messages for this tag (owned by user)
     messages = (
