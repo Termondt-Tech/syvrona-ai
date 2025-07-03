@@ -1,0 +1,91 @@
+.prompt-table {
+    width: 100%;
+    max-width: 900px;
+    margin: 2rem auto;
+    border-collapse: separate;
+    border-spacing: 0;
+    background: #fff;
+    border-radius: 10px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.07);
+    overflow: hidden;
+}
+.prompt-table th, .prompt-table td {
+    padding: 1rem 0.75rem;
+    text-align: left;
+    vertical-align: middle;
+}
+.prompt-table thead {
+    background: #f1f5f9;
+}
+.prompt-table th {
+    font-weight: 600;
+    font-size: 1.02rem;
+    border-bottom: 2px solid #e5e7eb;
+}
+.prompt-table td strong {
+    font-size: 1.05em;
+    color: #334155;
+}
+.prompt-table .prompt-snippet {
+    margin-top: 0.2rem;
+    font-size: 0.95em;
+    color: #64748b;
+    background: #f1f5f9;
+    padding: 0.3em 0.6em;
+    border-radius: 5px;
+    line-height: 1.4;
+    max-width: 320px;
+    word-break: break-word;
+}
+.prompt-table .prompt-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+}
+.prompt-table .btn-sm {
+    font-size: 0.92em;
+    padding: 0.33em 0.85em;
+}
+.no-content-message {
+    text-align: center;
+    color: #888;
+    font-size: 1.06em;
+    padding: 2.2em 1em;
+}
+
+/* Responsive: Stack table on narrow screens */
+@media (max-width: 600px) {
+    .prompt-table, .prompt-table thead, .prompt-table tbody, .prompt-table th, .prompt-table td, .prompt-table tr {
+        display: block;
+        width: 100%;
+    }
+    .prompt-table thead {
+        display: none;
+    }
+    .prompt-table tr {
+        margin-bottom: 1.1rem;
+        background: #fff;
+        border-radius: 10px;
+        box-shadow: 0 1px 4px rgba(0,0,0,0.07);
+    }
+    .prompt-table td {
+        padding: 0.7rem 1.2rem;
+        border-bottom: none;
+        border-right: none;
+        text-align: left;
+        position: relative;
+        max-width: 100%;
+    }
+    .prompt-table td strong {
+        font-size: 1em;
+    }
+    .prompt-table .prompt-snippet {
+        font-size: 0.97em;
+        max-width: 100%;
+    }
+    .prompt-table .prompt-actions {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 0.4em;
+    }
+}

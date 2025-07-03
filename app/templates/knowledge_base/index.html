@@ -1,0 +1,35 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Supported AI Models – Syvrona</title>
+<meta name="description" content="All supported AI models in Syvrona, including OpenAI and Anthropic models.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <h1 class="main-title">Syvrona Knowledge Base</h1>
+    <p class="subtitle">
+        Explore in-depth guides and documentation for using Syvrona’s AI features.
+    </p>
+    <ul class="kb-article-list">
+        {% for article in articles %}
+        <li class="kb-article">
+            <a href="{{ article.url }}">
+                <strong>{{ article.title }}</strong>
+            </a>
+            <span class="kb-desc">{{ article.description }}</span>
+        </li>
+        {% else %}
+        <li>No articles yet. Check back soon!</li>
+        {% endfor %}
+    </ul>
+
+    <footer class="kb-footer">
+        <p>
+            Need help?
+            <a href="{{ url_for('support.submit_ticket') }}">Contact support</a>
+            for personalized recommendations.
+        </p>
+    </footer>
+</main>
+{% endblock %}

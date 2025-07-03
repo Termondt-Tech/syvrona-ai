@@ -1,4 +1,6 @@
 from unittest.mock import patch
+from app import db
+from app.models import User, Prompt
 
 
 def test_app_exists(app):
@@ -163,6 +165,130 @@ def test_profile_requires_login(client):
     assert "/login" in response.headers.get("Location", "")
 
 
+def test_profile_access_with_login(client, login_user):
+    login_user(email="bob@example.com", password="securepw")
+    response = client.get("/profile")
+    assert response.status_code == 200
+    assert b"Profile" in response.data  # Or check your profile content
+
+
+def test_premium_page_requires_subscription(client, login_user):
+    # Free user (inactive subscription)
+    login_user(email="free@example.com", password="pw", subscription_status="inactive")
+    response = client.get("/chat", follow_redirects=False)
+    assert response.status_code in (301, 302, 403)
+    # Check for upgrade message/redirect if you want
+
+
+def test_premium_page_allows_subscribed_user(client, login_user):
+    # Subscribed user (active subscription)
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    response = client.get("/chat")
+    assert response.status_code == 200
+    assert b"Chat" in response.data  # Or expected content
+
+
 def test_confirm_email_with_invalid_token(client):
     response = client.get("/confirm-email/some-invalid-token", follow_redirects=True)
     assert b"The confirmation link is invalid or has expired." in response.data
+
+
+def test_prompt_list_requires_login(client):
+    """Prompt list should require authentication."""
+    response = client.get("/prompts")
+    # Should redirect to login (302) or 401 if API
+    assert response.status_code in (301, 302, 401)
+
+
+def test_prompt_list_requires_subscription(client, login_user):
+    """Prompt list should require active subscription."""
+    login_user(email="free@example.com", password="pw", subscription_status="inactive")
+    response = client.get("/prompts")
+    assert response.status_code in (301, 302, 403)
+
+
+def test_prompt_list_displays_prompts(client, login_user):
+    """Prompt list shows user prompts."""
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    user = User.query.filter_by(email="paid@example.com").first()
+
+    prompt = Prompt(
+        user_id=user.id,
+        title="Test Prompt",
+        description="Test Desc",
+        body="Prompt Body",
+    )
+    db.session.add(prompt)
+    db.session.commit()
+
+    response = client.get("/prompts")
+    assert response.status_code == 200
+    assert b"Test Prompt" in response.data
+    assert b"Test Desc" in response.data
+
+
+def test_create_prompt_page(client, login_user):
+    """User can view the prompt creation page."""
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    response = client.get("/prompts/create")
+    assert response.status_code == 200
+    assert b"Create" in response.data
+
+
+def test_create_prompt(client, login_user):
+    """User can create a prompt via POST."""
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    user = User.query.filter_by(email="paid@example.com").first()
+
+    data = {
+        "title": "My Prompt",
+        "description": "My Description",
+        "body": "Prompt Content",
+    }
+    response = client.post("/prompts/create", data=data, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"My Prompt" in response.data
+
+    # Check DB
+    assert (
+        Prompt.query.filter_by(user_id=user.id, title="My Prompt").first() is not None
+    )
+
+
+def test_edit_prompt(client, login_user):
+    """User can edit an existing prompt."""
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    user = User.query.filter_by(email="paid@example.com").first()
+
+    prompt = Prompt(user_id=user.id, title="EditMe", description="D", body="Body")
+    db.session.add(prompt)
+    db.session.commit()
+    edit_url = f"/prompts/{prompt.id}/edit"
+
+    # GET page
+    response = client.get(edit_url)
+    assert response.status_code == 200
+    assert b"EditMe" in response.data
+
+    # POST update
+    data = {"title": "Edited", "description": "Desc", "body": "New Body"}
+    response = client.post(edit_url, data=data, follow_redirects=True)
+    assert response.status_code == 200
+    assert b"Edited" in response.data
+
+    prompt = db.session.get(Prompt, prompt.id)  # SQLAlchemy 2.x style
+    assert prompt.title == "Edited"
+
+
+def test_delete_prompt(client, login_user):
+    """User can delete an existing prompt."""
+    login_user(email="paid@example.com", password="pw", subscription_status="active")
+    user = User.query.filter_by(email="paid@example.com").first()
+
+    prompt = Prompt(user_id=user.id, title="DelMe", description="", body="")
+    db.session.add(prompt)
+    db.session.commit()
+    del_url = f"/prompts/{prompt.id}/delete"
+    response = client.post(del_url, follow_redirects=True)
+    assert response.status_code == 200
+    assert db.session.get(Prompt, prompt.id) is None

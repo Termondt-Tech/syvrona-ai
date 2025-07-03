@@ -60,6 +60,13 @@
     border: 1px solid #dbeafe;
     font-weight: 500;
     font-size: 1em;
+    text-decoration: none !important;
+}
+.tag-pill:hover, .tag-pill:focus {
+    background: #dbeafe;
+    color: #174479;
+    text-decoration: none !important;   /* Remove underline on hover/focus too */
+    outline: none;
 }
 
 .message-list {
@@ -125,6 +132,60 @@
     color: #778;
     margin-top: 0.6em;
 }
+/* Extra margin at top when no tags exist */
+.extra-margin-top {
+    margin-top: 2rem;
+}
+
+/* Style for no-tags message */
+.no-tags-msg {
+    font-size: 1.15em;
+    margin-bottom: 0.5em;
+}
+
+/* Style for instructions under no-tags */
+.no-tags-instructions {
+    color: #46505a;
+    font-size: 1em;
+}
+
+/* Style for plus icon in instructions */
+.plus-icon {
+    border: 1px solid #bbb;
+    padding: 0 0.3em;
+    border-radius: 4px;
+    background: #f9f9f9;
+    font-weight: 500;
+}
+
+/* UL for instructions (adds left indent) */
+.no-tags-list {
+    margin: 0.5em 0 0 1.3em;
+    padding-left: 0; /* Reset if browser default interferes */
+}
+
+/* List for tags */
+.tag-list {
+    list-style: none;
+    padding: 0;
+    margin-top: 2rem;
+}
+
+/* Each tag list item */
+.tag-list-item {
+    margin-bottom: 0.75em;
+}
+
+/* Style for tag-count badge in tag pill */
+.tag-count-badge {
+    background: #c7d5ec;
+    color: #314f7c;
+    font-size: 0.95em;
+    padding: 0.1em 0.5em;
+    border-radius: 12px;
+    margin-left: 0.7em;
+}
+
 @media (max-width: 600px) {
     .tagged-messages-page {
         max-width: 99vw;

@@ -81,6 +81,14 @@ def create_app(config=None):
 
     app.register_blueprint(support_blueprint)
 
+    from .prompt import prompt_bp as prompt_blueprint
+
+    app.register_blueprint(prompt_blueprint)
+
+    from .knowledge_base import knowledge_bp as knowledge_blueprint
+
+    app.register_blueprint(knowledge_blueprint)
+
     @app.context_processor
     def inject_unread_notification_count():
         from app.models import Notification, NotificationRead

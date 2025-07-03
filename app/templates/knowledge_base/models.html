@@ -1,0 +1,222 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Supported AI Models – Syvrona</title>
+<meta name="description" content="All supported AI models in Syvrona, including OpenAI and Anthropic models.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content">
+    <h1>Supported AI Models in Syvrona</h1>
+    <p class="subtitle">
+        Syvrona offers a curated selection of advanced AI models from OpenAI and Anthropic. Choose the best fit for
+        your needs—whether you want blazing speed, deep reasoning, or long-form memory.
+        {% if default_model %}
+    <div class="kb-default-model">
+        <strong>Syvrona’s Current Default Model:</strong>
+        <span class="kb-name">{{ default_model.display_name }}</span>
+        ({{ default_model.provider|capitalize }})
+        <span class="kb-default-desc">
+            — This is the model automatically selected for new chats unless you pick another.
+        </span>
+    </div>
+
+    {% endif %}
+
+    </p>
+
+    <section class="kb-section">
+        <h2>Model Comparison Table</h2>
+        <div class="kb-table-responsive">
+            <table class="kb-table">
+                <thead>
+                    <tr>
+                        <th>Model Name</th>
+                        <th>Provider</th>
+                        <th>Speed</th>
+                        <th>Context Length</th>
+                        <th>Best For</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    <tr>
+                        <td>GPT-4o</td>
+                        <td>OpenAI</td>
+                        <td>⚡ Fast</td>
+                        <td>128k</td>
+                        <td>Everyday use, creativity, solid balance</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4.1</td>
+                        <td>OpenAI</td>
+                        <td>🚀 Fast</td>
+                        <td>128k</td>
+                        <td>Deep reasoning, precision tasks</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4.1 Mini</td>
+                        <td>OpenAI</td>
+                        <td>⚡ Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Cost-effective GPT-4, short answers, basic chat</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4o Mini</td>
+                        <td>OpenAI</td>
+                        <td>⚡ Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Lower-cost GPT-4o, snappy conversation, quick tasks</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4.1 Nano</td>
+                        <td>OpenAI</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Ultra-fast, high-volume tasks, short-form content</td>
+                    </tr>
+                    <tr>
+                        <td>O3</td>
+                        <td>OpenAI</td>
+                        <td>⚡ Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Everyday use, creative exploration</td>
+                    </tr>
+                    <tr>
+                        <td>O3 Mini</td>
+                        <td>OpenAI</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Ultra-fast, cost-efficient, bulk processing</td>
+                    </tr>
+                    <tr>
+                        <td>O4 Mini</td>
+                        <td>OpenAI</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Latest mini model, rapid responses</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-4.5</td>
+                        <td>OpenAI</td>
+                        <td>🚀 Fast</td>
+                        <td>128k (est.)</td>
+                        <td>Complex reasoning, large docs, advanced users</td>
+                    </tr>
+                    <tr>
+                        <td>GPT-3.5 Turbo</td>
+                        <td>OpenAI</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>16k</td>
+                        <td>Fast, cost-effective, general-purpose chat</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 4 Opus</td>
+                        <td>Anthropic</td>
+                        <td>⚠ Slower</td>
+                        <td>200k+</td>
+                        <td>Long-form memory, legal/technical docs</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 4 Sonnet</td>
+                        <td>Anthropic</td>
+                        <td>⚡ Fast</td>
+                        <td>100k+</td>
+                        <td>Q&amp;A, general-purpose productivity</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 3 Sonnet</td>
+                        <td>Anthropic</td>
+                        <td>⚡ Fast</td>
+                        <td>128k (w/ beta)</td>
+                        <td>Balanced performance &amp; price, long docs</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 3.5 Sonnet</td>
+                        <td>Anthropic</td>
+                        <td>⚡ Fast</td>
+                        <td>8k</td>
+                        <td>Chat, summaries, moderate context</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 3.5 Haiku</td>
+                        <td>Anthropic</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>8k</td>
+                        <td>Short replies, cost-effective usage</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 3 Haiku</td>
+                        <td>Anthropic</td>
+                        <td>⚡⚡ Very Fast</td>
+                        <td>4k</td>
+                        <td>Ultra-fast, lowest cost for simple tasks</td>
+                    </tr>
+                    <tr>
+                        <td>Claude 3 Opus</td>
+                        <td>Anthropic</td>
+                        <td>⚡ Fast</td>
+                        <td>4k</td>
+                        <td>Deep reasoning in short form</td>
+                    </tr>
+                </tbody>
+            </table>
+        </div>
+        <p class="note">
+            <strong>Note:</strong> Some context lengths are estimated. “Mini” and “Nano” models are experimental—try
+            them for maximum speed.
+        </p>
+    </section>
+
+    <section class="kb-section">
+        <h2>Choosing the Right Model</h2>
+        <ul class="kb-tips">
+            <li><strong>For most users:</strong> <span class="kb-name">GPT-4o</span> or <span class="kb-name">Claude 4
+                    Sonnet</span> provide the best balance of speed, cost, and quality.
+            </li>
+            <li><strong>For in-depth tasks:</strong> <span class="kb-name">GPT-4.1</span>, <span
+                    class="kb-name">GPT-4.5</span>, or <span class="kb-name">Claude 4 Opus</span> offer top
+                reasoning for research, technical, or legal content.</li>
+            <li><strong>For high-volume or rapid chat:</strong> Try <span class="kb-name">GPT-4.1 Nano</span>,
+                <span class="kb-name">O3 Mini</span>, or <span class="kb-name">Claude 3.5 Haiku</span>.
+            </li>
+            <li><strong>For long documents:</strong> Use <span class="kb-name">Claude 4 Opus</span> or <span
+                    class="kb-name">Claude 3 Sonnet</span> (with beta/extended context).</li>
+            <li><strong>On a budget:</strong> <span class="kb-name">GPT-3.5 Turbo</span> or any “Mini” or “Nano”
+                model offers the lowest cost per message.</li>
+        </ul>
+    </section>
+
+    <section class="kb-section">
+        <h2>Frequently Asked Questions</h2>
+        <dl class="faq-list">
+            <dt>What’s the difference between GPT-4o and GPT-4.1?</dt>
+            <dd>GPT-4o is optimized for speed and everyday use, while GPT-4.1 can provide even better reasoning for
+                in-depth or technical questions.</dd>
+            <dt>What does “context length” mean?</dt>
+            <dd>It’s the number of tokens (words and symbols) the model can “see” in a single chat. Higher means
+                longer conversations and documents can be handled.</dd>
+            <dt>Can I switch models any time?</dt>
+            <dd>Yes! Just select a different model from the Syvrona chat menu. Your choice is remembered for each
+                conversation.</dd>
+        </dl>
+    </section>
+
+    <section class="kb-section">
+        <h2>Full Model List</h2>
+        <ul class="kb-list">
+            {% for model in models %}
+            <li>{{ model.display_name }} ({{ model.provider|capitalize }})</li>
+            {% endfor %}
+        </ul>
+        <p class="note">Syvrona is always adding new models—check back for updates!</p>
+    </section>
+
+    <footer class="kb-footer">
+        <p>
+            Need help choosing?
+            <a href="{{ url_for('support.submit_ticket') }}">Contact support</a>
+            for personalized recommendations.
+        </p>
+    </footer>
+</main>
+{% endblock %}

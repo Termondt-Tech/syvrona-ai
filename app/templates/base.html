@@ -50,6 +50,7 @@
                             <a href="{{ url_for('chat.new_chat') }}">Chat</a>
                             <a href="{{ url_for('chat.conversations') }}">Conversations</a>
                             <a href="{{ url_for('chat.my_tags') }}">Tags</a>
+                            <a href="{{ url_for('prompt.prompt_list') }}">Prompts</a>
                         </div>
                     </div>
                     {% endif %}
@@ -61,6 +62,11 @@
                         <div class="dropdown-content">
                             <a href="{{ url_for('support.list_tickets') }}">My Tickets</a>
                             <a href="{{ url_for('support.submit_ticket') }}">Submit Ticket</a>
+                            {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status
+                    ==
+                    'active') %}
+                            <a href="{{ url_for('knowledge_base.index') }}">Knowledge Base</a>
+                            {% endif %}
                             <!-- <a href="#">FAQ</a> -->
                         </div>
                     </div>

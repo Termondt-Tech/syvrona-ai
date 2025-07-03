@@ -1,0 +1,31 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>Edit Prompt – Syvrona</title>
+<meta name="description" content="Edit an existing prompt for Syvrona." />
+{% endblock %}
+
+{% block content %}
+<main class="form-container">
+    <h1 class="form-title">Edit Prompt</h1>
+    {% include "_flash.html" %}
+    <form method="post" autocomplete="off">
+        <div class="form-group">
+            <label for="title">Title<span style="color:red;">*</span></label>
+            <input type="text" id="title" name="title" value="{{ request.form.title or prompt.title or '' }}" required maxlength="100" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="description">Description (optional)</label>
+            <input type="text" id="description" name="description" value="{{ request.form.description or prompt.description or '' }}" maxlength="255" class="form-control" />
+        </div>
+        <div class="form-group">
+            <label for="body">Prompt Body<span style="color:red;">*</span></label>
+            <textarea id="body" name="body" required rows="6" class="form-control">{{ request.form.body or prompt.body or '' }}</textarea>
+        </div>
+        <div style="margin-top: 1.5em;">
+            <button type="submit" class="btn btn-primary">Save Changes</button>
+            <a href="{{ url_for('prompt.prompt_list') }}" class="btn btn-secondary">Cancel</a>
+        </div>
+    </form>
+</main>
+{% endblock %}

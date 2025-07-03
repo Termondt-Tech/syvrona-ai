@@ -24,6 +24,7 @@ from app.handler.conversation_handler import (
     update_conversation_title,
     get_conversation_messages,
 )
+from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY
 
 from . import db
 
@@ -304,7 +305,25 @@ def latest_messages(conversation_id):
 def new_chat():
     logger.info(f"New chat for user: {current_user.get_id()}")
     session.pop("conversation_id", None)
-    return redirect(url_for("chat.chat_page"))
+    selected_model = session.pop("prefilled_model", DEFAULT_MODEL_KEY)
+
+    available_models = [
+        {
+            "key": k,
+            "provider": v.get("provider", "unknown"),
+            "display_name": v.get("display_name", k),
+        }
+        for k, v in MODEL_REGISTRY.items()
+    ]
+    # Optional: Sort (first OpenAI, then Anthropic, then others), then by name
+    available_models.sort(key=lambda m: (m["provider"], m["key"]))
+
+    return render_template(
+        "chat.html",
+        available_models=available_models,
+        default_model=DEFAULT_MODEL_KEY,
+        selected_model=selected_model,
+    )
 
 
 @chat.route("/chat")

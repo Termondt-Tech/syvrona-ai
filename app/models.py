@@ -178,6 +178,109 @@ class NotificationRead(db.Model):
     archived = db.Column(db.Boolean, default=False, nullable=False)
 
 
+# Association table for ordered prompts in chains
+chain_prompts = db.Table(
+    "chain_prompts",
+    db.Column(
+        "chain_id",
+        db.Integer,
+        db.ForeignKey("prompt_chain.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "prompt_id",
+        db.Integer,
+        db.ForeignKey("prompt.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column("position", db.Integer, nullable=False),  # order in chain
+)
+
+
+class Prompt(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    body = db.Column(db.Text, nullable=False)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
+    is_staff = db.Column(db.Boolean, default=False, nullable=False)
+    approved = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(tz=UTC),
+        onupdate=lambda: datetime.now(tz=UTC),
+    )
+
+    user = db.relationship("User", backref="prompts")
+    tags = db.relationship("Tag", secondary="prompt_tags", backref="prompts")
+
+
+class PromptChain(db.Model):
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(
+        db.Integer, db.ForeignKey("user.id", ondelete="CASCADE"), nullable=False
+    )
+    title = db.Column(db.String(100), nullable=False)
+    description = db.Column(db.String(255), nullable=True)
+    is_public = db.Column(db.Boolean, default=False, nullable=False)
+    is_staff = db.Column(db.Boolean, default=False, nullable=False)
+    approved = db.Column(db.Boolean, default=True, nullable=False)
+    created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
+    updated_at = db.Column(
+        db.DateTime,
+        default=lambda: datetime.now(tz=UTC),
+        onupdate=lambda: datetime.now(tz=UTC),
+    )
+
+    user = db.relationship("User", backref="prompt_chains")
+    prompts = db.relationship(
+        "Prompt",
+        secondary=chain_prompts,
+        order_by=chain_prompts.c.position,
+        backref="chains",
+    )
+    tags = db.relationship("Tag", secondary="chain_tags", backref="prompt_chains")
+
+
+# Association table for prompt tags
+prompt_tags = db.Table(
+    "prompt_tags",
+    db.Column(
+        "prompt_id",
+        db.Integer,
+        db.ForeignKey("prompt.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+# Optional: separate tags for chains
+chain_tags = db.Table(
+    "chain_tags",
+    db.Column(
+        "chain_id",
+        db.Integer,
+        db.ForeignKey("prompt_chain.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+    db.Column(
+        "tag_id",
+        db.Integer,
+        db.ForeignKey("tag.id", ondelete="CASCADE"),
+        primary_key=True,
+    ),
+)
+
+
 def create_conversation(user_id, title=None):
     new_conversation = Conversation(user_id=user_id, title=title)
     db.session.add(new_conversation)

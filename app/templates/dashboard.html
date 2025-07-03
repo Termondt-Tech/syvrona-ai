@@ -54,7 +54,7 @@
             <div>No recent conversations yet.</div>
             {% endif %}
         </section>
-         <!-- Recent Tags -->
+        <!-- Recent Tags -->
         <section class="dashboard-card tags">
             <h2>Recent Tags</h2>
             {% if recent_tags %}
@@ -68,6 +68,28 @@
             {% endif %}
             {% else %}
             <div class="empty-message">No tags yet.</div>
+            {% endif %}
+        </section>
+
+        <!-- Recent Prompts -->
+        <section class="dashboard-card prompts">
+            <h2>Recent Prompts</h2>
+            {% if recent_prompts %}
+            <ul>
+                {% for prompt in recent_prompts %}
+                <li>
+                    {{ prompt.title|e }}
+                    {% if prompt.updated_at %}
+                    <span class="prompt-date">{{ prompt.updated_at.strftime('%Y-%m-%d') }}</span>
+                    {% endif %}
+                    <a href="{{ url_for('prompt.use_prompt', prompt_id=prompt.id) }}">Use</a>
+                    <a href="{{ url_for('prompt.edit_prompt', prompt_id=prompt.id) }}">Edit</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('prompt.prompt_list') }}" class="btn-link">View All</a>
+            {% else %}
+            <div>No saved prompts yet.</div>
             {% endif %}
         </section>
 

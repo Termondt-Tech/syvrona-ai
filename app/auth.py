@@ -18,6 +18,7 @@ from app.models import (
     Message,
     Notification,
     NotificationRead,
+    Prompt,
     Tag,
     Ticket,
     User,
@@ -550,6 +551,13 @@ def dashboard_view():
     subscription_status = getattr(current_user, "subscription_status", None)
     subscription_plan = getattr(current_user, "subscription_plan", None)
 
+    recent_prompts = (
+        Prompt.query.filter_by(user_id=current_user.id)
+        .order_by(Prompt.updated_at.desc())
+        .limit(5)
+        .all()
+    )
+
     return render_template(
         "dashboard.html",
         recent_convos=recent_convos,
@@ -562,6 +570,7 @@ def dashboard_view():
         price_labels=PRICE_LABELS,
         recent_tags=recent_tags,
         tags_count=tags_count,
+        recent_prompts=recent_prompts,
     )
 
 

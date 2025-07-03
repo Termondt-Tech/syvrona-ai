@@ -1,15 +1,19 @@
 {% extends "base.html" %}
 {% block header %}
 <title>My Conversations – Syvrona</title>
+<meta name="description" content="View and manage your conversations with Syvrona.">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/conversation.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/pagination.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/searchbar.css') }}">
+
 {% endblock %}
 
 {% block content %}
 <main class="main-content">
     <h1 class="main-title">My Conversations</h1>
     {% include "_flash.html" %}
-    <form class="conversation-search-row" method="GET" action="{{ url_for('chat.conversations') }}">
-        <input type="text" name="q" id="conversation-search" class="conversation-search-input"
+    <form class="search-row" method="GET" action="{{ url_for('chat.conversations') }}">
+        <input type="text" name="q" id="conversation-search" class="search-input"
             placeholder="Search messages…" autocomplete="off" value="{{ search_query|e }}" aria-label="Search messages">
         <button type="submit" class="btn btn-small">Search</button>
         {% if search_query %}
