@@ -19,6 +19,7 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/flash.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/footer.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
 
 </head>
 
@@ -50,7 +51,7 @@
                             <a href="{{ url_for('chat.new_chat') }}">Chat</a>
                             <a href="{{ url_for('chat.conversations') }}">Conversations</a>
                             <a href="{{ url_for('chat.my_tags') }}">Tags</a>
-                            <a href="{{ url_for('prompt.prompt_list') }}">Prompts</a>
+                            <a href="{{ url_for('prompt.prompt_list') }}">Prompt Builder</a>
                         </div>
                     </div>
                     {% endif %}

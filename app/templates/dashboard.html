@@ -3,6 +3,7 @@
 {% block header %}
 <title>Dashboard – Syvrona</title>
 <link rel="stylesheet" href="{{ url_for('static', filename='css/dashboard.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
 {% endblock %}
 
 {% block content %}
@@ -54,22 +55,59 @@
             <div>No recent conversations yet.</div>
             {% endif %}
         </section>
-        <!-- Recent Tags -->
+        <!-- Tags section: updated for convo, prompt, and chain tags -->
         <section class="dashboard-card tags">
             <h2>Recent Tags</h2>
-            {% if recent_tags %}
-            <div class="tag-list">
-                {% for tag in recent_tags %}
-                <a href="{{ url_for('chat.my_tags', tag=tag.name) }}" class="tag-badge">{{ tag.name }}</a>
-                {% endfor %}
+            {% if recent_convo_tags or recent_prompt_tags or recent_chain_tags %}
+            <div class="tag-types-list">
+                {% if recent_convo_tags %}
+                <div class="tag-type-group">
+                    <div class="tag-type-label">Chat Tags</div>
+                    <div class="tag-list">
+                        {% for tag, count in recent_convo_tags %}
+                        <a href="{{ url_for('chat.tagged_messages', tag_id=tag.id) }}" class="tag-badge tag-badge-convo"
+                            title="{{ count }} messages">
+                            {{ tag.name }} <span class="tag-count tag-count-badge">{{ count }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if recent_prompt_tags %}
+                <div class="tag-type-group">
+                    <div class="tag-type-label">Prompt Tags</div>
+                    <div class="tag-list">
+                        {% for tag, count in recent_prompt_tags %}
+                        <a href="{{ url_for('prompt.tagged_prompts', tag_id=tag.id) }}"
+                            class="tag-badge tag-badge-prompt" title="{{ count }} prompts">
+                            {{ tag.name }} <span class="tag-count tag-count-badge">{{ count }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
+                {% if recent_chain_tags %}
+                <div class="tag-type-group">
+                    <div class="tag-type-label">Chain Tags</div>
+                    <div class="tag-list">
+                        {% for tag, count in recent_chain_tags %}
+                        <a href="{{ url_for('chain.tagged_chains', tag_id=tag.id) }}" class="tag-badge tag-badge-chain"
+                            title="{{ count }} chains">
+                            {{ tag.name }} <span class="tag-count tag-count-badge">{{ count }}</span>
+                        </a>
+                        {% endfor %}
+                    </div>
+                </div>
+                {% endif %}
             </div>
-            {% if tags_count > recent_tags|length %}
+            {% if tags_count > (recent_convo_tags|length + recent_prompt_tags|length + recent_chain_tags|length) %}
             <a href="{{ url_for('chat.my_tags') }}" class="btn-link">View All Tags</a>
             {% endif %}
             {% else %}
             <div class="empty-message">No tags yet.</div>
             {% endif %}
         </section>
+
 
         <!-- Recent Prompts -->
         <section class="dashboard-card prompts">
@@ -90,6 +128,27 @@
             <a href="{{ url_for('prompt.prompt_list') }}" class="btn-link">View All</a>
             {% else %}
             <div>No saved prompts yet.</div>
+            {% endif %}
+        </section>
+
+        <!-- Recent Prompt Chains section: -->
+        <section class="dashboard-card chains">
+            <h2>Recent Prompt Chains</h2>
+            {% if recent_chains %}
+            <ul>
+                {% for chain in recent_chains %}
+                <li>
+                    <strong>{{ chain.title|e }}</strong>
+                    <span class="chain-date">{{ chain.updated_at.strftime('%Y-%m-%d') if chain.updated_at else 'N/A'
+                        }}</span>
+                    <a href="{{ url_for('chain.run_chain', chain_id=chain.id) }}">Run</a>
+                    <a href="{{ url_for('chain.edit_chain', chain_id=chain.id) }}">Edit</a>
+                </li>
+                {% endfor %}
+            </ul>
+            <a href="{{ url_for('chain.chain_list') }}" class="btn-link">View All</a>
+            {% else %}
+            <div>No saved prompt chains yet.</div>
             {% endif %}
         </section>
 

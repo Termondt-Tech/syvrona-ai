@@ -1,0 +1,8 @@
+<div class="module-tabs">
+    <a href="{{ url_for('prompt.prompt_list') }}" class="module-tab {% if active_tab == 'prompts' %}active{% endif %}">
+        Prompts
+    </a>
+    <a href="{{ url_for('chain.chain_list') }}" class="module-tab {% if active_tab == 'chains' %}active{% endif %}">
+        Chains
+    </a>
+</div>

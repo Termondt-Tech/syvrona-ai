@@ -1,15 +1,11 @@
-{% extends "base.html" %}
+{% extends "prompt_module_base.html" %}
 
-{% block header %}
-<title>Use Prompt – Syvrona</title>
-<meta name="description" content="Use an existing prompt for Syvrona." />
-{% endblock %}
 
-{% block content %}
-<main class="form-container">
+
+{% block module_content %}
     <h1 class="form-title">Refine Your Prompt</h1>
     {% include "_flash.html" %}
-
+<div class="form-panel">
     <form method="POST" autocomplete="off">
         <div class="form-group">
             <label for="body">Edit your prompt before starting chat:</label>
@@ -35,5 +31,6 @@
             #}
         </div>
     </form>
-</main>
+    </div>
+
 {% endblock %}

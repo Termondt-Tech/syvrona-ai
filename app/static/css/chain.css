@@ -1,0 +1,176 @@
+/* --- chain.css: for chain create/edit UX --- */
+
+.chain-steps-widget {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 2.2rem;
+    margin-bottom: 2.1em;
+    margin-top: 0.4em;
+}
+.available-prompts {
+    flex: 1 1 380px;
+    min-width: 340px;
+    max-width: 460px;
+    /* Keep your background, border, etc. here */
+}
+
+.available-prompts .search-input {
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.selected-prompts {
+    flex: 2 1 320px;
+    min-width: 240px;
+    max-width: 500px;
+}
+.chain-step-dragging {
+    background: #dbeafe !important;
+    opacity: 0.75;
+}
+
+#prompt-search {
+    width: 100%;
+    padding: 0.52em 0.95em;
+    border: 1px solid #cbd5e1;
+    border-radius: 6px;
+    margin-bottom: 1em;
+    font-size: 1em;
+    background: #f7fafc;
+}
+.prompt-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    max-height: 260px;
+    overflow-y: auto;
+    border: 1px solid #e0e0e0;
+    border-radius: 8px;
+    background: #fbfcfd;
+    box-shadow: 0 1px 4px 0 rgba(90,110,130,0.03);
+}
+.prompt-list-item {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 0.65em 1em;
+    border-bottom: 1px solid #f1f5f9;
+    gap: 1em;
+    font-size: 1.01em;
+}
+.prompt-list-item:last-child {
+    border-bottom: none;
+}
+.prompt-list-item .prompt-title {
+    font-weight: 500;
+    color: #1a253c;
+    margin-right: 0.6em;
+}
+.prompt-list-item .prompt-desc {
+    color: #7a869a;
+    font-size: 0.98em;
+    margin-right: 1.2em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 120px;
+}
+.prompt-list-item .add-step-btn {
+    margin-left: auto;
+}
+
+.added-to-chain {
+    opacity: 0.42;
+    pointer-events: none;
+    background: #e7eef8 !important;
+}
+
+.selected-prompts label {
+    font-weight: 500;
+    margin-bottom: 0.4em;
+}
+.chain-steps-list {
+    list-style-type: decimal;
+    padding-left: 1.3em;
+    margin-top: 0.4em;
+}
+.chain-step-item {
+    background: #f7fafc;
+    border: 1px solid #e2e8f0;
+    border-radius: 8px;
+    display: flex;
+    align-items: center;
+    gap: 0.85em;
+    margin-bottom: 0.55em;
+    padding: 0.55em 0.95em;
+    font-size: 1.04em;
+    box-shadow: 0 2px 7px rgba(60,80,130,0.05);
+    transition: background 0.18s, box-shadow 0.18s;
+}
+.chain-step-item .prompt-title {
+    font-weight: 500;
+    color: #334155;
+    margin-right: 1em;
+    flex: 1;
+}
+.chain-step-item button {
+    margin: 0 2px;
+}
+.chain-step-item .btn-order-up,
+.chain-step-item .btn-order-down {
+    color: #305d8a;
+    background: #e8f1fa;
+    border: 1px solid #bad1e7;
+    border-radius: 7px;
+    font-size: 1.07em;
+    padding: 0.2em 0.55em;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.chain-step-item .btn-order-up:hover,
+.chain-step-item .btn-order-down:hover {
+    background: #d6e6f6;
+}
+.chain-step-item .remove-step-btn {
+    color: #d12828;
+    background: #ffecec;
+    border: 1px solid #f7c6c6;
+    border-radius: 7px;
+    font-size: 1.08em;
+    padding: 0.18em 0.68em;
+    cursor: pointer;
+    margin-left: 0.5em;
+    transition: background 0.17s;
+}
+.chain-step-item .remove-step-btn:hover {
+    background: #ffdbdb;
+}
+
+.chain-steps-hint {
+    color: #6e7fa3;
+    font-size: 0.98em;
+    margin-top: 0.3em;
+    margin-bottom: 1.1em;
+}
+
+@media (max-width: 820px) {
+    .chain-steps-widget {
+        flex-direction: column;
+        gap: 1.5rem;
+    }
+    .selected-prompts, .available-prompts {
+        min-width: 90vw;
+        max-width: 99vw;
+    }
+}
+
+@media (max-width: 500px) {
+    .chain-step-item {
+        flex-wrap: wrap;
+        padding: 0.48em 0.5em;
+        font-size: 0.99em;
+    }
+    .prompt-list-item .prompt-desc {
+        display: none;
+    }
+}

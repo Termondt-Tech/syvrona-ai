@@ -4,6 +4,7 @@
 <title>Chat – Syvrona</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
 {% endblock %}
 
 
@@ -14,7 +15,7 @@
         {% for msg in messages %}
         <div class="{{ msg.role }}-message" data-msg-id="{{ msg.id }}">
             <strong>{{ msg.role.capitalize() }}:</strong>
-            <div class="msg-content">{{ msg.content }}</div>
+            <div class="msg-content" data-role="{{ msg.role }}">{{ msg.content }}</div>
             <span class="model-label">{{ msg.model }}</span>
             <!-- Tag pills -->
             <div class="tag-list">
@@ -164,8 +165,22 @@
 
     // Convert all previous message content from markdown to HTML
     document.querySelectorAll('.msg-content').forEach(el => {
-        el.innerHTML = marked.parse(el.textContent);
+        const role = el.dataset.role;
+        if (role === "assistant") {
+            // Render markdown
+            el.innerHTML = marked.parse(el.textContent);
+        } else {
+            // Render as code, PRESERVE ALL CHARACTERS
+            // Use textContent to avoid all HTML/entity escaping problems
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            code.textContent = el.textContent; // Not innerHTML!
+            pre.appendChild(code);
+            el.innerHTML = ''; // Clear
+            el.appendChild(pre);
+        }
     });
+
 
     // Event delegation for add-tag-btn
     document.getElementById('body').addEventListener('click', function (e) {

@@ -85,6 +85,10 @@ def create_app(config=None):
 
     app.register_blueprint(prompt_blueprint)
 
+    from .chain import chain_bp as chain_blueprint
+
+    app.register_blueprint(chain_blueprint)
+
     from .knowledge_base import knowledge_bp as knowledge_blueprint
 
     app.register_blueprint(knowledge_blueprint)

@@ -1,0 +1,15 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>Prompt Builder – Syvrona</title>
+<meta name="description" content="Build and organize your prompts and chains in Syvrona.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/module-tabs.css') }}">
+{% block module_header %}{% endblock %}
+{% endblock %}
+{% block content %}
+<main class="{% block main_class %}main-content main-content-wide{% endblock %}">
+    {% include "_prompt_builder_tabs.html" %}
+    {% block module_content %}{% endblock %}
+</main>
+
+{% endblock %}

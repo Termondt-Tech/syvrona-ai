@@ -19,10 +19,13 @@ from app.models import (
     Notification,
     NotificationRead,
     Prompt,
+    PromptChain,
     Tag,
     Ticket,
     User,
     message_tags,
+    prompt_tags,
+    chain_tags,
 )
 import logging
 from app import hcaptcha
@@ -526,37 +529,72 @@ def dashboard_view():
         .limit(3)
         .all()
     )
-    # Get the recent tags (by most recently used in a message)
-    recent_tags = (
-        db.session.query(Tag)
-        .join(message_tags, Tag.id == message_tags.c.tag_id)
-        .join(Message, Message.id == message_tags.c.message_id)
-        .join(Conversation, Conversation.id == Message.conversation_id)
-        .filter(Conversation.user_id == current_user.id)
-        .order_by(db.func.max(Message.created_at).desc())
-        .group_by(Tag.id)
-        .limit(5)
-        .all()
-    )
-    tags_count = (
-        db.session.query(db.func.count(db.distinct(Tag.id)))
-        .join(message_tags, Tag.id == message_tags.c.tag_id)
-        .join(Message, Message.id == message_tags.c.message_id)
-        .join(Conversation, Conversation.id == Message.conversation_id)
-        .filter(Conversation.user_id == current_user.id)
-        .scalar()
-    )
 
-    # Account info
-    subscription_status = getattr(current_user, "subscription_status", None)
-    subscription_plan = getattr(current_user, "subscription_plan", None)
-
+    # Recent prompts (last 5)
     recent_prompts = (
         Prompt.query.filter_by(user_id=current_user.id)
         .order_by(Prompt.updated_at.desc())
         .limit(5)
         .all()
     )
+
+    # Recent chains (last 5)
+    recent_chains = (
+        PromptChain.query.filter_by(user_id=current_user.id)
+        .order_by(PromptChain.updated_at.desc())
+        .limit(5)
+        .all()
+    )
+
+    # Tags recently used in conversations/messages
+    recent_convo_tags = (
+        db.session.query(Tag, db.func.count(Message.id).label("msg_count"))
+        .join(message_tags, Tag.id == message_tags.c.tag_id)
+        .join(Message, Message.id == message_tags.c.message_id)
+        .join(Conversation, Conversation.id == Message.conversation_id)
+        .filter(Conversation.user_id == current_user.id)
+        .group_by(Tag.id)
+        .order_by(db.func.max(Message.created_at).desc())
+        .limit(5)
+        .all()
+    )
+
+    # Tags recently used on prompts
+    recent_prompt_tags = (
+        db.session.query(Tag, db.func.count(Prompt.id).label("prompt_count"))
+        .join(prompt_tags, Tag.id == prompt_tags.c.tag_id)
+        .join(Prompt, Prompt.id == prompt_tags.c.prompt_id)
+        .filter(Prompt.user_id == current_user.id)
+        .group_by(Tag.id)
+        .order_by(db.func.max(Prompt.updated_at).desc())
+        .limit(5)
+        .all()
+    )
+
+    # Tags recently used on chains
+    recent_chain_tags = (
+        db.session.query(Tag, db.func.count(PromptChain.id).label("chain_count"))
+        .join(chain_tags, Tag.id == chain_tags.c.tag_id)
+        .join(PromptChain, PromptChain.id == chain_tags.c.chain_id)
+        .filter(PromptChain.user_id == current_user.id)
+        .group_by(Tag.id)
+        .order_by(db.func.max(PromptChain.updated_at).desc())
+        .limit(5)
+        .all()
+    )
+
+    # Total tags (dedupe)
+    tags_count = (
+        db.session.query(db.func.count(db.distinct(Tag.id)))
+        .outerjoin(message_tags, Tag.id == message_tags.c.tag_id)
+        .outerjoin(prompt_tags, Tag.id == prompt_tags.c.tag_id)
+        .outerjoin(chain_tags, Tag.id == chain_tags.c.tag_id)
+        .filter((Tag.user_id == current_user.id))
+        .scalar()
+    )
+
+    subscription_status = getattr(current_user, "subscription_status", None)
+    subscription_plan = getattr(current_user, "subscription_plan", None)
 
     return render_template(
         "dashboard.html",
@@ -568,9 +606,12 @@ def dashboard_view():
         subscription_plan=subscription_plan,
         unread_notifications_list=unread_notifications_list,
         price_labels=PRICE_LABELS,
-        recent_tags=recent_tags,
-        tags_count=tags_count,
         recent_prompts=recent_prompts,
+        recent_chains=recent_chains,
+        recent_convo_tags=recent_convo_tags,
+        recent_prompt_tags=recent_prompt_tags,
+        recent_chain_tags=recent_chain_tags,
+        tags_count=tags_count,
     )
 
 

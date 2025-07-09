@@ -1,3 +1,11 @@
+/* ==========================================================================
+   tags.css - Tag and badge layout/appearance for Syvrona
+   --------------------------------------------------------------------------
+   NOTE: Do not duplicate tag-related styles in other CSS files.
+   All tag, pill, and badge visuals live here.
+   ========================================================================== */
+
+/* --- No Tags (Empty State) --- */
 .no-tags-guidance {
     background: #f7fafc;
     border: 1px solid #e0e0e0;
@@ -9,147 +17,15 @@
     font-size: 1.09rem;
     text-align: center;
 }
-
 .no-tags-guidance strong {
     color: #222;
     font-size: 1.13rem;
     display: block;
     margin-bottom: 0.4rem;
 }
-
-.tag-list-container {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 1rem;
-    justify-content: flex-start;
-}
-
-.tag-item {
-    background: #eef6fb;
-    border: 1px solid #c4e1f8;
-    border-radius: 7px;
-    padding: 0.6rem 1rem;
-    font-size: 1rem;
-    display: flex;
-    align-items: center;
-    gap: 0.8em;
-}
-
-.tag-label {
-    font-weight: 500;
-    color: #1877b2;
-    padding-right: 0.5em;
-}
-
-.tag-count {
-    color: #666;
-    font-size: 0.98em;
-}
-
-.tagged-messages-page {
-    max-width: 700px;
-    margin: 0 auto;
-}
-
-.tag-pill {
-    display: inline-block;
-    padding: 0.3em 1em;
-    border-radius: 16px;
-    background: #eef2fb;
-    color: #183153;
-    border: 1px solid #dbeafe;
-    font-weight: 500;
-    font-size: 1em;
-    text-decoration: none !important;
-}
-.tag-pill:hover, .tag-pill:focus {
-    background: #dbeafe;
-    color: #174479;
-    text-decoration: none !important;   /* Remove underline on hover/focus too */
-    outline: none;
-}
-
-.message-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-}
-
-.message-card {
-    margin-bottom: 1.5em;
-    background: #f7fafc;
-    border: 1px solid #e2e8f0;
-    border-radius: 10px;
-    padding: 1.2em 1.3em;
-    box-shadow: 0 2px 8px 0 rgba(60,80,130,0.06);
-}
-
-.message-meta {
-    display: flex;
-    align-items: center;
-    gap: 1em;
-    font-size: 0.98em;
-    margin-bottom: 0.55em;
-    color: #4954ac;
-}
-
-.msg-role {
-    font-weight: 500;
-    color: #4954ac;
-}
-.msg-date {
-    color: #718096;
-}
-.meta-sep {
-    color: #bbb;
-}
-.msg-convo {
-    color: #46505a;
-}
-.msg-convo a {
-    color: #314f7c;
-    text-decoration: underline;
-    font-weight: 500;
-}
-
-.msg-content-preview {
-    font-size: 1.08em;
-    color: #1a253c;
-    white-space: pre-line;
-}
-
-.no-messages {
-    margin-top: 2.2em;
-    padding: 2em 1em;
-    text-align: center;
-    color: #444;
-    background: #f8fafc;
-    border-radius: 10px;
-    border: 1px solid #e2e8f0;
-}
-.no-messages .tip {
-    font-size: 0.97em;
-    color: #778;
-    margin-top: 0.6em;
-}
-/* Extra margin at top when no tags exist */
-.extra-margin-top {
-    margin-top: 2rem;
-}
-
-/* Style for no-tags message */
-.no-tags-msg {
-    font-size: 1.15em;
-    margin-bottom: 0.5em;
-}
-
-/* Style for instructions under no-tags */
-.no-tags-instructions {
-    color: #46505a;
-    font-size: 1em;
-}
-
-/* Style for plus icon in instructions */
+.extra-margin-top { margin-top: 2rem; }
+.no-tags-msg { font-size: 1.15em; margin-bottom: 0.5em; }
+.no-tags-instructions { color: #46505a; font-size: 1em; }
 .plus-icon {
     border: 1px solid #bbb;
     padding: 0 0.3em;
@@ -157,35 +33,160 @@
     background: #f9f9f9;
     font-weight: 500;
 }
-
-/* UL for instructions (adds left indent) */
 .no-tags-list {
     margin: 0.5em 0 0 1.3em;
-    padding-left: 0; /* Reset if browser default interferes */
+    padding-left: 0;
 }
 
-/* List for tags */
+/* --- Tag Layout Container --- */
 .tag-list {
     list-style: none;
     padding: 0;
     margin-top: 2rem;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.75em 1em;    /* row gap, column gap */
+    align-items: flex-start;
+}
+.tag-list-item { margin: 0; }
+
+/* --- Tag Pills and Badges (Unified Appearance) --- */
+.tag-pill,
+.tag-badge {
+    display: inline-flex;
+    align-items: center;
+    border-radius: 14px;
+    padding: 0.15em 0.8em 0.15em 0.7em;
+    font-size: 0.93em;
+    font-weight: 500;
+    text-decoration: none !important;
+    margin-right: 0.3em;
+    box-shadow: 0 1px 2px rgba(60,90,170,0.05);
+    border: 1px solid #dbeafe;
+    transition: background 0.2s, color 0.2s;
+    cursor: pointer;
+    background: linear-gradient(90deg, #e0e7ff 80%, #c7d2fe 100%);
+    color: #3730a3;
+}
+.tag-pill:hover, .tag-pill:focus,
+.tag-badge:hover, .tag-badge:focus {
+    background: #dbeafe;
+    color: #174479;
+    outline: none;
+}
+.tag-badge .tag-count,
+.tag-pill .tag-count {
+    margin-left: 0.6em;
 }
 
-/* Each tag list item */
-.tag-list-item {
-    margin-bottom: 0.75em;
-}
+/* --- Tag Type Coloring for Dashboard/Sections --- */
+.tag-badge-convo   { background: linear-gradient(90deg, #eef6fb 80%, #c6dfff 100%); color: #2158b7; border-color: #c7d5ec; }
+.tag-badge-prompt  { background: linear-gradient(90deg, #fef9c3 80%, #fde68a 100%); color: #b58105; border-color: #fff7d6; }
+.tag-badge-chain   { background: linear-gradient(90deg, #e0f7fa 80%, #b2f2ef 100%); color: #00796b; border-color: #e0f7fa; }
 
-/* Style for tag-count badge in tag pill */
+/* --- Tag Count Badge (inside pills/badges) --- */
 .tag-count-badge {
     background: #c7d5ec;
     color: #314f7c;
     font-size: 0.95em;
     padding: 0.1em 0.5em;
     border-radius: 12px;
-    margin-left: 0.7em;
+    margin-left: 0.6em;
+    border: 1px solid #dde;
+}
+.tag-count-badge.tag-count-prompt { background: #fff7d6; color: #b58105; }
+.tag-count-badge.tag-count-chain { background: #e0f7fa; color: #00796b; }
+
+/* --- Tag Removal Button --- */
+.tag-pill .remove-tag {
+    margin-left: 0.6em;
+    font-weight: bold;
+    cursor: pointer;
+    font-size: 1.15em;
+    transition: color 0.12s;
+}
+.tag-pill .remove-tag:hover,
+.tag-pill .remove-tag:focus {
+    color: #e8202e;
 }
 
+/* --- Add Tag Button/Input (if used) --- */
+.add-tag-btn {
+    background: #e5e7eb;
+    color: #6366f1;
+    border-radius: 50%;
+    width: 1.6em;
+    height: 1.6em;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    font-size: 1.2em;
+}
+.tag-input {
+    border: 1px solid #a5b4fc;
+    border-radius: 8px;
+    margin-top: 0.2em;
+    padding: 0.2em 0.7em;
+    min-width: 90px;
+    font-size: 1em;
+    background: #f7fafc;
+    outline: none;
+}
+.tag-input:focus { background: #e7f2fa; }
+
+/* --- Tag Suggestions (autocomplete, if used) --- */
+.tag-suggestions {
+    position: absolute;
+    background: #fff;
+    border: 1px solid #a5b4fc;
+    border-radius: 8px;
+    margin-top: 2px;
+    z-index: 100;
+    min-width: 120px;
+    max-width: 240px;
+    box-shadow: 0 2px 8px rgba(0,0,0,0.12);
+    padding: 0;
+    font-size: 0.95em;
+}
+.tag-suggestion-item {
+    padding: 6px 16px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+.tag-suggestion-item.active,
+.tag-suggestion-item:hover {
+    background: #eef2ff;
+    color: #3730a3;
+    font-weight: bold;
+}
+
+/* --- Tag Types Group/Label (for dashboard sections) --- */
+.tag-type-label {
+    font-size: 0.98em;
+    font-weight: 600;
+    color: #666;
+    margin-bottom: 0.1em;
+}
+.tag-types-list {
+    display: flex;
+    flex-direction: column;
+    gap: 0.8em;
+}
+.tag-type-group .tag-list {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.6em;
+    margin-bottom: 0.2em;
+}
+
+/* --- Page-specific constraints (e.g., tagged-messages-page) --- */
+.tagged-messages-page {
+    max-width: 700px;
+    margin: 0 auto;
+}
+
+/* --- Responsive Adjustments --- */
 @media (max-width: 600px) {
     .tagged-messages-page {
         max-width: 99vw;
@@ -193,5 +194,12 @@
     }
     .message-card {
         padding: 1em 0.6em;
+    }
+    .tag-list {
+        gap: 0.35em 0.5em;
+    }
+    .tag-pill, .tag-badge {
+        font-size: 0.91em;
+        padding: 0.12em 0.6em 0.12em 0.5em;
     }
 }

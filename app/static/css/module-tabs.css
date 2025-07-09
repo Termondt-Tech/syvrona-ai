@@ -1,0 +1,24 @@
+.module-tabs {
+    display: flex;
+    gap: 1.3em;
+    border-bottom: 2px solid #e6e7f0;
+    margin-bottom: 1.8em;
+    margin-top: 0.2em;
+}
+.module-tab {
+    font-size: 1.12em;
+    color: #6b7280;
+    padding: 0.7em 1.3em 0.6em 1.3em;
+    text-decoration: none;
+    border-bottom: 3px solid transparent;
+    transition: color 0.18s, border-color 0.18s;
+}
+.module-tab.active, .module-tab:focus {
+    color: #3730a3;
+    border-bottom: 3px solid #6366f1;
+    font-weight: 600;
+    background: #f7fafc;
+}
+.module-tab:hover {
+    color: #4338ca;
+}

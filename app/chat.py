@@ -28,7 +28,8 @@ from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY
 
 from . import db
 
-from app.models import Message, Tag, message_tags, Conversation
+from app.models import Message, Prompt, PromptChain, Tag, message_tags, Conversation
+from app.models import prompt_tags, chain_tags
 
 chat = Blueprint("chat", __name__)
 
@@ -106,18 +107,65 @@ def remove_tag_from_message(msg_id, tag_id):
 @require_active_subscription
 def my_tags():
     user_id = current_user.get_id()
-    # Get all tags used by this user's messages, plus usage count
-    tags = (
-        db.session.query(Tag, db.func.count(Message.id).label("msg_count"))
-        .join(message_tags, Tag.id == message_tags.c.tag_id)
+    TagObj = Tag  # Just for clarity
+
+    # Message tag count
+    msg_counts = (
+        db.session.query(TagObj.id, db.func.count(Message.id))
+        .join(message_tags, TagObj.id == message_tags.c.tag_id)
         .join(Message, Message.id == message_tags.c.message_id)
         .join(Conversation, Conversation.id == Message.conversation_id)
         .filter(Conversation.user_id == user_id)
-        .group_by(Tag.id)
-        .order_by(db.func.count(Message.id).desc(), Tag.name.asc())
+        .group_by(TagObj.id)
         .all()
     )
-    return render_template("my_tags.html", tags=tags)
+    # Prompt tag count
+    prompt_counts = (
+        db.session.query(TagObj.id, db.func.count(Prompt.id))
+        .join(prompt_tags, TagObj.id == prompt_tags.c.tag_id)
+        .join(Prompt, Prompt.id == prompt_tags.c.prompt_id)
+        .filter(Prompt.user_id == user_id)
+        .group_by(TagObj.id)
+        .all()
+    )
+    # Chain tag count
+    chain_counts = (
+        db.session.query(TagObj.id, db.func.count(PromptChain.id))
+        .join(chain_tags, TagObj.id == chain_tags.c.tag_id)
+        .join(PromptChain, PromptChain.id == chain_tags.c.chain_id)
+        .filter(PromptChain.user_id == user_id)
+        .group_by(TagObj.id)
+        .all()
+    )
+
+    # Gather all tags belonging to user (even unused, if desired)
+    user_tags = (
+        TagObj.query.filter_by(user_id=user_id).order_by(TagObj.name.asc()).all()
+    )
+
+    # Compose dicts for fast lookup
+    msg_map = dict(msg_counts)
+    prompt_map = dict(prompt_counts)
+    chain_map = dict(chain_counts)
+
+    # Compose final tag list
+    tags_data = []
+    for tag in user_tags:
+        tags_data.append(
+            {
+                "tag": tag,
+                "msg_count": msg_map.get(tag.id, 0),
+                "prompt_count": prompt_map.get(tag.id, 0),
+                "chain_count": chain_map.get(tag.id, 0),
+            }
+        )
+
+    # Optionally, hide tags unused everywhere:
+    tags_data = [
+        t for t in tags_data if t["msg_count"] or t["prompt_count"] or t["chain_count"]
+    ]
+
+    return render_template("my_tags.html", tags=tags_data)
 
 
 @chat.route("/tag/<int:tag_id>")
@@ -140,6 +188,31 @@ def tagged_messages(tag_id):
     )
     # Each item is a tuple: (Message, Conversation)
     return render_template("tagged_messages.html", tag=tag, messages=messages)
+
+
+@chat.route("/newtag", methods=["POST"])
+@login_required
+@require_active_subscription
+def create_tag():
+    data = request.get_json()
+    name = data.get("name", "").strip()
+    if not name:
+        return jsonify({"error": "Missing tag name"}), 400
+
+    # Case-insensitive check for existing tag for this user
+    tag = (
+        Tag.query.filter_by(user_id=current_user.id)
+        .filter(db.func.lower(Tag.name) == name.lower())
+        .first()
+    )
+    if tag:
+        # Return existing tag (idempotent)
+        return jsonify({"id": tag.id, "name": tag.name}), 200
+
+    tag = Tag(user_id=current_user.id, name=name)
+    db.session.add(tag)
+    db.session.commit()
+    return jsonify({"id": tag.id, "name": tag.name}), 201
 
 
 @chat.route("/message/<int:message_id>")

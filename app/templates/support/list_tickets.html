@@ -4,27 +4,28 @@
 <title>My Support Tickets – Syvrona</title>
 <meta name="robots" content="noindex, nofollow">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/support.css') }}">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/responsive-table.css') }}">
 {% endblock %}
 
 {% block content %}
-<main class="main-content">
+<main class="main-content main-content-wide">
     <h1 class="form-title">My Support Tickets</h1>
     {% include "_flash.html" %}
 
-    <div class="support-table-actions">
+    <div class="app-table-actions">
         <a href="{{ url_for('support.submit_ticket') }}" class="btn-primary">+ New Ticket</a>
     </div>
 
     {% if tickets %}
-    <div class="support-table-responsive">
-        <table class="support-table">
+    <div class="app-table-responsive">
+        <table class="app-table">
             <thead>
                 <tr>
                     <th>Type</th>
                     <th>Subject</th>
                     <th>Status</th>
                     <th>Last Updated</th>
-                    <th></th>
+                    <th>Actions</th>
                 </tr>
             </thead>
             <tbody>
@@ -40,7 +41,7 @@
                     <td>{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
                     <td>
                         <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}"
-                            class="support-ticket-link">View</a>
+                            class="btn btn-primary btn-sm">View</a>
                     </td>
                 </tr>
                 {% endfor %}

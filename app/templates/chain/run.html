@@ -1,0 +1,45 @@
+{% extends "prompt_module_base.html" %}
+
+{% block module_content %}
+<h1 class="form-title">Run Chain: {{ chain.title|e }}</h1>
+{% include "_flash.html" %}
+<div class="form-panel">
+    <form method="POST" class="run-chain-form" autocomplete="off">
+        <div class="form-group">
+            <label for="context">Add context or instructions for this run (optional):</label>
+            <textarea id="context" name="context" class="form-control" rows="5"
+                placeholder="(Optional) Paste data, describe the situation, or set instructions for this run..."></textarea>
+        </div>
+        <div class="form-group">
+            <label for="model">Choose model:</label>
+            <select id="model" name="model">
+                {% for model in available_models %}
+                <option value="{{ model.key }}" {% if model.key == default_model %}selected{% endif %}>{{ model.display_name }} ({{ model.provider|capitalize }})</option>
+                {% endfor %}
+            </select>
+        </div>
+        <div class="chain-meta" style="margin-bottom:1.2em;">
+            {% if chain.description %}
+            <div><strong>Description:</strong> {{ chain.description|e }}</div>
+            {% endif %}
+            <div style="margin:0.4em 0;">
+                <strong>Steps:</strong>
+                <ol class="chain-steps-list" style="margin-left:1.5em;">
+                    {% for prompt in chain.prompts %}
+                    <li>
+                        <span class="prompt-title">{{ prompt.title|e }}</span>
+                        {% if prompt.description %}
+                        <div class="prompt-desc" style="color:#64748b; font-size:0.97em;">{{ prompt.description|e }}</div>
+                        {% endif %}
+                    </li>
+                    {% endfor %}
+                </ol>
+            </div>
+        </div>
+        <div class="form-actions-row">
+            <button type="submit" class="btn btn-primary">Run Chain</button>
+            <a href="{{ url_for('chain.chain_list') }}" class="btn btn-secondary">Back to Chains</a>
+        </div>
+    </form>
+</div>
+{% endblock %}

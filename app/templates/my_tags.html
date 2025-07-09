@@ -7,30 +7,42 @@
 {% block content %}
 <main class="main-content">
     <h1 class="main-title">My Tags</h1>
-    {% if not tags %}
+   <ul class="tag-list" style="margin-top:2rem;">
+    {% for t in tags %}
+    <li class="tag-list-item">
+        <span class="tag-pill">
+            {{ t.tag.name }}
+            {% if t.msg_count %}
+                <a href="{{ url_for('chat.tagged_messages', tag_id=t.tag.id) }}" class="tag-count tag-count-badge" title="Messages">
+                    💬 {{ t.msg_count }}
+                </a>
+            {% endif %}
+            {% if t.prompt_count %}
+                <a href="{{ url_for('prompt.tagged_prompts', tag_id=t.tag.id) }}" class="tag-count tag-count-badge tag-count-prompt" title="Prompts">
+                    📝 {{ t.prompt_count }}
+                </a>
+            {% endif %}
+            {% if t.chain_count %}
+                <a href="{{ url_for('chain.tagged_chains', tag_id=t.tag.id) }}" class="tag-count tag-count-badge tag-count-chain" title="Prompt Chains">
+                    ⛓️ {{ t.chain_count }}
+                </a>
+            {% endif %}
+        </span>
+    </li>
+    {% else %}
         <div class="no-tags-guidance extra-margin-top">
             <p class="no-tags-msg">You haven’t added any tags yet.</p>
             <div class="no-tags-instructions">
                 <strong>How to use tags:</strong><br>
                 <ul class="no-tags-list">
-                  <li>Add tags to any message in your chat conversations.</li>
-                  <li>Click the <span class="plus-icon">+</span> icon next to any message, start typing, and select or create a tag.</li>
-                  <li>Tags help you organize, filter, and quickly find important messages later.</li>
+                  <li>Add tags to any message, prompt, or prompt chain.</li>
+                  <li>Tags help you organize, filter, and quickly find important content later.</li>
                 </ul>
             </div>
         </div>
-    {% else %}
-        <ul class="tag-list" style="margin-top:2rem;">
-            {% for tag, count in tags %}
-            <li class="tag-list-item">
-                <a class="tag-pill"
-                   href="{{ url_for('chat.tagged_messages', tag_id=tag.id) }}">
-                    {{ tag.name }}
-                    <span class="tag-count tag-count-badge">{{ count }}</span>
-                </a>
-            </li>
-            {% endfor %}
-        </ul>
-    {% endif %}
+    {% endfor %}
+</ul>
+
+
 </main>
 {% endblock %}

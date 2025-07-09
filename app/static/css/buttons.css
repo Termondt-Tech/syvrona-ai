@@ -1,0 +1,94 @@
+/* --- universal button styles for both <a> and <button> --- */
+.btn,
+.btn-sm,
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 6px;
+    padding: 0.5rem 1.1rem;
+    background: #e5e7eb; /* fallback color for .btn */
+    color: #1f2937;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none !important; /* important to kill link underline */
+    transition: background 0.2s, color 0.2s, box-shadow 0.15s;
+    outline: none;
+    min-width: 0;
+}
+
+.btn-sm {
+    font-size: 0.92em;
+    padding: 0.33em 0.85em;
+}
+
+/* PRIMARY button */
+.btn-primary {
+    background: #2563eb;
+    color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: #1e40af;
+    color: #fff !important;
+}
+
+/* SECONDARY button */
+.btn-secondary {
+    background: #94a3b8;
+    color: #fff !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background: #64748b;
+    color: #fff !important;
+}
+
+/* DANGER button */
+.btn-danger {
+    background: #f87171;
+    color: #fff !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background: #dc2626;
+    color: #fff !important;
+}
+
+/* Remove underline and color inheritance for <a> with button classes */
+a.btn,
+a.btn-sm,
+a.btn-primary,
+a.btn-secondary,
+a.btn-danger {
+    text-decoration: none !important;
+    color: inherit;
+    display: inline-block;
+}
+
+/* Ensure <button> and <a> have pointer cursor */
+a.btn, button.btn, input[type="submit"].btn {
+    cursor: pointer;
+}
+
+/* Add focus ring for accessibility */
+.btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* --- Style the Button Container in table actions --- */
+.app-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
+}
