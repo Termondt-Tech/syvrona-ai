@@ -1,0 +1,243 @@
+{% extends "base.html" %}
+
+{% block header %}
+<title>All Features – Syvrona AI Chat Assistant</title>
+<meta name="description"
+    content="Explore all features of Syvrona: advanced prompt builder, chaining, memory, tagging, multi-model chat, privacy, and more. See what sets Syvrona apart.">
+
+<!-- Open Graph -->
+<meta property="og:title" content="Syvrona – All Features">
+<meta property="og:site_name" content="Syvrona">
+<meta property="og:description"
+    content="Explore all features of Syvrona: advanced prompt builder, chaining, memory, tagging, multi-model chat, privacy, and more.">
+<meta property="og:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
+<meta property="og:url" content="https://syvrona.com/features">
+<meta property="og:type" content="website">
+
+<!-- Twitter Card -->
+<meta name="twitter:card" content="summary_large_image">
+<meta name="twitter:title" content="Syvrona – All Features">
+<meta name="twitter:description"
+    content="Explore all features of Syvrona: advanced prompt builder, chaining, memory, tagging, multi-model chat, privacy, and more.">
+<meta name="twitter:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
+<link rel="canonical" href="https://syvrona.com/features" />
+
+<!-- Structured Data -->
+<script type="application/ld+json">
+{
+  "@context": "https://schema.org",
+  "@type": "SoftwareApplication",
+  "name": "Syvrona",
+  "operatingSystem": "All",
+  "applicationCategory": "ChatbotApplication",
+  "description": "Syvrona is an AI-powered chat assistant with advanced prompt builder, chaining, conversational memory, multi-model support, and privacy-first design.",
+  "url": "https://syvrona.com/features",
+  "publisher": {
+    "@type": "Organization",
+    "name": "Termondt Tech LLC",
+    "url": "https://termondttech.com"
+  },
+  "offers": [
+    {%if free_trial_enabled and free_trial_days > 0 %}
+    {
+      "@type": "Offer",
+      "name": "Free Trial",
+      "price": "0",
+      "priceCurrency": "USD",
+      "description": "7-day free trial for all paid plans. Credit card required at signup. Cancel anytime during the trial and your card will not be charged.",
+      "isAccessibleForFree": false
+    },
+    {%endif %}
+    {
+      "@type": "Offer",
+      "name": "Pro Monthly",
+      "price": "9.99",
+      "priceCurrency": "USD",
+      "description": "Full-featured access, billed monthly after free trial.",
+      "priceValidUntil": "2025-12-31"
+    },
+    {
+      "@type": "Offer",
+      "name": "Pro Yearly",
+      "price": "99",
+      "priceCurrency": "USD",
+      "description": "Best value—full access, billed yearly after free trial.",
+      "priceValidUntil": "2025-12-31"
+    }
+  ]
+}
+</script>
+
+<link rel="stylesheet" href="{{ url_for('static', filename='css/feature.css') }}">
+{% endblock %}
+
+{% block content %}
+<main class="main-content main-content-wide" id="main-content">
+    <div class="main-content-narrow">
+        <h1 class="main-title">Syvrona Feature Overview</h1>
+        <p>
+            Syvrona is your all-in-one AI workspace for thinking, writing, and building repeatable workflows.
+            Discover the full suite of features that help you do more—with less effort.
+        </p>
+    </div>
+
+    <section class="feature-section">
+        <h2 class="feature-title">All Features</h2>
+        <div class="feature-cards feature-cards-wide">
+
+            <!-- Prompt Builder -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">💡</div>
+                <div>
+                    <h3 class="feature-card-title">Advanced Prompt Builder</h3>
+                    <p>
+                        Create, save, and organize your best prompts. Add rich descriptions, searchable tags, and use
+                        categories to keep everything at your fingertips.
+                    </p>
+                    <ul>
+                        <li>Rapid entry with “Create and Add Another”</li>
+                        <li>Bulk onboarding—build your library fast</li>
+                        <li>Mobile- and desktop-friendly</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Prompt Chaining -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🔗</div>
+                <div>
+                    <h3 class="feature-card-title">Prompt Chaining & Workflow</h3>
+                    <p>
+                        Link your prompts together into step-by-step chains. Run complex, multi-stage AI workflows with
+                        a single click—no manual copy-pasting.
+                    </p>
+                    <ul>
+                        <li>Drag-and-drop to reorder steps</li>
+                        <li>Re-use prompts across multiple chains</li>
+                        <li>Add context before running for custom outputs</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Conversational Memory -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🧠</div>
+                <div>
+                    <h3 class="feature-card-title">Conversational Memory</h3>
+                    <p>
+                        Syvrona remembers your conversations—so you don’t have to repeat yourself. Pick up any chat,
+                        anytime, with full context preserved.
+                    </p>
+                    <ul>
+                        <li>Resume any previous conversation instantly</li>
+                        <li>Automatic context recall</li>
+                        <li>Perfect for long-running research, writing, and projects</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Flexible AI Models -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🤖</div>
+                <div>
+                    <h3 class="feature-card-title">Flexible AI Model Selection</h3>
+                    <p>
+                        Choose the right AI for your task—OpenAI, Anthropic, and more. Easily switch models for best
+                        results in creativity, analysis, or reasoning.
+                    </p>
+                    <ul>
+                        <li>Model picker on all chat and workflow run pages</li>
+                        <li>Compare outputs across different providers</li>
+                        <li>Ready for future model expansion</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Message Tagging -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🏷️</div>
+                <div>
+                    <h3 class="feature-card-title">Tagging & Organization</h3>
+                    <p>
+                        Label, organize, and search your prompts, responses, and conversations. Use tags for project,
+                        topic, or client—never lose track again.
+                    </p>
+                    <ul>
+                        <li>Fast tagging on prompt and chain creation</li>
+                        <li>Search or filter by tag anytime</li>
+                        <li>Bulk tag management coming soon</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Conversation History -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🕑</div>
+                <div>
+                    <h3 class="feature-card-title">Conversation History & Recall</h3>
+                    <p>
+                        Instantly access and resume any past chat session. Quickly reference previous projects,
+                        research, or creative drafts.
+                    </p>
+                    <ul>
+                        <li>Chronological and searchable chat history</li>
+                        <li>One-click resume or continue</li>
+                        <li>All content private to you—never indexed by search engines</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Privacy First -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">🔒</div>
+                <div>
+                    <h3 class="feature-card-title">Privacy & Security</h3>
+                    <p>
+                        Syvrona is privacy-first. We never use your data for ads, resale, or profiling. Your work is
+                        yours, always.
+                    </p>
+                    <ul>
+                        <li>End-to-end encrypted connection (HTTPS)</li>
+                        <li>No third-party analytics or ads</li>
+                        <li>Small, independent team—no outside investors</li>
+                    </ul>
+                </div>
+            </div>
+
+            <!-- Self-Service Billing -->
+            <div class="feature-card feature-card-detailed">
+                <div class="feature-icon">💳</div>
+                <div>
+                    <h3 class="feature-card-title">Self-Service Billing</h3>
+                    <p>
+                        Upgrade, downgrade, or manage your subscription easily—no emails, no hassle. Cancel anytime from
+                        your account.
+                    </p>
+                    <ul>
+                        <li>Transparent pricing</li>
+                        <li>Download invoices for accounting</li>
+                        <li>Free trial—no charge until you’re ready</li>
+                    </ul>
+                </div>
+            </div>
+
+        </div>
+    </section>
+
+    <div class="cta-section">
+        <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Start Free Trial</a>
+        <p class="cta-subtext">
+            Experience everything Syvrona can do—risk free.
+        </p>
+    </div>
+
+    <div class="main-content-narrow">
+        <p>
+            Have questions or need something custom?
+            <a href="https://termondttech.com/form/contact" target="_blank" rel="noopener noreferrer"><strong>Contact
+                    us</strong></a> for business, enterprise, or self-hosted options.
+        </p>
+    </div>
+
+</main>
+{% endblock %}

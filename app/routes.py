@@ -39,3 +39,17 @@ def terms():
 @main.route("/sitemap.xml")
 def sitemap():
     return current_app.send_static_file("sitemap.xml")
+
+
+@main.route("/features")
+def features():
+    """
+    Render the features page.
+    """
+    free_trial_enabled = is_feature_enabled("FREE_TRIAL_ENABLED")
+    free_trial_days = get_feature_config("FREE_TRIAL_DAYS", 7)
+    return render_template(
+        "features.html",
+        free_trial_enabled=free_trial_enabled,
+        free_trial_days=free_trial_days,
+    )

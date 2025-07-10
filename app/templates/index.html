@@ -6,6 +6,7 @@
     content="Syvrona is an intelligent AI companion designed for brainstorming, writing, and deep conversation. A clean and simple interface for creators, professionals, and curious minds.">
 <!-- Open Graph -->
 <meta property="og:title" content="Syvrona – Your Personal AI Chat Assistant">
+<meta property="og:site_name" content="Syvrona">
 <meta property="og:description"
     content="Chat naturally, write better, and explore ideas with Syvrona. A smart, streamlined AI assistant for professionals, creatives, and curious minds.">
 <meta property="og:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
@@ -43,7 +44,6 @@
       "price": "0",
       "priceCurrency": "USD",
       "description": "7-day free trial for all paid plans. Credit card required at signup. Cancel anytime during the trial and your card will not be charged.",
-      "eligibleDuration": "P7D", // ISO 8601 for 7 days
       "isAccessibleForFree": false
     },
     {%endif %}
@@ -73,15 +73,19 @@
 
 
 {% block content %}
-<main class="main-content">
-    <h1 class="main-title">Welcome to Syvrona</h1>
-    <p>
-        Syvrona is your personal AI companion—designed to help you think, write, and explore ideas through natural
-        conversation.
-        Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona provides
-        a clean,
-        focused chat experience with memory support and custom enhancements.
-    </p>
+<main class="main-content main-content-wide">
+    <div class="main-content-narrow">
+
+        <h1 class="main-title">Welcome to Syvrona</h1>
+        <p>
+            Syvrona is your personal AI companion—designed to help you think, write, and explore ideas through natural
+            conversation.
+            Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona
+            provides
+            a clean,
+            focused chat experience with memory support and custom enhancements.
+        </p>
+    </div>
     {% if free_trial_enabled and free_trial_days > 0 %}
     <div class="free-trial-promo">
         <span class="promo-icon">🎉</span>
@@ -92,55 +96,79 @@
         <a href="{{ url_for('auth.signup') }}" class="btn-primary promo-btn">Try Syvrona Free</a>
     </div>
     {% endif %}
-    <p>
-        Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface—making it
-        ideal for professionals, creatives, and everyday users alike.
-    </p>
-
+    <div class="main-content-narrow">
+        <p>
+            Unlike generic chat tools, Syvrona emphasizes simplicity, user control, and a clutter-free interface—making
+            it
+            ideal for professionals, creatives, and everyday users alike.
+        </p>
+    </div>
     <!-- New: Feature Highlights -->
     <section class="feature-section">
-        <h2 class="feature-title" style="margin-top:2rem;">Key Features</h2>
-        <ul class="feature-list" style="margin-bottom:2rem;">
-            <li><strong>Conversational Memory:</strong> Continue your discussions without losing context—Syvrona
-                remembers your conversation history for a seamless experience.</li>
-            <li><strong>Flexible AI Models:</strong> Choose from the latest OpenAI and Anthropic (Claude) models for
-                creative and technical chat.</li>
-            <li><strong>Intuitive Interface:</strong> Distraction-free design focused on usability, not marketing noise
-                or endless buttons.</li>
-            <li><strong>Privacy First:</strong> What you chat about stays private. Syvrona is developed by Termondt
-                Tech—not by Big Tech, and your conversations are never sold or used for ads.</li>
-            <li><strong>Conversation History:</strong> Review your previous chats and easily resume conversations from
-                where you left off.</li>
-            <li><strong>Message Tagging & Organization:</strong> Tag both your prompts and AI responses, organize
-                information, and quickly locate key points within your chat history.</li>
-            <li><strong>Self-Service Billing:</strong> Manage your subscription, update payment methods, and handle
-                billing through a secure, user-friendly portal.</li>
-        </ul>
-    </section>
-    <div class="cta-section" style="text-align: center; margin: 2.5rem 0;">
-        <div class="cta-section" style="text-align: center; margin: 2.5rem 0;">
-            {% if free_trial_enabled and free_trial_days > 0 %}
-            <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Start Free Trial</a>
-            <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
-                No charge today. Cancel anytime during your {{ free_trial_days }}-day trial.
-            </p>
-            {% else %}
-            <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Subscribe Now</a>
-            <p style="margin-top:0.5rem; color:#6b7280; font-size:1rem; text-align: center;">
-                Start your Syvrona journey in minutes.
-            </p>
-            {% endif %}
+        <h2 class="feature-title key-features-title">Key Features</h2>
+        <div class="feature-cards">
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">💡</div>
+                <h3 class="feature-card-title">Prompt Builder</h3>
+                <p>Create, reuse, and chain prompts for advanced workflows, ideation, and rapid content creation. Build
+                    your own productivity toolkit!</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🧠</div>
+                <h3 class="feature-card-title">Conversational Memory</h3>
+                <p>Continue discussions seamlessly—Syvrona remembers context so you don’t have to.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🤖</div>
+                <h3 class="feature-card-title">Flexible AI Models</h3>
+                <p>Choose from OpenAI & Anthropic models for the right mix of creativity and technical skill.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🏷️</div>
+                <h3 class="feature-card-title">Message Tagging</h3>
+                <p>Organize, label, and search your conversations and responses for fast recall.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🔒</div>
+                <h3 class="feature-card-title">Privacy First</h3>
+                <p>Your data is private—never used for ads or sold. Syvrona is built by a small, independent team.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">🕑</div>
+                <h3 class="feature-card-title">Conversation History</h3>
+                <p>Revisit and resume any past conversation instantly.</p>
+            </div>
+            <div class="feature-card">
+                <div class="feature-icon" aria-hidden="true">💳</div>
+                <h3 class="feature-card-title">Self-Service Billing</h3>
+                <p>Manage your plan and billing details easily—no emailing support required.</p>
+            </div>
         </div>
-
+    </section>
+    <div class="cta-section">
+        {% if free_trial_enabled and free_trial_days > 0 %}
+        <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Start Free Trial</a>
+        <p class="cta-subtext">
+            No charge today. Cancel anytime during your {{ free_trial_days }}-day trial.
+        </p>
+        {% else %}
+        <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Subscribe Now</a>
+        <p class="cta-subtext">
+            Start your Syvrona journey in minutes.
+        </p>
+        {% endif %}
+    </div>
+    <div class="main-content-narrow">
         <p>
             Syvrona powers creativity and productivity for individuals and teams alike.
             Interested in advanced business, enterprise, or self-hosted options? <a
-                href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit Termondt
+                href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit
+                    Termondt
                     Tech to learn more.</strong></a>
         </p>
 
 
-
+    </div>
 
 </main>
 
