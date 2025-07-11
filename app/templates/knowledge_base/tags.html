@@ -1,0 +1,57 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Tags & Tagging – Syvrona Knowledge Base</title>
+<meta name="description" content="How to use tags to organize conversations, prompts, and chains in Syvrona.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+{% block content %}
+<main class="main-content">
+    <h1>Tags & Tagging</h1>
+    <p class="subtitle">
+        Tags help you keep conversations, prompts, and chains organized—making it easier to filter, search, and group related items.
+    </p>
+
+    <section class="kb-section">
+        <h2>Where and How Can I Use Tags?</h2>
+        <ul class="kb-list">
+            <li><strong>Conversations, Prompts, Chains:</strong> Add tags for project, topic, or workflow grouping.</li>
+            <li><strong>Messages:</strong> Tag individual chat messages (from chat or conversation view) for future reference.</li>
+        </ul>
+    </section>
+
+    <section class="kb-section">
+        <h2>How to Add/Remove Tags</h2>
+        <ol class="kb-tips">
+            <li>Look for the <strong>“+” (plus symbol)</strong> next to tags in chat, conversation view, prompt, or chain pages to add a new tag.</li>
+            <li>Remove a tag by clicking the “x” next to it on any tagged item.</li>
+            <li>Tags can be reused anywhere; removing a tag from one item does <strong>not</strong> delete the tag elsewhere.</li>
+        </ol>
+    </section>
+
+    <section class="kb-section">
+        <h2>Current Limitations</h2>
+        <ul class="kb-tips">
+            <li>You <strong>cannot</strong> rename or delete tags yet (feature in development).</li>
+            <li>You <strong>can</strong> remove a tag from anything you’ve attached it to, anytime.</li>
+        </ul>
+    </section>
+
+    <section class="kb-section">
+        <h2>FAQ</h2>
+        <dl class="faq-list">
+            <dt>Can I see all items with a tag?</dt>
+            <dd>Yes, click a tag to view all conversations, prompts, chains, or messages with that tag.</dd>
+            <dt>Are tags private?</dt>
+            <dd>Tags are unique to your account; only you see your tags.</dd>
+            <dt>Can I edit or delete a tag?</dt>
+            <dd>No, not yet. Tag renaming/deleting is on our roadmap.</dd>
+        </dl>
+    </section>
+
+    <footer class="kb-footer">
+        <p>
+            Need more help with tags? <a href="{{ url_for('support.submit_ticket') }}">Contact support</a>.
+        </p>
+    </footer>
+</main>
+{% endblock %}

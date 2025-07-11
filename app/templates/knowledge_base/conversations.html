@@ -1,0 +1,52 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Managing Conversations – Syvrona Knowledge Base</title>
+<meta name="description" content="How to manage conversations in Syvrona: resume, tag, search, rename, and more.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+{% block content %}
+<main class="main-content">
+    <h1>Managing Conversations</h1>
+    <p class="subtitle">
+        Find, resume, tag, and rename your conversations in Syvrona to stay organized and never lose context.
+    </p>
+
+    <section class="kb-section">
+        <h2>Conversation Features</h2>
+        <ul class="kb-list">
+            <li><strong>Resume:</strong> Open any past conversation to pick up where you left off. Syvrona loads the full context and history.</li>
+            <li><strong>Tag:</strong> Add tags to conversations for easy grouping and filtering (using the “+” symbol).</li>
+            <li><strong>Rename:</strong> By default, conversations use the first line of your chat as the name. Rename from the conversations list for clarity.</li>
+            <li><strong>Search:</strong> Use search in the conversations list to quickly find any chat by name or tag.</li>
+        </ul>
+    </section>
+
+    <section class="kb-section">
+        <h2>How to Organize Conversations</h2>
+        <ol class="kb-tips">
+            <li>Open the <strong>Conversations</strong> page from the menu.</li>
+            <li>Search or filter by tag or text to find a conversation.</li>
+            <li>Click any conversation to resume chatting.</li>
+            <li>Rename a conversation by clicking the pencil/edit icon in the conversations list.</li>
+        </ol>
+    </section>
+
+    <section class="kb-section">
+        <h2>FAQ</h2>
+        <dl class="faq-list">
+            <dt>How are conversations named?</dt>
+            <dd>By default, they use the first few words of your first message. You can rename any time from the conversations list.</dd>
+            <dt>Can I archive or delete a conversation?</dt>
+            <dd>No, not yet. Only renaming, tagging, and searching are supported at this time.</dd>
+            <dt>Will Syvrona remember full context if I resume an old conversation?</dt>
+            <dd>Yes, you always get the full conversation history and AI memory when you resume.</dd>
+        </dl>
+    </section>
+
+    <footer class="kb-footer">
+        <p>
+            Still have conversation questions? <a href="{{ url_for('support.submit_ticket') }}">Contact support</a>.
+        </p>
+    </footer>
+</main>
+{% endblock %}

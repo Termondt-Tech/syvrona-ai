@@ -1,0 +1,86 @@
+{% extends "base.html" %}
+{% block header %}
+<title>Prompt Builder – Syvrona Knowledge Base</title>
+<meta name="description" content="How to create, organize, and use prompts and prompt chains in Syvrona’s Prompt Builder.">
+<link rel="stylesheet" href="{{ url_for('static', filename='css/knowledge_base.css') }}">
+{% endblock %}
+{% block content %}
+<main class="main-content">
+  <h1>Prompt Builder: Prompts & Chains</h1>
+  <p class="subtitle">
+    Syvrona’s Prompt Builder lets you create, organize, and reuse your best prompts—or link them into powerful, multi-step chains to supercharge your workflow.
+  </p>
+
+  <section class="kb-section">
+    <h2>Prompts vs. Chains</h2>
+    <ul class="kb-tips">
+      <li>
+        <strong>Prompt:</strong> A reusable instruction, template, or question you can use as a starting point for any chat session.<br>
+        <strong>You can run a prompt directly, no chain required.</strong>
+      </li>
+      <li>
+        <strong>Chain:</strong> A step-by-step workflow made by connecting multiple prompts. Run the whole sequence at once—Syvrona will step through each prompt in your chain, in order.
+      </li>
+    </ul>
+  </section>
+
+  <section class="kb-section">
+    <h2>Main Features</h2>
+    <ul class="kb-list">
+      <li><strong>Create, Edit, and Organize Prompts:</strong> Save your best prompts with clear titles, descriptions, and tags.</li>
+      <li><strong>Run Prompts Instantly:</strong> Start a chat or project from any prompt with one click—no need to add to a chain.</li>
+      <li><strong>Build & Run Chains:</strong> Drag and drop prompts into a chain for multi-step automation. Reorder, remove, or reuse prompts anytime.</li>
+      <li><strong>Tagging & Search:</strong> Use tags to organize and quickly find prompts or chains—even in large libraries.</li>
+      <li><strong>“Create and Add Another”:</strong> Quickly add multiple prompts or chain steps without leaving the page.</li>
+    </ul>
+  </section>
+
+  <section class="kb-section">
+    <h2>How to Use Prompt Builder</h2>
+    <ol class="kb-tips">
+      <li>Go to <strong>Prompt Builder</strong> from the navigation menu.</li>
+      <li>
+        <strong>To create a new prompt:</strong>  
+        Click <strong>“+ Create New Prompt”</strong>, enter your prompt details, and save.<br>
+        You can add more prompts quickly using “Create and Add Another.”
+      </li>
+      <li>
+        <strong>To create a chain:</strong><br>
+        Click <strong>“+ Create New Chain”</strong>, give it a title, then drag prompts from your library into the chain order you want.
+      </li>
+      <li>
+        <strong>To run a prompt or chain:</strong><br>
+        Click <strong>“Use”</strong> (for prompts) or <strong>“Run”</strong> (for chains).  
+        You’ll be taken to a page where you can add optional context, choose your preferred AI model, and launch directly into chat.
+      </li>
+      <li>
+        <strong>Tagging:</strong><br>
+        Add tags as you create or edit prompts and chains. Use the tag bar for quick entry. You can search and filter by tag any time.
+      </li>
+    </ol>
+  </section>
+
+  <section class="kb-section">
+    <h2>Frequently Asked Questions</h2>
+    <dl class="faq-list">
+      <dt>Can I run an individual prompt inside a chain?</dt>
+      <dd>No. Running a chain always executes all steps in the chain, in order. To run just one prompt, use it directly from the Prompt Builder.</dd>
+
+      <dt>Can I reuse prompts in multiple chains?</dt>
+      <dd>Yes! Any prompt in your library can be added to as many chains as you like.</dd>
+
+      <dt>Can I rename or delete a tag?</dt>
+      <dd>Not yet—currently, you can only remove tags from prompts or chains. (Tag renaming and deletion are on our roadmap.)</dd>
+
+      <dt>Do I have to create chains to use the Prompt Builder?</dt>
+      <dd>No. Prompts can be used by themselves or grouped into chains, whichever fits your workflow best.</dd>
+    </dl>
+  </section>
+
+  <footer class="kb-footer">
+    <p>
+      Still have questions? <a href="{{ url_for('support.submit_ticket') }}">Contact support</a> for prompt builder tips, troubleshooting, or feature requests.
+    </p>
+  </footer>
+</main>
+{% endblock %}
