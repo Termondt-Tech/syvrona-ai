@@ -411,7 +411,28 @@ def chat_page():
         conversation = get_conversation(conversation_id)
         if conversation and conversation.user_id == current_user.id:
             messages = get_conversation_messages(conversation_id)
-    return render_template("chat.html", messages=messages)
+    # ADD THIS BLOCK: (copy from /chat/new)
+    available_models = [
+        {
+            "key": k,
+            "provider": v.get("provider", "unknown"),
+            "display_name": v.get("display_name", k),
+        }
+        for k, v in MODEL_REGISTRY.items()
+    ]
+    available_models.sort(key=lambda m: (m["provider"], m["key"]))
+
+    # Pick up selected model from conversation if you have per-conversation model,
+    # otherwise default to last used or default
+    selected_model = session.get("prefilled_model", DEFAULT_MODEL_KEY)
+
+    return render_template(
+        "chat.html",
+        messages=messages,
+        available_models=available_models,
+        default_model=DEFAULT_MODEL_KEY,
+        selected_model=selected_model,
+    )
 
 
 @chat.route("/answer", methods=["GET", "POST"])
