@@ -14,7 +14,7 @@
         {% for msg in messages %}
         <div class="{{ msg.role }}-message" data-msg-id="{{ msg.id }}" id="msg-{{ msg.id }}">
             <strong>{{ msg.role.capitalize() }}:</strong>
-            <div class="msg-content">{{ msg.content }}</div>
+            <div class="msg-content" data-role="{{ msg.role }}">{{ msg.content }}</div>
             <span class="model-label">{{ msg.model }}</span>
             <div class="tag-list">
                 {% for tag in msg.tags %}
@@ -55,7 +55,19 @@
 <script>
     const contentBlocks = document.querySelectorAll(".msg-content");
     contentBlocks.forEach(block => {
-        block.innerHTML = marked.parse(block.textContent);
+        const role = block.dataset.role;
+        if (role === "assistant") {
+            // Only parse markdown for assistant messages
+            block.innerHTML = marked.parse(block.textContent);
+        } else {
+            // Render as literal code, preserving all characters exactly
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            code.textContent = block.textContent; // Not innerHTML!
+            pre.appendChild(code);
+            block.innerHTML = '';
+            block.appendChild(pre);
+        }
     });
 
     // Event delegation for add-tag-btn
