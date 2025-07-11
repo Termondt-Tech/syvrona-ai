@@ -17,7 +17,7 @@
     </div>
     {% endif %}
 
-   {% include "_flash.html" %}
+    {% include "_flash.html" %}
 
     <form method="POST" action="/signup">
 
@@ -100,17 +100,17 @@
         </div>
         {% if free_trial_enabled %}
         <!-- Note under signup button -->
-        <div style="
-    font-size: 0.94rem;
-    color: #6A7685;
-    margin-top: 0.7rem;
-    text-align: center;
-">
-            Your card won't be charged until your free trial ends. Cancel anytime.
+        <div class="signup-note">
+            <span class="secure-icon" aria-hidden="true">🔒</span>
+            Secure payment with Stripe. <br>
+            Free trial—no charge today. Cancel anytime.
         </div>
+
+
         {% else %}
-        <div style="font-size: 0.95rem; color: #6A7685; margin-top: 0.7rem; text-align: center;">
-            You’ll be redirected to securely complete your subscription.
+        <div class="signup-note">
+            <span class="secure-icon" aria-hidden="true">🔒</span>
+            Secure payment with Stripe.
         </div>
         {% endif %}
     </form>

@@ -104,7 +104,6 @@ def login_post():
     db.session.commit()
 
     login_user(user, remember=remember)
-    flash("Login successful.", "success")
     return redirect(url_for("auth.dashboard_view"))
 
 

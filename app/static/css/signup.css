@@ -181,5 +181,18 @@
 }
 .secure-icon {
     font-size: 1.1em;
+    line-height: 1;
     vertical-align: middle;
+    margin-right: 3px;
+    position: relative;
+    top: -2px; /* Try -2px, -3px, or -4px */
+}
+
+.signup-note {
+    font-size: 0.94rem;
+    color: #6A7685;
+    margin-top: 0.7rem;
+    text-align: center;
+    /* Optional: a little padding if you want visual breathing room */
+    /* padding: 0.3em 0; */
 }
