@@ -27,15 +27,14 @@
                 {% endfor %}
                 <span class="add-tag-btn" title="Add tag">+</span>
             </div>
-            <input class="tag-input" type="text" placeholder="Add tag..." style="display:none;">
+            <input class="tag-input" type="text" placeholder="Add tag..." aria-label="Add tag" style="display:none;">
             <div class="tag-suggestions" style="display:none;"></div>
         </div>
         {% endfor %}
     </div>
     <form id="chat-form">
         <div class="input-row">
-            <textarea id="input" placeholder="Enter your message"
-                rows="3">{{ session.pop('prefilled_prompt', '') }}</textarea>
+            <textarea id="input" placeholder="Enter your message" rows="3">{{ prefilled_prompt }}</textarea>
             <div class="model-selector">
                 <label for="model" class="visually-hidden">Model:</label>
                 <select id="model" name="model">
@@ -60,7 +59,6 @@
     const modelSelector = document.getElementById('model');
     const AUTO_SUBMIT_ENABLED = true; // set to true to enable, false to disable
 
-
     // Auto-submit if input is prefilled (for refined-prompt workflow)
     if (AUTO_SUBMIT_ENABLED && input && input.value.trim()) {
         // Delay lets user see what’s happening, avoids racing other handlers
@@ -76,17 +74,46 @@
         }, 600); // ~0.6s pause for context; tweak if needed
     }
 
+    /**
+     * Renders a message’s content based on the role.
+     * - Assistant: renders as markdown (with code, links, formatting, etc.)
+     * - User: renders as plain code in <pre><code>, preserving all characters (no HTML, no markdown)
+     *
+     * @param {string} role - "assistant" or "user"
+     * @param {string} text - The raw message text
+     * @returns {string} - HTML to inject into .msg-content
+     */
+    function renderMsgContent(role, text) {
+        if (role === "assistant") {
+            // Use marked.js to parse markdown (with code formatting, links, etc.)
+            return marked.parse(text);
+        } else {
+            // User message: render in pre/code block, preserving all chars safely
+            const pre = document.createElement('pre');
+            const code = document.createElement('code');
+            code.textContent = text;
+            pre.appendChild(code);
+            return pre.outerHTML;
+        }
+    }
+
+
 
     form.addEventListener("submit", async (e) => {
         e.preventDefault();
+
+        const messageText = input.value;
+        const selectedModel = modelSelector.value;
+
+        input.value = ""; // Clear input after submission
 
         const userDiv = document.createElement("div");
         userDiv.className = "user-message";
         userDiv.setAttribute('data-msg-id', 'pending-user');
         userDiv.innerHTML = `
             <strong>User:</strong>
-            <div class="msg-content">${marked.parse(input.value)}</div>
-            <span class="model-label">${modelSelector.value}</span>
+            <div class="msg-content">${renderMsgContent('user', messageText)}</div>
+            <span class="model-label">${selectedModel}</span>
             ${getTagUIMarkup('', [])}
             `;
         body.appendChild(userDiv);
@@ -97,7 +124,7 @@
         const response = await fetch("/answer", {
             method: "POST",
             headers: { "Content-Type": "application/json" },
-            body: JSON.stringify({ message: input.value, model: modelSelector.value })
+            body: JSON.stringify({ message: messageText, model: selectedModel })
         });
 
         // If conversationId is not already set:
@@ -123,7 +150,6 @@
 
         const assistantMsgContent = assistantDiv.querySelector('.msg-content');
 
-
         while (true) {
             const { done, value } = await reader.read();
             if (done) break;
@@ -134,7 +160,6 @@
             body.scrollTop = body.scrollHeight;
         }
 
-        input.value = "";
         // After streaming completes...
         await updateLatestMessages();
 
@@ -166,19 +191,7 @@
     // Convert all previous message content from markdown to HTML
     document.querySelectorAll('.msg-content').forEach(el => {
         const role = el.dataset.role;
-        if (role === "assistant") {
-            // Render markdown
-            el.innerHTML = marked.parse(el.textContent);
-        } else {
-            // Render as code, PRESERVE ALL CHARACTERS
-            // Use textContent to avoid all HTML/entity escaping problems
-            const pre = document.createElement('pre');
-            const code = document.createElement('code');
-            code.textContent = el.textContent; // Not innerHTML!
-            pre.appendChild(code);
-            el.innerHTML = ''; // Clear
-            el.appendChild(pre);
-        }
+        el.innerHTML = renderMsgContent(role, el.textContent);
     });
 
 

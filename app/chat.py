@@ -372,12 +372,20 @@ def latest_messages(conversation_id):
     )
 
 
-@chat.route("/chat/new")
+@chat.route("/chat/new ", methods=["GET", "POST"])
 @login_required
 @require_active_subscription
 def new_chat():
-    logger.info(f"New chat for user: {current_user.get_id()}")
     session.pop("conversation_id", None)
+
+    # If POST, pull prompt/model from form (else defaults)
+    if request.method == "POST":
+        prefilled_prompt = request.form.get("body", "")
+        selected_model = request.form.get("model", DEFAULT_MODEL_KEY)
+    else:
+        prefilled_prompt = ""
+        selected_model = DEFAULT_MODEL_KEY
+
     selected_model = session.pop("prefilled_model", DEFAULT_MODEL_KEY)
 
     available_models = [
@@ -396,6 +404,7 @@ def new_chat():
         available_models=available_models,
         default_model=DEFAULT_MODEL_KEY,
         selected_model=selected_model,
+        prefilled_prompt=prefilled_prompt,
     )
 
 
@@ -406,11 +415,23 @@ def chat_page():
     logger.info(f"Current User: {current_user.get_id()}")
     conversation_id = session.get("conversation_id")
     messages = []
+    selected_model = None
 
     if conversation_id:
         conversation = get_conversation(conversation_id)
         if conversation and conversation.user_id == current_user.id:
             messages = get_conversation_messages(conversation_id)
+            if messages:
+                # Get last message's model, prefer assistant message if you want
+                last_msg_with_model = next(
+                    (m for m in reversed(messages) if m.model), None
+                )
+                if last_msg_with_model:
+                    selected_model = last_msg_with_model.model
+    # Model selection logic:
+    if not selected_model:
+        selected_model = session.get("prefilled_model", DEFAULT_MODEL_KEY)
+
     # ADD THIS BLOCK: (copy from /chat/new)
     available_models = [
         {
@@ -421,10 +442,6 @@ def chat_page():
         for k, v in MODEL_REGISTRY.items()
     ]
     available_models.sort(key=lambda m: (m["provider"], m["key"]))
-
-    # Pick up selected model from conversation if you have per-conversation model,
-    # otherwise default to last used or default
-    selected_model = session.get("prefilled_model", DEFAULT_MODEL_KEY)
 
     return render_template(
         "chat.html",

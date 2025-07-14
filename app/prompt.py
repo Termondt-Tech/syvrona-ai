@@ -4,7 +4,6 @@ from flask import (
     render_template,
     redirect,
     request,
-    session,
     url_for,
     flash,
 )
@@ -161,7 +160,7 @@ def delete_prompt(prompt_id):
     return render_template("prompt/delete_confirm.html", prompt=prompt)
 
 
-@prompt_bp.route("/prompts/<int:prompt_id>/use", methods=["GET", "POST"])
+@prompt_bp.route("/prompts/<int:prompt_id>/use", methods=["GET"])
 @login_required
 @require_active_subscription
 def use_prompt(prompt_id):
@@ -176,12 +175,6 @@ def use_prompt(prompt_id):
     ]
     # Sort or group by provider if you want
     available_models = sorted(available_models, key=lambda m: m["key"])
-    if request.method == "POST":
-        prompt_body = request.form["body"]
-        model_key = request.form.get("model", DEFAULT_MODEL_KEY)
-        session["prefilled_prompt"] = prompt_body
-        session["prefilled_model"] = model_key
-        return redirect(url_for("chat.new_chat"))
     return render_template(
         "prompt/use.html",
         prompt=prompt,
