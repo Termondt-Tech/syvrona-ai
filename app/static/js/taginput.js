@@ -6,6 +6,12 @@ document.addEventListener("DOMContentLoaded", function () {
     const tagSuggestions = document.getElementById("tag-suggestions");
     const tagIdsDiv = document.getElementById("tag-ids");
 
+    if (tagInput) {
+        tagInput.setAttribute('autocomplete', 'off');
+        tagInput.setAttribute('autocorrect', 'off');
+        tagInput.setAttribute('autocapitalize', 'off');
+        tagInput.setAttribute('spellcheck', 'false');
+    }
     // Exit if not present (so safe to include everywhere)
     if (!tagBar || !tagInput || !tagSuggestions || !tagIdsDiv) return;
 
@@ -85,7 +91,7 @@ document.addEventListener("DOMContentLoaded", function () {
                 const newTagName = tagInput.value.trim();
                 const resp = await fetch('/newtag', {
                     method: 'POST',
-                    headers: { 'Content-Type': 'application/json' },
+                    headers: { 'Content-Type': 'application/json', 'X-CSRFToken': window.csrf_token },
                     body: JSON.stringify({ name: newTagName })
                 });
                 if (resp.ok) {

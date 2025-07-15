@@ -65,6 +65,7 @@
                         <form action="{{ url_for('chain.delete_chain', chain_id=chain.id) }}" method="POST"
                             class="action-confirm-form" data-confirm-title="Delete Chain"
                             data-confirm-message="Are you sure you want to delete this chain?" style="display:inline;">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-danger btn-sm">Delete</button>
                         </form>
                         <a href="{{ url_for('chain.run_chain', chain_id=chain.id) }}"

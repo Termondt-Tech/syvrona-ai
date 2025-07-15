@@ -9,6 +9,7 @@
     <h1 class="page-title">Create Notification</h1>
     {% include "_flash.html" %}
     <form method="POST" class="admin-form notification-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="title" class="label">Title</label>
             <input type="text" class="input" id="title" name="title" required maxlength="100"

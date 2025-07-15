@@ -4,6 +4,7 @@
 <link rel="stylesheet" href="{{ url_for('static', filename='css/conversation.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/chat.css') }}">
 <link rel="stylesheet" href="{{ url_for('static', filename='css/tags.css') }}">
+
 {% endblock %}
 
 {% block content %}
@@ -25,7 +26,8 @@
                 {% endfor %}
                 <span class="add-tag-btn" title="Add tag">+</span>
             </div>
-            <input class="tag-input" type="text" placeholder="Add tag..." style="display:none;">
+            <input class="tag-input" type="text" placeholder="Add tag..." style="display:none;" autocomplete="off"
+                autocorrect="off" autocapitalize="off" spellcheck="false">
             <div class="tag-suggestions" style="display:none;"></div>
 
         </div>
@@ -36,11 +38,13 @@
 
     <div class="conversation-actions-row">
         <form action="{{ url_for('chat.resume_conversation', conversation_id=conversation.id) }}" method="get">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button class="btn btn-primary">Continue This Conversation</button>
         </form>
         <form action="{{ url_for('chat.delete_conversation_route', conversation_id=conversation.id) }}" method="POST"
             class="action-confirm-form" data-confirm-title="Delete Conversation"
             data-confirm-message="Are you sure you want to delete this conversation?">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button type="submit" class="btn btn-danger">Delete</button>
         </form>
         <a href="{{ url_for('chat.conversations') }}" class="btn btn-secondary">Back to Conversations list</a>
@@ -158,7 +162,7 @@
         const msgId = msgDiv.dataset.msgId;
         const resp = await fetch(`/messages/${msgId}/tags`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': window.csrf_token },
             body: JSON.stringify({ tag: tagName })
         });
         if (resp.ok) {

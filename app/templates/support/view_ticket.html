@@ -47,6 +47,7 @@
 
     {% if ticket.status != "closed" %}
     <form method="POST" style="margin-top:2rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="message">Reply</label>
             <textarea name="message" id="message" class="support-textarea" rows="5" required

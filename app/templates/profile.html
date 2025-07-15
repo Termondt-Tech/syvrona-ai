@@ -36,7 +36,8 @@
   </p>
   {% set prefs = user.preferences or {} %}
 
-  <form method="POST" action="/profile/update">
+  <form method="POST" action="{{url_for('auth.update_profile')}}" class="profile-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <div class="form-group">
       <label class="label" for="username">Name</label>
       <div class="control">
@@ -77,6 +78,7 @@
     </div>
   </form>
   <form method="POST" action="{{ url_for('auth.update_preferences') }}" class="notification-preferences-form">
+    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
     <h2>Email Notification Preferences</h2>
     {% set prefs = user.preferences or {} %}
     <div class="form-group">

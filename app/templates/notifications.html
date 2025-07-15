@@ -12,6 +12,7 @@
     <div class="notifications-toolbar table-actions-bar">
         <div>
             <form method="get" class="filter-form" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <label for="filter" style="font-weight:500;">Show&nbsp;</label>
                 <select name="filter" id="filter" onchange="this.form.submit()" class="input input-small">
                     <option value="all" {% if filter_type=="all" %}selected{% endif %}>All</option>
@@ -21,10 +22,12 @@
                 </select>
             </form>
             <form method="post" action="{{ url_for('auth.archive_all_notifications') }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-secondary btn-small">Archive All</button>
             </form>
         </div>
         <form method="get" class="per-page-form" style="display:inline;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="per_page" style="font-weight:500;">Show&nbsp;</label>
             <select name="per_page" id="per_page" onchange="this.form.submit()" class="input input-small">
                 {% for n in [10, 25, 50, 100] %}
@@ -41,6 +44,7 @@
         {% if notifications %}
         <div class="notifications-toolbar">
             <form method="POST" action="{{ url_for('auth.archive_all_notifications') }}" style="display:inline;">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                 <button type="submit" class="btn-secondary btn-small">Archive All</button>
             </form>
         </div>
@@ -68,11 +72,13 @@
                 {% if n.id not in read_ids %}
                 <form method="POST" action="{{ url_for('auth.mark_notification_read', notification_id=n.id) }}"
                     class="mark-read-form" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-secondary btn-small">Mark as Read</button>
                 </form>
                 {% endif %}
                 <form method="POST" action="{{ url_for('auth.archive_notification', notification_id=n.id) }}"
                     class="archive-form" style="display:inline">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                     <button type="submit" class="btn-secondary btn-small">Archive</button>
                 </form>
             </div>

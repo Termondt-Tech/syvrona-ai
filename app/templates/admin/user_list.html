@@ -21,6 +21,7 @@
     {% endwith %}
     <div class="table-actions-bar">
         <form method="get" class="filters-form" style="display: flex; align-items: center; gap: 1em; margin-bottom: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="admin" style="font-weight:500;">Role&nbsp;</label>
             <select name="admin" id="admin" onchange="this.form.submit()" class="input input-small">
                 <option value="" {% if not filter_admin %}selected{% endif %}>All</option>
@@ -109,7 +110,8 @@
                     </td>
                     <td>
                         {% if user.subscription_status %}
-                        <span class="badge badge-{{ user.subscription_status|lower }}">{{ user.subscription_status|capitalize }}</span>
+                        <span class="badge badge-{{ user.subscription_status|lower }}">{{
+                            user.subscription_status|capitalize }}</span>
                         {% else %}
                         <span class="badge badge-none">None</span>
                         {% endif %}
@@ -118,6 +120,7 @@
                     <td>
                         <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}"
                             onsubmit="return confirmToggle('{{ user.email }}', {{ user.is_active|tojson }});">
+                            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
                             <button type="submit" class="btn btn-{{ 'danger' if user.is_active else 'success' }}">
                                 {{ 'Deactivate' if user.is_active else 'Activate' }}
                             </button>

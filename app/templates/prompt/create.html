@@ -10,6 +10,7 @@
 {% include "_flash.html" %}
 <div class="form-panel">
     <form method="post" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="title">Title<span style="color:red;">*</span></label>
             <input type="text" id="title" name="title" value="{{ request.form.title or title or '' }}" required

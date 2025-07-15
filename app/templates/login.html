@@ -20,7 +20,8 @@
     {% endif %}
     {% endwith %}
 
-    <form method="POST" action="/login">
+    <form method="POST" action="{{url_for('auth.login')}}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <div class="control">
                 <input class="input is-large" type="email" name="email" placeholder="Your Email" autofocus="">

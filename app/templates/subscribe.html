@@ -29,6 +29,7 @@
     </div>
 
     <form method="POST" action="{{ url_for('billing.subscribe') }}" class="form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group plan-group">
             <label class="label" style="margin-bottom: 0.75rem;">Choose Your Plan</label>
             <div class="plan-cards">

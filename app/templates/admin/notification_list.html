@@ -12,6 +12,7 @@
     <div class="table-actions-bar">
         <a href="{{ url_for('admin.create_notification') }}" class="btn-primary">Create Notification</a>
         <form method="get" class="filters-form" style="display: flex; align-items: center; gap: 1em; margin-bottom: 0;">
+            <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <label for="type" style="font-weight:500;">Type&nbsp;</label>
             <select name="type" id="type" onchange="this.form.submit()" class="input input-small">
                 <option value="" {% if not notif_type %}selected{% endif %}>All</option>

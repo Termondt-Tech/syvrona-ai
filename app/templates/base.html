@@ -21,6 +21,9 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/typography.css') }}">
     <link rel="stylesheet" href="{{ url_for('static', filename='css/buttons.css') }}">
 
+    <script>
+        window.csrf_token = "{{ csrf_token() }}";
+    </script>
 </head>
 
 <body class="bg-light">
@@ -63,9 +66,10 @@
                         <div class="dropdown-content">
                             <a href="{{ url_for('support.list_tickets') }}">My Tickets</a>
                             <a href="{{ url_for('support.submit_ticket') }}">Submit Ticket</a>
-                            {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status
-                    ==
-                    'active') %}
+                            {% if current_user.is_authenticated and (current_user.is_admin or
+                            current_user.subscription_status
+                            ==
+                            'active') %}
                             <a href="{{ url_for('knowledge_base.index') }}">Knowledge Base</a>
                             {% endif %}
                             <!-- <a href="#">FAQ</a> -->

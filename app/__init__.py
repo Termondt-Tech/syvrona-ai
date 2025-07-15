@@ -4,6 +4,7 @@ from flask_sqlalchemy import SQLAlchemy
 from flask_migrate import Migrate
 from flask_login import LoginManager, current_user
 from flask_hcaptcha import hCaptcha
+from flask_wtf import CSRFProtect
 
 
 from app.config import Config
@@ -18,6 +19,7 @@ login_manager = LoginManager()
 logger = logging.getLogger(__name__)
 
 hcaptcha = hCaptcha()
+csrf = CSRFProtect()
 
 
 def create_app(config=None):
@@ -39,6 +41,7 @@ def create_app(config=None):
     logger.info("Logging configured")
 
     hcaptcha.init_app(app)
+    csrf.init_app(app)
 
     logger.info("App configuration:")
     logger.info(

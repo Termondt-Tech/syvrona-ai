@@ -14,6 +14,7 @@
     {% include "_flash.html" %}
 
     <form method="POST" action="{{ url_for('support.submit_ticket') }}">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="type">Type</label>
             <select name="type" id="type" required class="form-control">

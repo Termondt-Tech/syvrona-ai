@@ -33,6 +33,7 @@
         {% endfor %}
     </div>
     <form id="chat-form">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="input-row">
             <textarea id="input" placeholder="Enter your message" rows="3">{{ prefilled_prompt }}</textarea>
             <div class="model-selector">
@@ -123,7 +124,7 @@
 
         const response = await fetch("/answer", {
             method: "POST",
-            headers: { "Content-Type": "application/json" },
+            headers: { "Content-Type": "application/json", "X-CSRF-Token": window.csrf_token },
             body: JSON.stringify({ message: messageText, model: selectedModel })
         });
 
@@ -259,7 +260,7 @@
         const msgId = msgDiv.dataset.msgId;
         const resp = await fetch(`/messages/${msgId}/tags`, {
             method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
+            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrf_token },
             body: JSON.stringify({ tag: tagName })
         });
         if (resp.ok) {

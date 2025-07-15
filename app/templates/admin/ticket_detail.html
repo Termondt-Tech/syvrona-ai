@@ -48,6 +48,7 @@
     </div>
 
     <form method="POST" class="status-form" style="margin-bottom: 1.5rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <label for="status"><strong>Status:</strong></label>
         <select name="status" id="status">
             {% for s in ['open', 'pending', 'resolved', 'closed'] %}
@@ -79,6 +80,7 @@
     </div>
     {% if ticket.status != "closed" %}
     <form method="POST" style="margin-top:2rem;">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="message">Reply as staff</label>
             <textarea name="message" id="message" class="support-textarea" rows="5" required
