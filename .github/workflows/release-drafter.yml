@@ -1,0 +1,22 @@
+name: Release Drafter
+
+on:
+  push:
+    branches:
+      - master      # Or 'master'—update if your default branch is different
+  pull_request:
+    types: [closed]
+  workflow_dispatch:
+  release:
+    types: [published]
+
+jobs:
+  update_release_draft:
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: release-drafter/release-drafter@v6
+        with:
+          config-name: release-drafter.yml
+        env:
+          GITHUB_TOKEN: ${{ secrets.GITHUB_TOKEN }}

@@ -1,0 +1,27 @@
+# Add 'feature' label for PRs with "feature" in title
+- label: feature
+  title: 'feature'
+
+# Add 'bug' label for PRs with "fix" or "bug" in title or body
+- label: bug
+  title: ['fix', 'bug']
+  body: ['fix', 'bug']
+
+# Add 'backend' label if PR touches code in the app directory
+- label: backend
+  files:
+    - 'app/**/*.py'
+    - '*.py'
+
+# Add 'frontend' label if PR touches anything in static/ or templates/
+- label: frontend
+  files:
+    - 'static/**'
+    - 'templates/**'
+    - '**/*.js'
+    - '**/*.css'
+
+# Add 'docs' label if PR touches Markdown files
+- label: docs
+  files:
+    - '**/*.md'
