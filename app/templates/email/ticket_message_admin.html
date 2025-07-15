@@ -7,7 +7,7 @@
     body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
     .container { max-width: 500px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.06); padding: 32px; }
     .logo { margin-bottom: 28px; text-align: center; }
-    .btn { display:inline-block; background:#2563eb; color:#fff; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; }
+    /* Removed .btn class styles to avoid conflicts */
     .footer { color:#788; font-size:12px; margin-top:30px; text-align:center; }
     .small { font-size: 11px; color: #aaa; margin-top: 16px; text-align: center;}
     .meta { font-size: 14px; color: #555; margin: 18px 0 10px 0;}
@@ -31,7 +31,10 @@
     </div>
     <p>
       View the full conversation in the admin portal:<br>
-      <a href="{{ link }}" class="btn">View Ticket</a>
+      <a href="{{ link }}"
+         style="display:inline-block; background:#2563eb !important; background-color:#2563eb !important; color:#fff !important; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; font-family: Arial, sans-serif; border:none; mso-padding-alt:0;">
+        View Ticket
+      </a>
     </p>
     <div class="footer">
       — The Syvrona Team

@@ -1,38 +1,80 @@
 <!DOCTYPE html>
 <html>
+
 <head>
   <meta charset="utf-8">
   <title>Welcome to Syvrona – Confirm Your Email</title>
   <style>
-    body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
-    .container { max-width: 500px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.06); padding: 32px; }
-    .logo { margin-bottom: 28px; text-align: center; }
-    .btn { display:inline-block; background:#2563eb; color:#fff; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; }
-    .footer { color:#788; font-size:12px; margin-top:30px; text-align:center; }
-    .small { font-size: 11px; color: #aaa; margin-top: 16px; text-align: center;}
+    body {
+      font-family: Arial, sans-serif;
+      color: #222;
+      background: #f7fafd;
+    }
+
+    .container {
+      max-width: 500px;
+      margin: 32px auto;
+      background: #fff;
+      border-radius: 10px;
+      box-shadow: 0 3px 14px rgba(0, 0, 0, 0.06);
+      padding: 32px;
+    }
+
+    .logo {
+      margin-bottom: 28px;
+      text-align: center;
+    }
+
+    /* Removed .btn class to avoid conflicts with inline styles */
+    .footer {
+      color: #788;
+      font-size: 12px;
+      margin-top: 30px;
+      text-align: center;
+    }
+
+    .small {
+      font-size: 11px;
+      color: #aaa;
+      margin-top: 16px;
+      text-align: center;
+    }
+
+    /* Extra: links inside .container (except buttons) have brand color */
+    .container a:not([style*="background"]) {
+      color: #2563eb;
+    }
   </style>
 </head>
+
 <body>
   <div class="container">
     <div class="logo">
-      <img src="https://syvrona.com/static/images/syvrona-logo-darktext-transparent-100.png" alt="Syvrona" width="100" height="auto" style="display:block; margin:0 auto;">
+      <img src="https://syvrona.com/static/images/syvrona-logo-darktext-transparent-100.png" alt="Syvrona" width="100"
+        style="display:block; margin:0 auto;">
     </div>
-    <h2>Welcome to Syvrona!</h2>
+    <h2 style="margin-top:0;">Welcome to Syvrona!</h2>
     <p>Hello {{ user.name }},</p>
     <p>
       Thanks for signing up for <strong>Syvrona</strong> — your platform for AI-driven automation and productivity.
     </p>
     <p>
-      <strong>Please confirm your email address</strong> to help us keep your account secure and ensure you receive important updates and password reset emails.
+      <strong>Please confirm your email address</strong> to help us keep your account secure and ensure you receive
+      important updates and password reset emails.
     </p>
-    <p style="text-align:center;">
-      <a href="{{ confirm_url }}" class="btn">Confirm Your Email Address</a>
+    <p style="text-align:center; margin: 32px 0 24px 0;">
+      <a href="{{ confirm_url }}"
+        style="display:inline-block; background:#2563eb !important; background-color:#2563eb !important; color:#fff !important; padding:14px 32px; border-radius:6px; text-decoration:none; font-weight:bold; font-size:16px; font-family: Arial, sans-serif; border:none; mso-padding-alt:0; box-shadow:0 2px 8px rgba(37,99,235,0.12);">
+        Confirm Your Email Address
+      </a>
     </p>
-    <p>If the button above doesn't work, copy and paste this link into your browser:</p>
-    <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
+    <p style="font-size:13px; color:#555;">
+      If the button above doesn't work, copy and paste this link into your browser:<br>
+      <a href="{{ confirm_url }}" style="word-break:break-all;">{{ confirm_url }}</a>
+    </p>
     {% if free_trial_enabled and free_trial_days > 0 %}
-    <p>
-      <strong>Enjoy your {{ free_trial_days }}-day free trial!</strong>  
+    <p style="background:#f1f5f9; border-radius:5px; padding:12px 16px;">
+      <strong>Enjoy your {{ free_trial_days }}-day free trial!</strong><br>
       You’ll have full access to Syvrona after you complete your subscription setup.
     </p>
     {% else %}
@@ -40,7 +82,9 @@
       You’ll have full access to Syvrona after you complete your subscription setup.
     </p>
     {% endif %}
-    <p>If you need help, contact Syvrona Support at <a href="mailto:info@termondttech.com">info@termondttech.com</a>.</p>
+    <p>
+      If you need help, contact Syvrona Support at <a href="mailto:info@termondttech.com">info@termondttech.com</a>.
+    </p>
     <div class="footer">
       — The Syvrona Team
       <div class="small">
@@ -49,4 +93,5 @@
     </div>
   </div>
 </body>
+
 </html>

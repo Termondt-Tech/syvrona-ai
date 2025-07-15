@@ -7,7 +7,7 @@
     body { font-family: Arial, sans-serif; color: #222; background: #f7fafd; }
     .container { max-width: 500px; margin: 32px auto; background: #fff; border-radius: 10px; box-shadow: 0 3px 14px rgba(0,0,0,0.06); padding: 32px; }
     .logo { margin-bottom: 28px; text-align: center; }
-    .btn { display:inline-block; background:#2563eb; color:#fff; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; }
+    /* Removed .btn class styles to avoid conflicts */
     .footer { color:#788; font-size:12px; margin-top:30px; text-align:center; }
     .small { font-size: 11px; color: #aaa; margin-top: 16px; text-align: center;}
   </style>
@@ -24,7 +24,10 @@
       To complete this change, please confirm your new email address by clicking the button below:
     </p>
     <p style="text-align:center;">
-      <a href="{{ confirm_url }}" class="btn">Confirm New Email Address</a>
+      <a href="{{ confirm_url }}"
+         style="display:inline-block; background:#2563eb !important; background-color:#2563eb !important; color:#fff !important; padding:12px 26px; border-radius:5px; text-decoration:none; font-weight:bold; font-family: Arial, sans-serif; border:none; mso-padding-alt:0;">
+        Confirm New Email Address
+      </a>
     </p>
     <p>If the button above doesn't work, copy and paste this link into your browser:</p>
     <p><a href="{{ confirm_url }}">{{ confirm_url }}</a></p>
