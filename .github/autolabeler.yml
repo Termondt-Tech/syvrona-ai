@@ -1,0 +1,32 @@
+- label: bug
+  title: ['fix', 'bug', 'error']
+  body: ['fix', 'bug', 'error']
+
+- label: documentation
+  files: ['**/*.md', 'docs/**']
+  title: ['docs', 'documentation']
+
+- label: enhancement
+  title: ['feature', 'enhancement']
+  body: ['feature', 'enhancement']
+  # You can also match files if you want to get more granular
+
+- label: question
+  title: ['question', 'how to', 'help']
+  body: ['question', 'how to', 'help']
+
+- label: help wanted
+  title: ['help', 'support']
+  body: ['help', 'support']
+
+- label: duplicate
+  title: ['duplicate']
+  body: ['duplicate']
+
+- label: invalid
+  title: ['invalid']
+  body: ['invalid']
+
+- label: wontfix
+  title: ['wontfix', "won't fix"]
+  body: ['wontfix', "won't fix"]
