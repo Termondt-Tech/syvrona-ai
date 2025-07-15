@@ -57,6 +57,7 @@ def app():
     app = create_app(
         {
             "TESTING": True,
+            "WTF_CSRF_ENABLED": False,  # Disable CSRF for tests
             "SQLALCHEMY_DATABASE_URI": (
                 "sqlite:///:memory:"  # Use in-memory DB for tests
             ),
