@@ -380,13 +380,23 @@ def new_chat():
 
     # If POST, pull prompt/model from form (else defaults)
     if request.method == "POST":
-        prefilled_prompt = request.form.get("body", "")
+        chain_id = request.form.get("chain_id")
         selected_model = request.form.get("model", DEFAULT_MODEL_KEY)
+        if chain_id:
+            # It's a chain run: merge prompts + (optional) context
+            chain = PromptChain.query.filter_by(
+                id=chain_id, user_id=current_user.id
+            ).first_or_404()
+            context = request.form.get("context", "").strip()
+            prompt_bodies = [p.body for p in chain.prompts]
+            if context:
+                prompt_bodies.append(context)
+            prefilled_prompt = "\n\n".join(prompt_bodies)
+        else:
+            prefilled_prompt = request.form.get("body", "")
     else:
         prefilled_prompt = ""
         selected_model = DEFAULT_MODEL_KEY
-
-    selected_model = session.pop("prefilled_model", DEFAULT_MODEL_KEY)
 
     available_models = [
         {

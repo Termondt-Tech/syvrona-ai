@@ -4,7 +4,9 @@
 <h1 class="form-title">Run Chain: {{ chain.title|e }}</h1>
 {% include "_flash.html" %}
 <div class="form-panel">
-    <form method="POST" class="run-chain-form" autocomplete="off">
+    <form method="POST" action="{{ url_for('chat.new_chat') }}" class="run-chain-form" autocomplete="off">
+        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="chain_id" value="{{ chain.id }}">
         <div class="form-group">
             <label for="context">Add context or instructions for this run (optional):</label>
             <textarea id="context" name="context" class="form-control" rows="5"
@@ -14,7 +16,8 @@
             <label for="model">Choose model:</label>
             <select id="model" name="model">
                 {% for model in available_models %}
-                <option value="{{ model.key }}" {% if model.key == default_model %}selected{% endif %}>{{ model.display_name }} ({{ model.provider|capitalize }})</option>
+                <option value="{{ model.key }}" {% if model.key==default_model %}selected{% endif %}>{{
+                    model.display_name }} ({{ model.provider|capitalize }})</option>
                 {% endfor %}
             </select>
         </div>
@@ -29,7 +32,8 @@
                     <li>
                         <span class="prompt-title">{{ prompt.title|e }}</span>
                         {% if prompt.description %}
-                        <div class="prompt-desc" style="color:#64748b; font-size:0.97em;">{{ prompt.description|e }}</div>
+                        <div class="prompt-desc" style="color:#64748b; font-size:0.97em;">{{ prompt.description|e }}
+                        </div>
                         {% endif %}
                     </li>
                     {% endfor %}
