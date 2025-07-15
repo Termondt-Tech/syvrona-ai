@@ -9,6 +9,9 @@ on:
   workflow_dispatch:
   release:
     types: [published]
+permissions:
+  contents: write
+  pull-requests: read
 
 jobs:
   update_release_draft:
