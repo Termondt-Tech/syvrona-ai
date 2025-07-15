@@ -1,0 +1,23 @@
+name-template: 'v$RESOLVED_VERSION'
+tag-template: 'v$RESOLVED_VERSION'
+
+categories:
+  - title: '🚀 Features'
+    labels:
+      - 'enhancement'
+  - title: '🐛 Fixes'
+    labels:
+      - 'bug'
+  - title: '📝 Documentation'
+    labels:
+      - 'documentation'
+
+change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
+no-changes-template: '- No changes'
+
+template: |
+  ## Changes
+
+  $CHANGES
+
+  **Full Changelog:** $FULL_CHANGELOG
