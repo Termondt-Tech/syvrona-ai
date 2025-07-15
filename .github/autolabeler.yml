@@ -1,27 +1,32 @@
-# Add 'feature' label for PRs with "feature" in title
-- label: feature
-  title: 'feature'
-
-# Add 'bug' label for PRs with "fix" or "bug" in title or body
 - label: bug
-  title: ['fix', 'bug']
-  body: ['fix', 'bug']
+  title: ['fix', 'bug', 'error']
+  body: ['fix', 'bug', 'error']
 
-# Add 'backend' label if PR touches code in the app directory
-- label: backend
-  files:
-    - 'app/**/*.py'
-    - '*.py'
+- label: documentation
+  files: ['**/*.md', 'docs/**']
+  title: ['docs', 'documentation']
 
-# Add 'frontend' label if PR touches anything in static/ or templates/
-- label: frontend
-  files:
-    - 'static/**'
-    - 'templates/**'
-    - '**/*.js'
-    - '**/*.css'
+- label: enhancement
+  title: ['feature', 'enhancement']
+  body: ['feature', 'enhancement']
+  # You can also match files if you want to get more granular
 
-# Add 'docs' label if PR touches Markdown files
-- label: docs
-  files:
-    - '**/*.md'
+- label: question
+  title: ['question', 'how to', 'help']
+  body: ['question', 'how to', 'help']
+
+- label: help wanted
+  title: ['help', 'support']
+  body: ['help', 'support']
+
+- label: duplicate
+  title: ['duplicate']
+  body: ['duplicate']
+
+- label: invalid
+  title: ['invalid']
+  body: ['invalid']
+
+- label: wontfix
+  title: ['wontfix', "won't fix"]
+  body: ['wontfix', "won't fix"]
