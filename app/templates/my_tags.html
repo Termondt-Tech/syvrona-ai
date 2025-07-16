@@ -7,41 +7,84 @@
 {% block content %}
 <main class="main-content">
     <h1 class="main-title">My Tags</h1>
-   <ul class="tag-list" style="margin-top:2rem;">
-    {% for t in tags %}
-    <li class="tag-list-item">
-        <span class="tag-pill">
-            {{ t.tag.name }}
-            {% if t.msg_count %}
-                <a href="{{ url_for('chat.tagged_messages', tag_id=t.tag.id) }}" class="tag-count tag-count-badge" title="Messages">
+    <ul class="tag-list" style="margin-top:2rem;">
+        {% for t in tags %}
+        {% import "macros/tag_controls.html" as macros %}
+        <li class="tag-list-item">
+            <span class="tag-pill">
+                {{ t.tag.name }}
+                {% if t.msg_count %}
+                <a href="{{ url_for('chat.tagged_messages', tag_id=t.tag.id) }}" class="tag-count tag-count-badge"
+                    title="Messages">
                     💬 {{ t.msg_count }}
                 </a>
-            {% endif %}
-            {% if t.prompt_count %}
-                <a href="{{ url_for('prompt.tagged_prompts', tag_id=t.tag.id) }}" class="tag-count tag-count-badge tag-count-prompt" title="Prompts">
+                {% endif %}
+                {% if t.prompt_count %}
+                <a href="{{ url_for('prompt.tagged_prompts', tag_id=t.tag.id) }}"
+                    class="tag-count tag-count-badge tag-count-prompt" title="Prompts">
                     📝 {{ t.prompt_count }}
                 </a>
-            {% endif %}
-            {% if t.chain_count %}
-                <a href="{{ url_for('chain.tagged_chains', tag_id=t.tag.id) }}" class="tag-count tag-count-badge tag-count-chain" title="Prompt Chains">
+                {% endif %}
+                {% if t.chain_count %}
+                <a href="{{ url_for('chain.tagged_chains', tag_id=t.tag.id) }}"
+                    class="tag-count tag-count-badge tag-count-chain" title="Prompt Chains">
                     ⛓️ {{ t.chain_count }}
                 </a>
-            {% endif %}
-        </span>
-    </li>
-    {% else %}
+                {% endif %}
+                {{ macros.tag_controls(t.tag.id, t.tag.name) }}
+            </span>
+        </li>
+        {% else %}
         <div class="no-tags-guidance extra-margin-top">
             <p class="no-tags-msg">You haven’t added any tags yet.</p>
             <div class="no-tags-instructions">
                 <strong>How to use tags:</strong><br>
                 <ul class="no-tags-list">
-                  <li>Add tags to any message, prompt, or prompt chain.</li>
-                  <li>Tags help you organize, filter, and quickly find important content later.</li>
+                    <li>Add tags to any message, prompt, or prompt chain.</li>
+                    <li>Tags help you organize, filter, and quickly find important content later.</li>
                 </ul>
             </div>
         </div>
-    {% endfor %}
-</ul>
+        {% endfor %}
+    </ul>
+    <script src="{{ url_for('static', filename='js/tags.js') }}"></script>
+    <!-- Rename Modal -->
+    <div id="renameTagModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-flex-center">
+            <div class="modal-content">
+                <form id="renameTagForm" autocomplete="off">
+                    <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                    <h2>Rename Tag</h2>
+                    <input type="hidden" name="tag_id" id="renameTagId">
+                    <label for="newTagName">New name</label>
+                    <input type="text" id="newTagName" name="new_name" required minlength="2" maxlength="30">
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-primary">Rename</button>
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                    </div>
+                    <div class="form-message" id="renameTagMsg"></div>
+                </form>
+            </div>
+        </div>
+    </div>
+
+    <!-- Delete Modal -->
+    <div id="deleteTagModal" class="modal" aria-hidden="true" role="dialog" aria-modal="true">
+        <div class="modal-flex-center">
+            <div class="modal-content">
+                <form id="deleteTagForm">
+                    <h2>Delete Tag</h2>
+                    <input type="hidden" name="tag_id" id="deleteTagId">
+                    <p id="deleteTagConfirm"></p>
+                    <div class="modal-actions">
+                        <button type="submit" class="btn-danger">Delete</button>
+                        <button type="button" class="btn-secondary close-modal">Cancel</button>
+                    </div>
+                    <div class="form-message" id="deleteTagMsg"></div>
+                </form>
+            </div>
+        </div>
+    </div>
 
 
 </main>
