@@ -6,6 +6,17 @@ Syvrona is an AI-powered technician assistant platform, built with Flask and des
 
 ---
 
+## 📚 Documentation
+
+- [Best Practices](docs/best_practices.md)
+- [Deployment Guide](docs/deployment.md)
+- [DigitalOcean Install Guide](docs/digital_ocean_install.md)
+- [Product Roadmap](docs/roadmap.md)
+- [Release Notes](docs/releases/)
+- [Changelog](CHANGELOG.md)
+  
+---
+
 ## 🚀 Tech Stack
 
 - Python 3.12
@@ -17,7 +28,7 @@ Syvrona is an AI-powered technician assistant platform, built with Flask and des
 
 ---
 
-## 🧪 Local Development Setup
+## 🧑‍💻 Local Development Setup
 
 ```bash
 # Clone the repository
@@ -40,27 +51,27 @@ App runs at: [http://localhost:5001](http://localhost:5001)
 
 ---
 
-## 🛠️ Automated Releases & PR Labeling
+## 🔄 Automated Releases & PR Labeling
 
 This repository uses **automated release note generation** and **pull request labeling** to streamline contributions and change tracking:
 
 - **Release Drafter:**  
-  Every time a pull request is merged, a draft release is automatically updated with categorized release notes based on PR titles, labels, and referenced issues.  
-  👉 To help keep release notes clear, please give your pull requests meaningful titles and descriptions, and reference any related issues (e.g., “Fixes #42”).
+  Automatically generates draft release notes from merged PRs.  
+  ➤ Please use clear PR titles, descriptions, and reference issues (e.g., “Fixes #42”).
 
 - **Probot Autolabeler:**  
-  Pull requests are automatically labeled based on their content (files changed, keywords in the title/body, etc.).  
-  👉 You can customize these labels by editing `.github/autolabeler.yml` in the repo. Existing labels include: `bug`, `enhancement`, `documentation`, `question`, and more.
+  PRs are auto-labeled by file changes and keywords.  
+  ➤ Customize labels in `.github/autolabeler.yml`. Labels include: `bug`, `enhancement`, `documentation`, `question`, etc.
 
-### Contributor Guidelines
+See [.github/release-drafter.yml](.github/release-drafter.yml) and [.github/autolabeler.yml](.github/autolabeler.yml) for details.
+
+### 🧑‍🤝‍🧑 Contributor Guidelines
 
 Help us keep releases organized:
 
-- **Write clear pull request titles and descriptions**
-- **Reference issues** using `Fixes #issue_number`
-- **Check your PR labels** (they may be applied automatically)
-
-For more information, see the [`.github/release-drafter.yml`](.github/release-drafter.yml) and [`.github/autolabeler.yml`](.github/autolabeler.yml) configuration files.
+- Use descriptive PR titles and descriptions.
+- Reference related issues (`Fix #123`).
+- Check PR labels before merging.
 
 ## 📄 License
 
