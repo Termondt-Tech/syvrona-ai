@@ -20,7 +20,7 @@ from . import db
 tags_bp = Blueprint("tags", __name__)
 
 
-@tags_bp.route("/tags")
+@tags_bp.route("/")
 @login_required
 @require_active_subscription
 def get_tags():
@@ -91,9 +91,9 @@ def my_tags():
         )
 
     # Optionally, hide tags unused everywhere:
-    tags_data = [
-        t for t in tags_data if t["msg_count"] or t["prompt_count"] or t["chain_count"]
-    ]
+    # tags_data = [
+    #    t for t in tags_data if t["msg_count"] or t["prompt_count"] or t["chain_count"]
+    # ]
 
     return render_template("my_tags.html", tags=tags_data)
 

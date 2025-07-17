@@ -49,7 +49,7 @@ document.addEventListener("DOMContentLoaded", function () {
             return;
         }
         // Fetch suggestions from backend
-        const resp = await fetch(`/tags?q=${encodeURIComponent(q)}`);
+        const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
         const tags = await resp.json();
         // Only show suggestions not already added
         const filtered = tags.filter(tag => !currentTags.some(t => t.id == tag.id));

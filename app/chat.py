@@ -13,9 +13,10 @@ from flask import (
     url_for,
 )
 from flask_login import current_user, login_required
+from flask_wtf.csrf import generate_csrf
 
 from app.decorators import require_active_subscription
-from app.handler.conversation_handler import (
+from app.services.conversation import (
     create_conversation,
     delete_conversation,
     get_conversation,
@@ -28,24 +29,12 @@ from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY
 
 from . import db
 
-from app.models import Message, Prompt, PromptChain, Tag, message_tags, Conversation
-from app.models import prompt_tags, chain_tags
+from app.models import Message, PromptChain, Tag, message_tags, Conversation
+
 
 chat = Blueprint("chat", __name__)
 
 logger = logging.getLogger(__name__)
-
-
-@chat.route("/tags")
-@login_required
-@require_active_subscription
-def get_tags():
-    q = request.args.get("q", "").strip()
-    tags_query = Tag.query.filter_by(user_id=current_user.id)
-    if q:
-        tags_query = tags_query.filter(Tag.name.ilike(f"%{q}%"))
-    tags = tags_query.order_by(Tag.name).all()
-    return jsonify([{"id": tag.id, "name": tag.name} for tag in tags])
 
 
 @chat.route("/messages/<int:msg_id>/tags", methods=["POST"])
@@ -100,72 +89,6 @@ def remove_tag_from_message(msg_id, tag_id):
         return jsonify({"success": True})
     else:
         return jsonify({"success": False, "reason": "Tag not found"}), 404
-
-
-@chat.route("/my-tags", methods=["GET"])
-@login_required
-@require_active_subscription
-def my_tags():
-    user_id = current_user.get_id()
-    TagObj = Tag  # Just for clarity
-
-    # Message tag count
-    msg_counts = (
-        db.session.query(TagObj.id, db.func.count(Message.id))
-        .join(message_tags, TagObj.id == message_tags.c.tag_id)
-        .join(Message, Message.id == message_tags.c.message_id)
-        .join(Conversation, Conversation.id == Message.conversation_id)
-        .filter(Conversation.user_id == user_id)
-        .group_by(TagObj.id)
-        .all()
-    )
-    # Prompt tag count
-    prompt_counts = (
-        db.session.query(TagObj.id, db.func.count(Prompt.id))
-        .join(prompt_tags, TagObj.id == prompt_tags.c.tag_id)
-        .join(Prompt, Prompt.id == prompt_tags.c.prompt_id)
-        .filter(Prompt.user_id == user_id)
-        .group_by(TagObj.id)
-        .all()
-    )
-    # Chain tag count
-    chain_counts = (
-        db.session.query(TagObj.id, db.func.count(PromptChain.id))
-        .join(chain_tags, TagObj.id == chain_tags.c.tag_id)
-        .join(PromptChain, PromptChain.id == chain_tags.c.chain_id)
-        .filter(PromptChain.user_id == user_id)
-        .group_by(TagObj.id)
-        .all()
-    )
-
-    # Gather all tags belonging to user (even unused, if desired)
-    user_tags = (
-        TagObj.query.filter_by(user_id=user_id).order_by(TagObj.name.asc()).all()
-    )
-
-    # Compose dicts for fast lookup
-    msg_map = dict(msg_counts)
-    prompt_map = dict(prompt_counts)
-    chain_map = dict(chain_counts)
-
-    # Compose final tag list
-    tags_data = []
-    for tag in user_tags:
-        tags_data.append(
-            {
-                "tag": tag,
-                "msg_count": msg_map.get(tag.id, 0),
-                "prompt_count": prompt_map.get(tag.id, 0),
-                "chain_count": chain_map.get(tag.id, 0),
-            }
-        )
-
-    # Optionally, hide tags unused everywhere:
-    tags_data = [
-        t for t in tags_data if t["msg_count"] or t["prompt_count"] or t["chain_count"]
-    ]
-
-    return render_template("my_tags.html", tags=tags_data)
 
 
 @chat.route("/tag/<int:tag_id>")
@@ -480,7 +403,7 @@ def answer():
         # Store the conversation ID in the session
         session["conversation_id"] = conversation_id
 
-    from app.handler.ai_streamer import AIStreamer  # adjust path as needed
+    from app.services.ai_streamer import AIStreamer  # adjust path as needed
 
     streamer = AIStreamer()
 
@@ -494,4 +417,6 @@ def answer():
 
     response = Response(generate(), content_type="text/plain")
     response.headers["X-Conversation-Id"] = str(conversation_id)
+    # This line delivers a fresh CSRF token to the client for the next request
+    response.headers["X-CSRFToken"] = generate_csrf()
     return response

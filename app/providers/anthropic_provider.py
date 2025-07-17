@@ -2,7 +2,7 @@ import os
 import logging
 from anthropic import Anthropic
 
-from app.handler.conversation_handler import get_conversation_messages
+from app.services.conversation import get_conversation_messages
 from app.providers.base_provider import AIProvider
 from app.model_registry import get_model_metadata
 

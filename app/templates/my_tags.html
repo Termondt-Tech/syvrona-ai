@@ -31,6 +31,9 @@
                     ⛓️ {{ t.chain_count }}
                 </a>
                 {% endif %}
+                {% if not (t.msg_count or t.prompt_count or t.chain_count) %}
+                <span class="tag-badge tag-badge-unused" title="Unused">(Unused)</span>
+                {% endif %}
                 {{ macros.tag_controls(t.tag.id, t.tag.name) }}
             </span>
         </li>
