@@ -11,7 +11,9 @@ categories:
   - title: '📝 Documentation'
     labels:
       - 'documentation'
-
+  - title: '🧰 Architecture & Refactor'
+    labels:
+      - 'architecture'
 change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
 no-changes-template: '- No changes'
 

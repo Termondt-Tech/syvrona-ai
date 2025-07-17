@@ -162,6 +162,14 @@
         }
 
         // After streaming completes...
+        // update the CSRF token if the server sent a new one
+        const newToken = response.headers.get("X-CSRFToken");
+        if (newToken) {
+            window.csrf_token = newToken;
+            // If you also keep a hidden field in your form, update that as well:
+            document.querySelector('input[name="csrf_token"]').value = newToken;
+        }
+        // Set the final message ID (if not already set)
         await updateLatestMessages();
 
         async function updateLatestMessages() {
@@ -212,8 +220,14 @@
             const tagId = tagSpan.dataset.tagId;
             const msgDiv = tagSpan.closest('[data-msg-id]');
             const msgId = msgDiv.dataset.msgId;
-            fetch(`/messages/${msgId}/tags/${tagId}`, { method: 'DELETE' })
+            fetch(`/messages/${msgId}/tags/${tagId}`, {
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': window.csrf_token
+                }
+            })
                 .then(() => tagSpan.remove());
+
         }
     });
 
@@ -228,7 +242,7 @@
                 suggestionsDiv.innerHTML = '';
                 return;
             }
-            const resp = await fetch(`/tags?q=${encodeURIComponent(q)}`);
+            const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
             const tags = await resp.json();
             suggestionsDiv.innerHTML = '';
             if (tags.length === 0) {
@@ -336,7 +350,7 @@
                 suggestionsDiv.innerHTML = '';
                 return;
             }
-            const resp = await fetch(`/tags?q=${encodeURIComponent(q)}`);
+            const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
             const tags = await resp.json();
             suggestionsDiv.innerHTML = '';
             if (tags.length === 0) {

@@ -12,7 +12,7 @@ from flask_login import current_user, login_required, login_user, logout_user
 from werkzeug.security import generate_password_hash, check_password_hash
 from itsdangerous import URLSafeTimedSerializer, SignatureExpired, BadSignature
 from app.constants import PRICE_LABELS
-from app.handler.signup_handler import SignupHandler
+from app.services.signup import SignupHandler
 from app.models import (
     Conversation,
     Message,

@@ -36,6 +36,10 @@ class Config:
     HCAPTCHA_SITE_KEY = os.getenv("HCAPTCHA_SITE_KEY")
     HCAPTCHA_SECRET_KEY = os.getenv("HCAPTCHA_SECRET_KEY")
 
+    # CSRF protection
+    WTF_CSRF_ENABLED = os.getenv("WTF_CSRF_ENABLED", "true").lower() == "true"
+    WTF_CSRF_TIME_LIMIT = int(os.getenv("WTF_CSRF_TIME_LIMIT", 86400))  # 24 hours
+
 
 class DevelopmentConfig(Config):
     DEBUG = True

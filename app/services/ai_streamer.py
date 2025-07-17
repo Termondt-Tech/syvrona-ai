@@ -16,7 +16,7 @@ class AIStreamer:
 
     def chat(self, message, user_id, conversation_id, model):
         from app.models import create_message
-        from app.handler.conversation_handler import get_conversation_messages
+        from app.services.conversation import get_conversation_messages
 
         metadata = get_model_metadata(model)
         provider_key = metadata.get("provider")

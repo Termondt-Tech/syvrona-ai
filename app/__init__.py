@@ -96,6 +96,10 @@ def create_app(config=None):
 
     app.register_blueprint(knowledge_blueprint)
 
+    from .tags import tags_bp as tags_blueprint
+
+    app.register_blueprint(tags_blueprint, url_prefix="/tags")
+
     @app.context_processor
     def inject_unread_notification_count():
         from app.models import Notification, NotificationRead

@@ -90,8 +90,13 @@
             const tagId = tagSpan.dataset.tagId;
             const msgDiv = tagSpan.closest('[data-msg-id]');
             const msgId = msgDiv.dataset.msgId;
-            fetch(`/messages/${msgId}/tags/${tagId}`, { method: 'DELETE' })
-                .then(() => tagSpan.remove());
+            fetch(`/messages/${msgId}/tags/${tagId}`, { 
+                method: 'DELETE',
+                headers: {
+                    'X-CSRF-Token': window.csrf_token
+                }
+            })
+            .then(() => tagSpan.remove());
         }
     });
 
@@ -106,7 +111,7 @@
                 suggestionsDiv.innerHTML = '';
                 return;
             }
-            const resp = await fetch(`/tags?q=${encodeURIComponent(q)}`);
+            const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
             const tags = await resp.json();
             suggestionsDiv.innerHTML = '';
             if (tags.length === 0) {
