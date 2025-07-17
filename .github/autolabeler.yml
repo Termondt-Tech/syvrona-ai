@@ -30,3 +30,7 @@
 - label: wontfix
   title: ['wontfix', "won't fix"]
   body: ['wontfix', "won't fix"]
+
+- label: architecture
+  title: ['architecture', 'design', 'system design', 'system architecture', 'refactor', 'refactoring']
+  body: ['architecture', 'design', 'system design', 'system architecture', 'refactor', 'refactoring']
