@@ -1,4 +1,4 @@
-/* Global element styles */
+/* === base.css === */
 body {
     height: 100vh;
 }
@@ -13,8 +13,43 @@ pre {
     display: inline;
     max-width: 50%;
 }
+.notification-badge {
+  display: inline-block;
+  min-width: 19px;
+  padding: 2px 7px;
+  margin-left: 7px;
+  font-size: 0.92em;
+  font-weight: 700;
+  background: #2563eb;
+  color: #fff;
+  border-radius: 1em;
+  vertical-align: middle;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.07);
+  line-height: 1.2;
+}
 
-/* Layout styles */
+/* Visually hidden helper for accessibility */
+.visually-hidden {
+    position: absolute !important;
+    width: 1px !important;
+    height: 1px !important;
+    padding: 0 !important;
+    margin: -1px !important;
+    overflow: hidden !important;
+    clip: rect(0 0 0 0) !important;
+    white-space: nowrap !important;
+    border: 0 !important;
+}
+
+.no-content-message {
+    text-align: center;
+    color: #888;
+    font-size: 1.06em;
+    padding: 2.2em 1em;
+}
+
+
+/* === layout.css === */
 .layout-vertical-center {
     display: flex;
     flex-direction: column;
@@ -22,7 +57,7 @@ pre {
     justify-content: flex-start;
 }
 
-/* Navbar styles */
+/* === navbar.css === */
 .navbar {
     background-color: #ffffff;
     border-bottom: 1px solid #e5e7eb;
@@ -31,6 +66,14 @@ pre {
     position: sticky;
     top: 0;
     z-index: 10;
+}
+
+.nav-links a.admin-link {
+    color: #003366;
+    font-weight: 600;
+    border: 1px solid #003366;
+    padding: 0.25rem 0.5rem;
+    border-radius: 4px;
 }
 
 .container {
@@ -42,14 +85,12 @@ pre {
     align-items: center;
 }
 
-/* Logo */
 .logo {
     font-size: 1.5rem;
     font-weight: 700;
     color: #2563eb;
 }
 
-/* Nav links */
 .nav-links a {
     margin-left: 1.5rem;
     text-decoration: none;
@@ -63,28 +104,132 @@ pre {
     color: #2563eb;
 }
 
-/* Ensure mobile nav toggle works */
 .nav-links.open {
     display: flex !important;
 }
 
-/* Main content */
-.main-content {
-    padding: 2rem 1rem;
-    text-align: center;
+.menu-toggle {
+    display: block;
+    font-size: 1.5rem;
+    background: none;
+    border: none;
+    cursor: pointer;
 }
 
-.main-content h1 {
-    font-size: 2rem;
-    margin-bottom: 0.5rem;
+.nav-links {
+    display: none;
+    flex-direction: column;
+    background-color: #ffffff;
+    position: absolute;
+    top: 64px;
+    right: 1rem;
+    padding: 1rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    border-radius: 0.5rem;
+    gap: 1.5rem;
 }
 
-.main-content p {
-    font-size: 1.125rem;
-    color: #4b5563;
+@media (min-width: 769px) {
+    .menu-toggle {
+        display: none;
+    }
+
+    .nav-links {
+        display: flex;
+        flex-direction: row;
+        position: static;
+        padding: 0;
+        box-shadow: none;
+        background-color: transparent;
+    }
+
+    .nav-links a {
+        margin: 0 0 0 1.5rem;
+    }
 }
 
-/* Form container */
+/* Dropdown Styles */
+.dropdown {
+    position: relative;
+    display: inline-block;
+}
+
+.dropbtn {
+    background: none;
+    border: none;
+    font: inherit;
+    color: #374151;
+    font-weight: 500;
+    margin-left: 1.5rem;
+    cursor: pointer;
+    transition: color 0.2s;
+    padding: 0;
+}
+
+.dropbtn:focus,
+.dropbtn:hover {
+    color: #2563eb;
+    outline: none;
+}
+
+.dropdown-content {
+    display: none;
+    position: absolute;
+    right: 0;
+    min-width: 180px;
+    background-color: #fff;
+    box-shadow: 0 4px 12px rgba(0,0,0,0.10);
+    border-radius: 0.5rem;
+    z-index: 100;
+    flex-direction: column;
+    gap: 0;
+    padding: 0.5rem 0;
+}
+
+.dropdown-content a {
+    color: #374151;
+    padding: 0.6rem 1.2rem;
+    display: block;
+    text-decoration: none;
+    font-weight: 500;
+}
+
+.dropdown-content a:hover {
+    background: #f1f5f9;
+    color: #2563eb;
+}
+
+/* Show dropdown on hover - desktop only */
+@media (min-width: 769px) {
+    .dropdown:hover .dropdown-content,
+    .dropdown:focus-within .dropdown-content {
+        display: block;
+    }
+    .dropbtn::after {
+        content: "";
+    }
+}
+
+/* On mobile, use open class */
+@media (max-width: 768px) {
+    .dropdown-content {
+        position: static;
+        box-shadow: none;
+        background: transparent;
+        min-width: 0;
+        border-radius: 0;
+        padding: 0;
+    }
+    .dropdown-content a {
+        padding-left: 2rem;
+    }
+    .dropdown.open .dropdown-content {
+        display: block;
+    }
+}
+
+
+/* === forms.css === */
 .form-container {
     max-width: 500px;
     margin: 2rem auto;
@@ -97,7 +242,6 @@ pre {
     align-items: center;
 }
 
-/* Title */
 .form-title {
     font-size: 1.75rem;
     margin-bottom: 1.5rem;
@@ -105,7 +249,6 @@ pre {
     color: #1f2937;
 }
 
-/* Form group layout */
 .form-group {
     margin-bottom: 1.25rem;
     display: flex;
@@ -135,7 +278,6 @@ pre {
     box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
 }
 
-/* Submit button */
 .btn-primary {
     background-color: #2563eb;
     color: #ffffff;
@@ -157,151 +299,159 @@ pre {
     margin-top: 1rem;
 }
 
-/* Responsive layout for nav */
-.menu-toggle {
-    display: block;
-    font-size: 1.5rem;
-    background: none;
+/* Modal overlay */
+.modal-overlay {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100vw;
+    height: 100vh;
+    background: rgba(30, 41, 59, 0.75);
+    /* Syvrona blue-black */
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 10000;
+}
+
+.modal-dialog {
+    background: #fff;
+    border-radius: 12px;
+    box-shadow: 0 8px 32px rgba(0, 0, 0, 0.20);
+    max-width: 420px;
+    padding: 2rem 1.5rem;
+    text-align: center;
+    min-width: 300px;
+    animation: fadeIn .25s;
+}
+
+.modal-header h2 {
+    font-size: 1.4rem;
+    color: #1e293b;
+    margin-bottom: .75rem;
+}
+
+.modal-body p {
+    color: #334155;
+    margin-bottom: 1.25rem;
+    font-size: 1.1rem;
+}
+
+.modal-footer {
+    display: flex;
+    justify-content: flex-end;
+    gap: 1rem;
+}
+
+.btn {
+    padding: 0.5rem 1.1rem;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
+    font-size: 1rem;
 }
 
-.nav-links {
-    display: none;
-    flex-direction: column;
-    background-color: #ffffff;
-    position: absolute;
-    top: 64px;
-    right: 1rem;
-    padding: 1rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    border-radius: 0.5rem;
-    gap: 1.5rem;
+.btn-danger {
+    background: #f87171;
+    color: #fff;
 }
 
-/* Mobile-first adjustments */
-.input-row {
+.btn-secondary {
+    background: #94a3b8;
+    color: #fff;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.mt-1 {
+    margin-top: 1rem !important;
+}
+
+.form-panel {
+    background: #fff;
+    border-radius: 0.6rem;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.07);
+    max-width: 520px;
+    margin: 2.5rem auto;
+    padding: 2.5rem 2rem;
     display: flex;
     flex-direction: column;
     align-items: stretch;
-    margin-bottom: 1rem;
-    max-width: 700px;
-    width: 100%;
 }
 
-.input-row textarea {
-    flex: 1;
-    padding: 0.75rem;
-    border-radius: 0.375rem;
-    border: 1px solid #d1d5db;
-    resize: vertical;
-    font-size: 1rem;
-    background-color: #f9fafb;
+@media (max-width: 600px) {
+    .form-panel {
+        padding: 1.2rem 0.6rem;
+        max-width: 98vw;
+        margin: 1.5rem auto;
+    }
+}
+
+.edit-title-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
     width: 100%;
-    max-width: 100%;
+    max-width: 420px;
+}
+
+.edit-title-input {
+    flex: 1 1 auto;
     min-width: 0;
+    padding: 0.4rem 0.7rem;
+    border-radius: 6px;
+    border: 1px solid #b8bfc7;
+    font-size: 1rem;
+    background: #f9fafb;
+    transition: border-color 0.18s;
 }
 
-.input-row textarea:focus {
+.edit-title-input:focus {
     outline: none;
     border-color: #2563eb;
-    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.25);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.18);
 }
 
-.input-row .btn-primary {
-    padding: 0.75rem 1.25rem;
-    white-space: nowrap;
-    width: 100%;
-}
-
-@media (min-width: 769px) {
-    .menu-toggle {
-        display: none;
+/* Responsive: stack input+button vertically on mobile */
+@media (max-width: 600px) {
+    .edit-title-form {
+        flex-direction: column;
+        gap: 0.3rem;
+        align-items: stretch;
+        max-width: none;
     }
 
-    .nav-links {
-        display: flex;
-        flex-direction: row;
-        position: static;
-        padding: 0;
-        box-shadow: none;
-        background-color: transparent;
-    }
-
-    .nav-links a {
-        margin: 0 0 0 1.5rem;
-    }
-
-    .input-row {
-        flex-direction: row;
-        align-items: flex-end;
-    }
-
-    .input-row textarea {
-        width: 50ch;
-    }
-
-    .input-row .btn-primary {
-        width: auto;
+    .edit-title-input {
+        width: 100%;
     }
 }
 
-/* Footer styling */
-.site-footer {
-    background-color: #f3f4f6;
-    border-top: 1px solid #e5e7eb;
-    padding: 1.5rem 0;
-    text-align: center;
-    font-size: 0.875rem;
-    color: #6b7280;
-    margin-top: auto;
+.form-actions-row {
+    margin-top: 1.5em;
+    display: flex;
+    gap: 1em;
+    flex-wrap: wrap;
+    align-items: center;
+    justify-content: flex-start;
 }
 
-.footer-container {
-    max-width: 1100px;
-    margin: 0 auto;
-    padding: 0 1rem;
+@media (max-width: 600px) {
+    .form-actions-row {
+        flex-direction: column;
+        gap: 0.65em;
+        align-items: stretch;
+    }
 }
 
-.main-title {
-    font-size: 2rem;
-    font-weight: 700;
-    color: #1f2937;
-    margin-bottom: 1.5rem;
-    text-align: center;
-}
-
-.main-description {
-    font-size: 1.125rem;
-    color: #374151;
-    line-height: 1.75;
-    margin-bottom: 1.25rem;
-    text-align: left;
-}
-
-.chat-container {
-    max-width: 700px;
-    margin: 2rem auto;
-    padding: 0 1rem;
-}
-
-pre#body {
-    white-space: pre-wrap;
-    word-wrap: break-word;
-    display: block;
-    max-width: 100%;
-    width: 100%;
-    background-color: #f9fafb;
-    padding: 1rem;
-    margin: 1rem auto;
-    border: 1px solid #e5e7eb;
-    border-radius: 0.375rem;
-    font-family: monospace;
-    font-size: 0.95rem;
-    overflow-y: auto;
-}
-
-/* Flash message base */
+/* === flash.css === */
 .flash-message {
     max-width: 600px;
     margin: 1rem auto;
@@ -313,7 +463,6 @@ pre#body {
     box-shadow: 0 2px 4px rgba(0,0,0,0.05);
 }
 
-/* Flash message variants */
 .flash-success {
     background-color: #ecfdf5;
     color: #065f46;
@@ -336,4 +485,213 @@ pre#body {
     background-color: #fef3c7;
     color: #92400e;
     border: 1px solid #f59e0b;
+}
+
+
+/* === footer.css === */
+.site-footer {
+    background-color: #f3f4f6;
+    border-top: 1px solid #e5e7eb;
+    padding: 1.5rem 0;
+    text-align: center;
+    font-size: 0.875rem;
+    color: #6b7280;
+    margin-top: auto;
+}
+
+.footer-container {
+    max-width: 1100px;
+    margin: 0 auto;
+    padding: 0 1rem;
+}
+
+.site-footer p {
+    margin: 0.5rem 0;
+}
+
+.footer-link {
+    color: #374151;
+    text-decoration: none;
+    font-weight: 500;
+    transition: color 0.2s ease-in-out;
+}
+
+.footer-link:hover,
+.footer-link:focus {
+    color: #2563eb;
+    text-decoration: underline;
+}
+
+/* === typography.css === */
+
+.main-title {
+    font-size: 2rem;
+    font-weight: 700;
+    color: #1f2937;
+    margin-bottom: 1.5rem;
+    text-align: center;
+}
+
+.main-description {
+    font-size: 1.125rem;
+    color: #374151;
+    line-height: 1.75;
+    margin-bottom: 1.25rem;
+    text-align: left;
+}
+
+/* Updated: main-content now max-width and left-aligned by default */
+.main-content {
+    max-width: 720px;
+    margin: 2.5rem auto 2rem auto;
+    padding: 2rem 1.5rem;
+    background: #fff;
+    border-radius: 1.1rem;
+    box-shadow: 0 2px 12px rgba(30, 60, 90, 0.05);
+    text-align: left;
+}
+
+.main-content-wide {
+    max-width: 1100px; /* Or higher if needed */
+}
+
+.main-content-narrow {
+  max-width: 720px;
+  margin: 0 auto 2rem auto;
+}
+
+
+/* Headings inside main-content still centered for emphasis */
+.main-content h1,
+.main-content h2,
+.main-content .feature-title {
+    text-align: center;
+}
+
+/* Body text remains left-aligned */
+.main-content p,
+.main-content ul,
+.main-content li {
+    text-align: left;
+    font-size: 1.125rem;
+    color: #4b5563;
+}
+
+/* Optional: Feature section styling for visual distinction */
+.feature-section {
+    margin-top: 2rem;
+    background: #f8fafc;
+    padding: 1.5rem 1rem;
+    border-radius: 1rem;
+}
+
+.feature-list {
+    list-style: disc inside;
+    margin-left: 1.2rem;
+    color: #222;
+    font-size: 1.04rem;
+}
+
+.feature-list li {
+    margin-bottom: 0.65em;
+}
+
+/* Legal pages are always left-aligned for readability */
+.legal-page {
+    text-align: left;
+}
+
+/* --- universal button styles for both <a> and <button> --- */
+.btn,
+.btn-sm,
+.btn-primary,
+.btn-secondary,
+.btn-danger {
+    display: inline-block;
+    border: none;
+    cursor: pointer;
+    font-family: inherit;
+    font-size: 1rem;
+    border-radius: 6px;
+    padding: 0.5rem 1.1rem;
+    background: #e5e7eb; /* fallback color for .btn */
+    color: #1f2937;
+    font-weight: 500;
+    text-align: center;
+    text-decoration: none !important; /* important to kill link underline */
+    transition: background 0.2s, color 0.2s, box-shadow 0.15s;
+    outline: none;
+    min-width: 0;
+}
+
+.btn-sm {
+    font-size: 0.92em;
+    padding: 0.33em 0.85em;
+}
+
+/* PRIMARY button */
+.btn-primary {
+    background: #2563eb;
+    color: #fff !important;
+}
+
+.btn-primary:hover,
+.btn-primary:focus {
+    background: #1e40af;
+    color: #fff !important;
+}
+
+/* SECONDARY button */
+.btn-secondary {
+    background: #94a3b8;
+    color: #fff !important;
+}
+
+.btn-secondary:hover,
+.btn-secondary:focus {
+    background: #64748b;
+    color: #fff !important;
+}
+
+/* DANGER button */
+.btn-danger {
+    background: #f87171;
+    color: #fff !important;
+}
+
+.btn-danger:hover,
+.btn-danger:focus {
+    background: #dc2626;
+    color: #fff !important;
+}
+
+/* Remove underline and color inheritance for <a> with button classes */
+a.btn,
+a.btn-sm,
+a.btn-primary,
+a.btn-secondary,
+a.btn-danger {
+    text-decoration: none !important;
+    color: inherit;
+    display: inline-block;
+}
+
+/* Ensure <button> and <a> have pointer cursor */
+a.btn, button.btn, input[type="submit"].btn {
+    cursor: pointer;
+}
+
+/* Add focus ring for accessibility */
+.btn:focus-visible {
+    outline: 2px solid #2563eb;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 3px rgba(37,99,235,0.15);
+}
+
+/* --- Style the Button Container in table actions --- */
+.app-actions {
+    display: flex;
+    gap: 8px;
+    align-items: center;
+    flex-wrap: wrap;
 }
