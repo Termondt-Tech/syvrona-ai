@@ -291,3 +291,24 @@
     padding: 0 2px;
     border-radius: 2px;
 }
+
+/* conversation.css */
+
+.conversation-container {
+    max-width: 700px;
+    margin: 2rem auto;
+    padding: 0 1rem;
+    background: #fff;
+}
+
+.conversation-history {
+    display: block;
+    margin-bottom: 1.5rem;
+}
+
+.conversation-container .add-tag-btn,
+.conversation-container .tag-input,
+.conversation-container .tag-suggestions {
+    display: none !important;
+}
+/* Optionally, tweak message backgrounds, etc. */

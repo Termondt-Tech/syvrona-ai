@@ -9,7 +9,7 @@
 
 {% block content %}
 <h1 class="main-title">{{ conversation.title }}</h1>
-<main class="chat-container">
+<main class="conversation-container">
     <p><em>Started: {{ conversation.created_at.strftime('%Y-%m-%d %I:%M %p') }}</em></p>
     <div class="conversation-history" id="history">
         {% for msg in messages %}
@@ -49,10 +49,10 @@
         </form>
         <a href="{{ url_for('chat.conversations') }}" class="btn btn-secondary">Back to Conversations list</a>
     </div>
-
     {% include "_modal.html" %}
-
+    <script src="{{ url_for('static', filename='js/modal.js') }}"></script>
 </main>
+
 
 <!-- Add the same marked.js script -->
 <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
@@ -214,10 +214,5 @@
     });
 
 </script>
-
-<script src="{{ url_for('static', filename='js/modal.js') }}"></script>
-
-
-
 
 {% endblock %}
