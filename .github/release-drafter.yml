@@ -18,8 +18,8 @@ change-template: '- $TITLE (#$NUMBER) @$AUTHOR'
 no-changes-template: '- No changes'
 
 template: |
-  ## Changes
+  ## What's Changed
 
   $CHANGES
 
-  **Full Changelog:** $FULL_CHANGELOG
+  **[Full Changelog](https://github.com/Termondt-Tech/syvrona-ai/compare/$PREVIOUS_TAG...$TAG)**
