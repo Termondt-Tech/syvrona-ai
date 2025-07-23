@@ -1,5 +1,6 @@
 from app.models import (
     Conversation,
+    Message,
     create_conversation as db_create_conversation,
     get_conversation_messages as db_get_conversation_messages,
     get_user_conversations as db_get_user_conversations,
@@ -7,6 +8,9 @@ from app.models import (
     delete_conversation as db_delete_conversation,
     search_conversations_by_message as db_search_conversations_by_message,
 )
+from app import db
+from sqlalchemy import or_
+from collections import defaultdict
 
 
 def create_conversation(user_id, title=None):
@@ -55,3 +59,56 @@ def search_conversations_by_message(user_id, query):
     conversations = sorted(conversations, key=lambda x: x.created_at, reverse=True)
     # Sort conversations by created_at in descending order
     return conversations, convo_to_msg
+
+
+def search_conversations_by_message_paginated(user_id, query, page=1, per_page=10):
+    """
+    Returns:
+        Pagination: conversations paginated (like SQLAlchemy Flask paginate)
+        dict: convo_to_msg mapping conversation.id -> [matching messages]
+    """
+    query = query.strip()
+    # 1: Find convos where title matches or any msg content matches
+    # Create subquery for conversations that have a message matching the query AND
+    # belong to this user
+    subq = (
+        db.session.query(Message.conversation_id)
+        .join(Conversation, Message.conversation_id == Conversation.id)
+        .filter(
+            Conversation.user_id == user_id,
+            Message.content.ilike(f"%{query}%"),
+        )
+        .subquery()
+    )
+
+    convo_query = (
+        Conversation.query.filter(Conversation.user_id == user_id)
+        .filter(or_(Conversation.title.ilike(f"%{query}%"), Conversation.id.in_(subq)))
+        .order_by(Conversation.created_at.desc())
+    )
+
+    convos_paginated = convo_query.paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    # 2: For convos on this page, fetch their matching messages (which match the query)
+    paged_convo_ids = [c.id for c in convos_paginated.items]
+    if paged_convo_ids:
+        msgs = (
+            Message.query.filter(
+                Message.conversation_id.in_(paged_convo_ids),
+                Message.content.ilike(f"%{query}%"),
+            )
+            .join(Conversation, Message.conversation_id == Conversation.id)
+            .filter(Conversation.user_id == user_id)
+            .order_by(Message.created_at.asc())
+            .all()
+        )
+
+        convo_to_msg = defaultdict(list)
+        for msg in msgs:
+            convo_to_msg[msg.conversation_id].append(msg)
+    else:
+        convo_to_msg = {}
+
+    return convos_paginated, convo_to_msg

@@ -4,7 +4,7 @@
     <h1 class="form-title">Refine Your Prompt</h1>
     {% include "_flash.html" %}
 <div class="form-panel">
-    <form action="{{ url_for('chat.new_chat') }}" method="POST" autocomplete="off">
+    <form action="{{ url_for('chat.chat_page') }}" method="POST" autocomplete="off">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
             <label for="body">Edit your prompt before starting chat:</label>

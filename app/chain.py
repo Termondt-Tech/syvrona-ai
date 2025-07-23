@@ -1,10 +1,10 @@
-from flask import Blueprint, render_template, redirect, request, session, url_for, flash
+from flask import Blueprint, render_template, redirect, request, url_for, flash
 from flask_login import login_required, current_user
 
 from app.decorators import require_active_subscription
 from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY
-from .models import PromptChain, Prompt, Tag, chain_prompts
-from . import db
+from app.models import PromptChain, Prompt, Tag, chain_prompts
+from app import db
 
 chain_bp = Blueprint("chain", __name__)
 
@@ -220,19 +220,6 @@ def run_chain(chain_id):
 
     # Sort or group by provider if you want
     available_models = sorted(available_models, key=lambda m: m["key"])
-
-    if request.method == "POST":
-        context = request.form.get("context", "").strip()
-        model_key = request.form.get("model", DEFAULT_MODEL_KEY)
-        prompt_bodies = [p.body for p in chain.prompts]
-        # Combine all prompts, append context (if any)
-        if context:
-            prompt_bodies.append(context)
-        # This could be a single string (joined), or just a list—depends how
-        # your chat expects it
-        session["prefilled_prompt"] = "\n\n".join(prompt_bodies)
-        session["prefilled_model"] = model_key
-        return redirect(url_for("chat.new_chat"))
 
     return render_template(
         "chain/run.html",

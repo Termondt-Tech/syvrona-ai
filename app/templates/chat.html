@@ -32,6 +32,7 @@
     </div>
     <form id="chat-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+        <input type="hidden" name="conversation_id" value="{{ conversation_id }}">
         <div class="input-row">
             <textarea id="input" placeholder="Enter your message" rows="3">{{ prefilled_prompt }}</textarea>
             <div class="model-selector">
@@ -68,12 +69,20 @@
 <script>
     const form = document.getElementById('chat-form');
     const input = document.getElementById('input');
+    window.conversationId = "{{ conversation_id|default('') }}" ||
+        document.querySelector('input[name="conversation_id"]')?.value || null;
 
     // --- Auto-expand textarea as you type ---
     input.addEventListener('input', function () {
         this.style.height = 'auto';
         this.style.height = Math.max(this.scrollHeight, 44) + 'px';
     });
+
+    function resetInputHeight() {
+        input.style.height = 'auto';
+        input.style.height = Math.max(input.scrollHeight, 44) + 'px';
+    }
+
 
     const sendBtn = document.getElementById('send-btn');
 
@@ -367,6 +376,7 @@
         const messageText = input.value;
         const selectedModel = modelSelector.value;
         input.value = "";
+        resetInputHeight();
 
         // Add user message
         const userDiv = document.createElement("div");
@@ -388,13 +398,11 @@
             const response = await fetch("/answer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "X-CSRF-Token": window.csrf_token },
-                body: JSON.stringify({ message: messageText, model: selectedModel })
+                body: JSON.stringify({ 
+                    message: messageText, 
+                    model: selectedModel, 
+                    conversation_id: window.conversationId ? Number(window.conversationId) : null })
             });
-
-            if (!window.conversationId) {
-                const headerId = response.headers.get("X-Conversation-Id");
-                if (headerId) window.conversationId = parseInt(headerId, 10);
-            }
 
             const reader = response.body.getReader();
             let output = "";
@@ -426,6 +434,12 @@
                 window.csrf_token = newToken;
                 document.querySelector('input[name="csrf_token"]').value = newToken;
             }
+            const headerId = response.headers.get("X-Conversation-Id");
+            if (headerId) {
+                window.conversationId = headerId;
+                document.querySelector('input[name="conversation_id"]').value = headerId;
+            }
+
             await updateLatestMessages();
 
             input.focus();

@@ -14,7 +14,11 @@
         <!-- Quick Start -->
         <section class="dashboard-card quickstart">
             <h2>Quick Start</h2>
-            <a href="{{ url_for('chat.new_chat') }}" class="btn-primary">Start a New Chat</a>
+            <div class="quickstart-actions">
+                <a href="{{ url_for('chat.chat_page') }}" class="btn-primary">Start a New Chat</a>
+                <a href="{{ url_for('prompt.create_prompt') }}" class="btn-primary">Start a New Prompt</a>
+                <a href="{{ url_for('chain.create_chain') }}" class="btn-primary">Create a Prompt Chain</a>
+            </div>
         </section>
 
         <!-- Notifications -->
