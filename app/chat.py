@@ -20,8 +20,7 @@ from app.services.conversation import (
     create_conversation,
     delete_conversation,
     get_conversation,
-    get_user_conversations,
-    search_conversations_by_message,
+    search_conversations_by_message_paginated,
     update_conversation_title,
     get_conversation_messages,
 )
@@ -168,26 +167,28 @@ def view_message(message_id):
 @login_required
 @require_active_subscription
 def conversations():
-    user_id = current_user.get_id()
+    page = request.args.get("page", 1, type=int)
+    per_page = request.args.get("per_page", 10, type=int)
     q = request.args.get("q", "").strip()
-    if q:
-        convos, convo_to_msg = search_conversations_by_message(user_id, q)
-        search_query = q
-    else:
-        convos = get_user_conversations(user_id)
-        convo_to_msg = {}
-        search_query = ""
-        logger.info(f"User {user_id} has {len(convos)} conversations.")
 
-    if not convos:
-        flash("No conversations found.", "info")
-        return render_template("conversations.html", conversations=[])
-    # Check if the user has conversations
+    if q:
+        convos, convo_to_msg = search_conversations_by_message_paginated(
+            current_user.id, q, page, per_page
+        )
+    else:
+        convos = (
+            Conversation.query.filter_by(user_id=current_user.id)
+            .order_by(Conversation.created_at.desc())
+            .paginate(page=page, per_page=per_page, error_out=False)
+        )
+        convo_to_msg = {}
+
     return render_template(
         "conversations.html",
         conversations=convos,
+        search_query=q,
         convo_to_msg=convo_to_msg,
-        search_query=search_query,
+        active_tab="conversations",
     )
 
 
@@ -204,21 +205,6 @@ def edit_conversation_title(conversation_id):
     flash("Conversation title updated successfully!", "success")
     # Redirect to the conversations page
     return redirect(url_for("chat.conversations"))
-
-
-@chat.route("/conversation/<int:conversation_id>")
-@login_required
-@require_active_subscription
-def resume_conversation(conversation_id):
-    conversation = get_conversation(conversation_id)
-    if conversation is None:
-        flash("Conversation not found.", "error")
-        return redirect(url_for("chat.conversations"))
-    if conversation.user_id != current_user.id:
-        abort(404)  # Unauthorized access - send as 404 to avoid leaking info
-    session["conversation_id"] = conversation.id
-    logger.info(f"Resumed conversation with ID: {conversation_id}")
-    return redirect(url_for("chat.chat_page"))
 
 
 @chat.route("/conversation/<int:conversation_id>/view")
@@ -250,9 +236,16 @@ def view_conversation(conversation_id):
 @login_required
 @require_active_subscription
 def delete_conversation_route(conversation_id):
+    # Extract current pagination/search context from form
+    page = request.form.get("page", 1, type=int)
+    per_page = request.form.get("per_page", 10, type=int)
+    q = request.form.get("q", "").strip()
+
+    # Authorization and deletion
     convo = get_conversation(conversation_id)
     if not convo or convo.user_id != current_user.id:
         abort(404)  # Not found or unauthorized
+
     session.pop("conversation_id", None)  # In case it was active
     delete_conversation(conversation_id)
     flash("Conversation deleted.", "success")
@@ -262,7 +255,24 @@ def delete_conversation_route(conversation_id):
             f"{current_user.get_id()}"
         )
     )
-    return redirect(url_for("chat.conversations"))
+
+    # --- Edge case: If the page is now empty, go to previous page
+    # Only possible if page > 1
+
+    # Get current list of user's conversations (after deletion)
+    query = Conversation.query.filter_by(user_id=current_user.id)
+    if q:
+        query = query.filter(Conversation.title.ilike(f"%{q}%"))
+    # Count how many items left on the *now-current* page
+    pagination = query.order_by(Conversation.created_at.desc()).paginate(
+        page=page, per_page=per_page, error_out=False
+    )
+
+    # If page > 1 and no items on this page, go back one page
+    if page > 1 and len(pagination.items) == 0:
+        page -= 1
+
+    return redirect(url_for("chat.conversations", page=page, per_page=per_page, q=q))
 
 
 @chat.route("/conversation/<int:conversation_id>/latest")
@@ -295,18 +305,24 @@ def latest_messages(conversation_id):
     )
 
 
-@chat.route("/chat/new ", methods=["GET", "POST"])
+@chat.route("/chat", methods=["GET", "POST"])
 @login_required
 @require_active_subscription
-def new_chat():
-    session.pop("conversation_id", None)
+def chat_page():
+    logger.info(f"Current User: {current_user.get_id()}")
 
-    # If POST, pull prompt/model from form (else defaults)
+    conversation_id = None
+    prefilled_prompt = ""
+    selected_model = DEFAULT_MODEL_KEY
+    messages = []
+
+    # Handle POST logic (form submits, prompt chain runs, continue conversation, etc.)
     if request.method == "POST":
+        # Check for conversation resume
+        conversation_id = request.form.get("conversation_id")
+        # Check for prompt/chain prefill
         chain_id = request.form.get("chain_id")
-        selected_model = request.form.get("model", DEFAULT_MODEL_KEY)
         if chain_id:
-            # It's a chain run: merge prompts + (optional) context
             chain = PromptChain.query.filter_by(
                 id=chain_id, user_id=current_user.id
             ).first_or_404()
@@ -315,57 +331,28 @@ def new_chat():
             if context:
                 prompt_bodies.append(context)
             prefilled_prompt = "\n\n".join(prompt_bodies)
-        else:
+            selected_model = request.form.get("model", DEFAULT_MODEL_KEY)
+        elif request.form.get("body") is not None:
             prefilled_prompt = request.form.get("body", "")
-    else:
-        prefilled_prompt = ""
-        selected_model = DEFAULT_MODEL_KEY
+            selected_model = request.form.get("model", DEFAULT_MODEL_KEY)
+        else:
+            selected_model = (
+                request.form.get("model", DEFAULT_MODEL_KEY) or DEFAULT_MODEL_KEY
+            )
 
-    available_models = [
-        {
-            "key": k,
-            "provider": v.get("provider", "unknown"),
-            "display_name": v.get("display_name", k),
-        }
-        for k, v in MODEL_REGISTRY.items()
-    ]
-    # Optional: Sort (first OpenAI, then Anthropic, then others), then by name
-    available_models.sort(key=lambda m: (m["provider"], m["key"]))
-
-    return render_template(
-        "chat.html",
-        available_models=available_models,
-        default_model=DEFAULT_MODEL_KEY,
-        selected_model=selected_model,
-        prefilled_prompt=prefilled_prompt,
-    )
-
-
-@chat.route("/chat")
-@login_required
-@require_active_subscription
-def chat_page():
-    logger.info(f"Current User: {current_user.get_id()}")
-    conversation_id = session.get("conversation_id")
-    messages = []
-    selected_model = None
-
+    # If conversation_id exists, load conversation and messages
     if conversation_id:
         conversation = get_conversation(conversation_id)
         if conversation and conversation.user_id == current_user.id:
             messages = get_conversation_messages(conversation_id)
             if messages:
-                # Get last message's model, prefer assistant message if you want
                 last_msg_with_model = next(
                     (m for m in reversed(messages) if m.model), None
                 )
                 if last_msg_with_model:
                     selected_model = last_msg_with_model.model
-    # Model selection logic:
-    if not selected_model:
-        selected_model = session.get("prefilled_model", DEFAULT_MODEL_KEY)
 
-    # ADD THIS BLOCK: (copy from /chat/new)
+    # Build available models for selector
     available_models = [
         {
             "key": k,
@@ -382,6 +369,8 @@ def chat_page():
         available_models=available_models,
         default_model=DEFAULT_MODEL_KEY,
         selected_model=selected_model,
+        conversation_id=conversation_id,
+        prefilled_prompt=prefilled_prompt,
     )
 
 
@@ -392,16 +381,24 @@ def answer():
     data = request.get_json()
     message = data["message"]
     model = data.get("model", "gpt-3.5-turbo")  # default fallback
+    raw_conversation_id = data.get("conversation_id")
+    logger.info(f"Raw conversation_id: {raw_conversation_id!r}")
     logger.info(f"Model: {model}")
     logger.info(f"Current User: {current_user.get_id()}")
     user_id = current_user.get_id()
-    conversation_id = session.get("conversation_id")
+
+    if raw_conversation_id in (None, "", "None", "null"):
+        conversation_id = None
+    else:
+        try:
+            conversation_id = int(raw_conversation_id)
+        except (TypeError, ValueError):
+            conversation_id = None
+
     if not conversation_id:
         conversation = create_conversation(user_id, message)
         conversation_id = conversation.id
         logger.info(f"New conversation created with ID: {conversation_id}")
-        # Store the conversation ID in the session
-        session["conversation_id"] = conversation_id
 
     from app.services.ai_streamer import AIStreamer  # adjust path as needed
 

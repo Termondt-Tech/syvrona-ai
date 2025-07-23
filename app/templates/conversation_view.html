@@ -37,8 +37,9 @@
     </div>
 
     <div class="conversation-actions-row">
-        <form action="{{ url_for('chat.resume_conversation', conversation_id=conversation.id) }}" method="get">
+        <form action="{{ url_for('chat.chat_page') }}" method="post">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+            <input type="hidden" name="conversation_id" value="{{ conversation.id }}">
             <button class="btn btn-primary">Continue This Conversation</button>
         </form>
         <form action="{{ url_for('chat.delete_conversation_route', conversation_id=conversation.id) }}" method="POST"
