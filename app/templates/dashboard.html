@@ -105,7 +105,7 @@
                 {% endif %}
             </div>
             {% if tags_count > (recent_convo_tags|length + recent_prompt_tags|length + recent_chain_tags|length) %}
-            <a href="{{ url_for('chat.my_tags') }}" class="btn-link">View All Tags</a>
+            <a href="{{ url_for('tags.my_tags') }}" class="btn-link">View All Tags</a>
             {% endif %}
             {% else %}
             <div class="empty-message">No tags yet.</div>

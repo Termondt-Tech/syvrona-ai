@@ -66,6 +66,7 @@
 
 </main>
 <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tags.js') }}"></script>
 <script>
     const form = document.getElementById('chat-form');
     const input = document.getElementById('input');
@@ -77,15 +78,12 @@
         this.style.height = 'auto';
         this.style.height = Math.max(this.scrollHeight, 44) + 'px';
     });
-
     function resetInputHeight() {
         input.style.height = 'auto';
         input.style.height = Math.max(input.scrollHeight, 44) + 'px';
     }
 
-
     const sendBtn = document.getElementById('send-btn');
-
     const body = document.getElementById('body');
     const modelSelector = document.getElementById('model');
     const AUTO_SUBMIT_ENABLED = true;
@@ -112,15 +110,32 @@
             }, ms);
         }
     }
-    // --- Toast click to dismiss ---
+    // --- Close toast on click ---
     document.getElementById('toast').addEventListener('click', function () {
         this.classList.remove('show');
     });
 
     // --- On page load: scroll to bottom ---
     window.addEventListener('DOMContentLoaded', () => {
+        // --- Render all message markdown/code (delegated to marked.js) ---
+        document.querySelectorAll('.msg-content').forEach(el => {
+            const role = el.dataset.role;
+            if (role === "assistant") {
+                el.innerHTML = marked.parse(el.textContent);
+            } else {
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                code.textContent = el.textContent;
+                pre.appendChild(code);
+                el.innerHTML = '';
+                el.appendChild(pre);
+            }
+        });
+
+        // --- Scroll to bottom *after* rendering ---
         scrollChatToBottomAndFocus(false);
     });
+
 
     // --- Auto-submit if prefilled prompt ---
     if (AUTO_SUBMIT_ENABLED && input && input.value.trim()) {
@@ -131,235 +146,6 @@
             }
         }, 600);
     }
-
-    // --- Markdown/Code rendering ---
-    function renderMsgContent(role, text) {
-        if (role === "assistant") {
-            return marked.parse(text);
-        } else {
-            const pre = document.createElement('pre');
-            const code = document.createElement('code');
-            code.textContent = text;
-            pre.appendChild(code);
-            return pre.outerHTML;
-        }
-    }
-
-    // --- Tag controls and helpers ---
-    function getTagUIMarkup(msgId, tags = []) {
-        let pills = tags.map(tag => `
-        <span class="tag-pill" data-tag-id="${tag.id}">
-            ${tag.name}
-            <span class="remove-tag" title="Remove tag">&times;</span>
-        </span>
-    `).join('');
-        return `
-        <div class="tag-list">
-            ${pills}
-            <span class="add-tag-btn" title="Add tag">+</span>
-        </div>
-        <input class="tag-input" type="text" placeholder="Add tag..." style="display:none;">
-        <div class="tag-suggestions" style="display:none;"></div>
-    `;
-    }
-
-    function ensureSuggestionsVisible(input, suggestionsDiv) {
-        if (!suggestionsDiv || suggestionsDiv.style.display === 'none') return;
-
-        // Reset previous flipping
-        suggestionsDiv.style.bottom = '';
-        suggestionsDiv.style.top = '';
-        suggestionsDiv.style.maxHeight = '';
-
-        // DOM context
-        const chatBody = document.getElementById('body');
-        const form = document.getElementById('chat-form');
-        const inputRect = input.getBoundingClientRect();
-        const sugRect = suggestionsDiv.getBoundingClientRect();
-        const formRect = form.getBoundingClientRect();
-
-        // Check if last message in chat
-        const isLastMsg = input.closest('[data-msg-id]') === chatBody.querySelector('[data-msg-id]:last-of-type');
-
-        // Space below input (to top of form)
-        const spaceBelow = formRect.top - inputRect.bottom;
-
-        // If suggestions overflow below chat form, flip up if there's room
-        if (sugRect.bottom > formRect.top) {
-            const flipHeight = sugRect.height || 180;
-            // If enough space above input, flip suggestions up
-            if (inputRect.top > flipHeight + 12) {
-                suggestionsDiv.style.top = 'auto';
-                suggestionsDiv.style.bottom = `110%`;
-                suggestionsDiv.style.maxHeight = `${inputRect.top - 12}px`;
-            } else {
-                // Otherwise, just shrink
-                suggestionsDiv.style.maxHeight = `${formRect.top - inputRect.bottom - 8}px`;
-            }
-        } else {
-            // Normal display
-            suggestionsDiv.style.top = '';
-            suggestionsDiv.style.bottom = '';
-            suggestionsDiv.style.maxHeight = '';
-        }
-
-        // --- Auto-scroll only if it's the last message and suggestions are clipped ---
-        if (isLastMsg && sugRect.bottom > formRect.top) {
-            // Calculate needed scroll adjustment
-            const scrollDelta = sugRect.bottom - formRect.top + 8; // 8px margin
-            chatBody.scrollTop = chatBody.scrollTop + scrollDelta;
-        }
-    }
-
-    function bindTagInput(input) {
-        const msgDiv = input.closest('[data-msg-id]');
-        const suggestionsDiv = msgDiv.querySelector('.tag-suggestions');
-        let suggestionIdx = -1;
-
-        function highlightSuggestion(idx) {
-            const suggestions = suggestionsDiv.querySelectorAll('.tag-suggestion-item');
-            suggestions.forEach((item, i) => {
-                item.classList.toggle('active', i === idx);
-            });
-        }
-
-        input.addEventListener('input', async function () {
-            const q = input.value;
-            suggestionIdx = -1;
-            if (!q) {
-                suggestionsDiv.style.display = 'none';
-                suggestionsDiv.innerHTML = '';
-                return;
-            }
-            const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
-            const tags = await resp.json();
-            suggestionsDiv.innerHTML = '';
-            if (tags.length === 0) {
-                suggestionsDiv.style.display = 'none';
-                return;
-            }
-            tags.forEach((tag, idx) => {
-                const item = document.createElement('div');
-                item.className = 'tag-suggestion-item';
-                item.textContent = tag.name;
-                item.tabIndex = -1;
-                item.addEventListener('mousedown', async (e) => {
-                    e.preventDefault();
-                    await addTagToMessage(msgDiv, tag.name, input, suggestionsDiv);
-                });
-                suggestionsDiv.appendChild(item);
-            });
-            suggestionsDiv.style.display = 'block';
-            ensureSuggestionsVisible(input, suggestionsDiv);
-        });
-
-        input.addEventListener('keydown', async function (e) {
-            const suggestions = suggestionsDiv.querySelectorAll('.tag-suggestion-item');
-            if ((e.key === 'ArrowDown' || e.key === 'Tab') && suggestions.length > 0) {
-                e.preventDefault();
-                suggestionIdx = (suggestionIdx + 1) % suggestions.length;
-                highlightSuggestion(suggestionIdx);
-                input.value = suggestions[suggestionIdx].textContent;
-            } else if (e.key === 'ArrowUp' && suggestions.length > 0) {
-                e.preventDefault();
-                suggestionIdx = (suggestionIdx - 1 + suggestions.length) % suggestions.length;
-                highlightSuggestion(suggestionIdx);
-                input.value = suggestions[suggestionIdx].textContent;
-            } else if (e.key === 'Enter') {
-                if (suggestionIdx >= 0 && suggestions[suggestionIdx]) {
-                    e.preventDefault();
-                    await addTagToMessage(msgDiv, suggestions[suggestionIdx].textContent, input, suggestionsDiv);
-                    suggestionIdx = -1;
-                } else if (input.value.trim()) {
-                    e.preventDefault();
-                    await addTagToMessage(msgDiv, input.value.trim(), input, suggestionsDiv);
-                    suggestionIdx = -1;
-                }
-            } else if (e.key === 'Escape') {
-                // Hide and clear suggestions
-                suggestionsDiv.style.display = 'none';
-                suggestionsDiv.innerHTML = '';
-                suggestionIdx = -1;
-                input.value = '';
-                // Hide and blur the input
-                input.style.display = 'none';
-                input.blur();
-            }
-            ensureSuggestionsVisible(input, suggestionsDiv);
-        });
-        input.addEventListener('blur', () => {
-            // Only hide if not focused on suggestions (optional, but usually ok)
-            setTimeout(() => {
-                input.value = '';
-                input.style.display = 'none';
-                // Optionally: hide suggestions too
-                suggestionsDiv.style.display = 'none';
-                suggestionsDiv.innerHTML = '';
-            }, 100);
-        });
-
-    }
-
-
-    async function addTagToMessage(msgDiv, tagName, input, suggestionsDiv) {
-        const msgId = msgDiv.dataset.msgId;
-        const resp = await fetch(`/messages/${msgId}/tags`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRF-Token': window.csrf_token },
-            body: JSON.stringify({ tag: tagName })
-        });
-        if (resp.ok) {
-            const data = await resp.json();
-            const tagList = msgDiv.querySelector('.tag-list');
-            const span = document.createElement('span');
-            span.className = 'tag-pill';
-            span.dataset.tagId = data.tag.id;
-            span.innerHTML = `
-            ${data.tag.name}
-            <span class="remove-tag" title="Remove tag">&times;</span>
-        `;
-            const addBtn = tagList.querySelector('.add-tag-btn');
-            tagList.insertBefore(span, addBtn);
-            if (input) input.value = '';
-            if (suggestionsDiv) {
-                suggestionsDiv.innerHTML = '';
-                suggestionsDiv.style.display = 'none';
-            }
-        }
-        else {
-            showToast("Failed to add tag.");
-        }
-    }
-
-    // --- Tag event delegation ---
-    body.addEventListener('click', function (e) {
-        if (e.target.classList.contains('add-tag-btn')) {
-            const container = e.target.closest('.tag-list');
-            const input = container.parentElement.querySelector('.tag-input');
-            input.style.display = 'inline-block';
-            input.focus();
-        }
-
-        if (e.target.classList.contains('remove-tag')) {
-            const tagSpan = e.target.closest('.tag-pill');
-            const tagId = tagSpan.dataset.tagId;
-            const msgDiv = tagSpan.closest('[data-msg-id]');
-            const msgId = msgDiv.dataset.msgId;
-            fetch(`/messages/${msgId}/tags/${tagId}`, {
-                method: 'DELETE',
-                headers: { 'X-CSRF-Token': window.csrf_token }
-            }).then(() => tagSpan.remove());
-        }
-    });
-
-    // --- Tag input setup for all tag inputs on load ---
-    document.querySelectorAll('.tag-input').forEach(bindTagInput);
-
-    // --- Render initial messages ---
-    document.querySelectorAll('.msg-content').forEach(el => {
-        const role = el.dataset.role;
-        el.innerHTML = renderMsgContent(role, el.textContent);
-    });
 
     // --- FORM SUBMIT: Handle User Message and Assistant Streaming ---
     form.addEventListener("submit", async (e) => {
@@ -378,57 +164,83 @@
         input.value = "";
         resetInputHeight();
 
-        // Add user message
+        // --- Add user message to DOM immediately ---
         const userDiv = document.createElement("div");
         userDiv.className = "user-message";
         userDiv.setAttribute('data-msg-id', 'pending-user');
         userDiv.innerHTML = `
-        <strong>User:</strong>
-        <div class="msg-content">${renderMsgContent('user', messageText)}</div>
-        <span class="model-label">${selectedModel}</span>
-        ${getTagUIMarkup('', [])}
-    `;
+            <strong>User:</strong>
+            <div class="msg-content">${marked.parse(messageText)}</div>
+            <span class="model-label">${selectedModel}</span>
+            <div class="tag-list">
+                <span class="add-tag-btn" title="Add tag">+</span>
+            </div>
+            <input class="tag-input" type="text" placeholder="Add tag..." aria-label="Add tag" style="display:none;">
+            <div class="tag-suggestions" style="display:none;"></div>
+        `;
         body.appendChild(userDiv);
-        userDiv.querySelectorAll('.tag-input').forEach(bindTagInput);
 
-        // Scroll to bottom after user message
+        // --- Always create assistant div with spinner immediately ---
+        const assistantDiv = document.createElement("div");
+        assistantDiv.className = "assistant-message";
+        assistantDiv.setAttribute('data-msg-id', 'pending-assistant');
+        assistantDiv.innerHTML = `
+            <strong>Assistant:</strong>
+            <div class="msg-content">
+                <span class="thinking-placeholder" style="opacity:0.8;">
+                    <span class="thinking-spinner"></span>
+                    <span class="thinking-text">Thinking</span>
+                    <span class="thinking-dot dot1">.</span>
+                    <span class="thinking-dot dot2">.</span>
+                    <span class="thinking-dot dot3">.</span>
+                </span>
+            </div>
+            <span class="model-label">${modelSelector.value}</span>
+            <div class="tag-list">
+                <span class="add-tag-btn" title="Add tag">+</span>
+            </div>
+            <input class="tag-input" type="text" placeholder="Add tag..." aria-label="Add tag" style="display:none;">
+            <div class="tag-suggestions" style="display:none;"></div>
+        `;
+        body.appendChild(assistantDiv);
         scrollChatToBottomAndFocus();
+
+        const assistantMsgContent = assistantDiv.querySelector('.msg-content');
+        let firstTokenArrived = false;
+
+        // --- Let browser paint spinner before fetch ---
+        await new Promise(r => setTimeout(r, 0));
+
         try {
-            // Post to backend and handle streaming response
+            // --- Post to backend and handle streaming response ---
             const response = await fetch("/answer", {
                 method: "POST",
                 headers: { "Content-Type": "application/json", "X-CSRF-Token": window.csrf_token },
-                body: JSON.stringify({ 
-                    message: messageText, 
-                    model: selectedModel, 
-                    conversation_id: window.conversationId ? Number(window.conversationId) : null })
+                body: JSON.stringify({
+                    message: messageText,
+                    model: selectedModel,
+                    conversation_id: window.conversationId ? Number(window.conversationId) : null
+                })
             });
 
             const reader = response.body.getReader();
             let output = "";
-            const assistantDiv = document.createElement("div");
-            assistantDiv.className = "assistant-message";
-            assistantDiv.setAttribute('data-msg-id', 'pending-assistant');
-            assistantDiv.innerHTML = `
-            <strong>Assistant:</strong>
-            <div class="msg-content"></div>
-            <span class="model-label">${modelSelector.value}</span>
-            ${getTagUIMarkup('', [])}
-        `;
-            body.appendChild(assistantDiv);
-            assistantDiv.querySelectorAll('.tag-input').forEach(bindTagInput);
 
-            const assistantMsgContent = assistantDiv.querySelector('.msg-content');
             while (true) {
                 const { done, value } = await reader.read();
                 if (done) break;
                 const chunk = new TextDecoder().decode(value);
                 output += chunk;
+                // On first non-empty output, remove spinner only (not .msg-content)
+                if (!firstTokenArrived && output.trim().length > 0) {
+                    firstTokenArrived = true;
+                    const spinner = assistantMsgContent.querySelector('.thinking-placeholder');
+                    if (spinner) spinner.remove();
+                }
                 assistantMsgContent.innerHTML = marked.parse(output);
-                // NO auto-scroll during streaming, per UX spec.
             }
 
-            // After streaming completes: update CSRF token and message IDs
+            // After streaming: update CSRF token and message IDs
             const newToken = response.headers.get("X-CSRFToken");
             if (newToken) {
                 window.csrf_token = newToken;
@@ -443,7 +255,7 @@
             await updateLatestMessages();
 
             input.focus();
-
+            
             async function updateLatestMessages() {
                 const resp = await fetch(`/conversation/${window.conversationId}/latest`);
                 const latest = await resp.json();
@@ -461,17 +273,14 @@
                         }
                     }
                 });
-
             }
         } catch (err) {
-            showToast("Failed to process request.")
+            showToast("Failed to process request.");
         } finally {
             sendBtn.disabled = false;
             sendBtnLabel.style.display = '';
             sendBtnSpinner.style.display = 'none';
         }
-
-
     });
 </script>
 {% endblock %}

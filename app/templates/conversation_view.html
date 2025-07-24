@@ -57,152 +57,25 @@
 
 <!-- Add the same marked.js script -->
 <script src="{{ url_for('static', filename='js/marked.min.js') }}"></script>
+<script src="{{ url_for('static', filename='js/tags.js') }}"></script>
 <script>
-    const contentBlocks = document.querySelectorAll(".msg-content");
-    contentBlocks.forEach(block => {
-        const role = block.dataset.role;
-        if (role === "assistant") {
-            // Only parse markdown for assistant messages
-            block.innerHTML = marked.parse(block.textContent);
-        } else {
-            // Render as literal code, preserving all characters exactly
-            const pre = document.createElement('pre');
-            const code = document.createElement('code');
-            code.textContent = block.textContent; // Not innerHTML!
-            pre.appendChild(code);
-            block.innerHTML = '';
-            block.appendChild(pre);
-        }
-    });
-
-    // Event delegation for add-tag-btn
-    document.getElementById('history').addEventListener('click', function (e) {
-        // Add Tag Button
-        if (e.target.classList.contains('add-tag-btn')) {
-            const container = e.target.closest('.tag-list');
-            const input = container.parentElement.querySelector('.tag-input');
-            input.style.display = 'inline-block';
-            input.focus();
-        }
-
-        // Remove Tag Button
-        if (e.target.classList.contains('remove-tag')) {
-            const tagSpan = e.target.closest('.tag-pill');
-            const tagId = tagSpan.dataset.tagId;
-            const msgDiv = tagSpan.closest('[data-msg-id]');
-            const msgId = msgDiv.dataset.msgId;
-            fetch(`/messages/${msgId}/tags/${tagId}`, { 
-                method: 'DELETE',
-                headers: {
-                    'X-CSRF-Token': window.csrf_token
-                }
-            })
-            .then(() => tagSpan.remove());
-        }
-    });
-
-    // Tag Input: autocomplete & submit (delegate focus/blur if possible)
-    document.querySelectorAll('.tag-input').forEach(input => {
-        const msgDiv = input.closest('[data-msg-id]');
-        const suggestionsDiv = msgDiv.querySelector('.tag-suggestions');
-        input.addEventListener('input', async function () {
-            const q = input.value;
-            if (!q) {
-                suggestionsDiv.style.display = 'none';
-                suggestionsDiv.innerHTML = '';
-                return;
-            }
-            const resp = await fetch(`/tags/?q=${encodeURIComponent(q)}`);
-            const tags = await resp.json();
-            suggestionsDiv.innerHTML = '';
-            if (tags.length === 0) {
-                suggestionsDiv.style.display = 'none';
-                return;
-            }
-            tags.forEach(tag => {
-                const item = document.createElement('div');
-                item.className = 'tag-suggestion-item';
-                item.textContent = tag.name;
-                item.addEventListener('click', async () => {
-                    await addTagToMessage(msgDiv, tag.name, input, suggestionsDiv);
-                });
-                suggestionsDiv.appendChild(item);
-            });
-            suggestionsDiv.style.display = 'block';
-        });
-
-        let suggestionIdx = -1;
-        input.addEventListener('keydown', async function (e) {
-            const suggestions = suggestionsDiv.querySelectorAll('.tag-suggestion-item');
-            if (e.key === 'ArrowDown' && suggestions.length > 0) {
-                e.preventDefault();
-                suggestionIdx = (suggestionIdx + 1) % suggestions.length;
-                suggestions.forEach((item, idx) => {
-                    item.classList.toggle('active', idx === suggestionIdx);
-                });
-                input.value = suggestions[suggestionIdx].textContent;
-            } else if (e.key === 'ArrowUp' && suggestions.length > 0) {
-                e.preventDefault();
-                suggestionIdx = (suggestionIdx - 1 + suggestions.length) % suggestions.length;
-                suggestions.forEach((item, idx) => {
-                    item.classList.toggle('active', idx === suggestionIdx);
-                });
-                input.value = suggestions[suggestionIdx].textContent;
-            } else if (e.key === 'Enter') {
-                e.preventDefault();
-                if (suggestionIdx >= 0 && suggestions[suggestionIdx]) {
-                    await addTagToMessage(msgDiv, suggestions[suggestionIdx].textContent, input, suggestionsDiv);
-                } else if (input.value.trim()) {
-                    await addTagToMessage(msgDiv, input.value.trim(), input, suggestionsDiv);
-                }
-                suggestionIdx = -1;
-            } else {
-                suggestionIdx = -1;
-            }
-        });
-
-
-    });
-
-    async function addTagToMessage(msgDiv, tagName, input, suggestionsDiv) {
-        const msgId = msgDiv.dataset.msgId;
-        const resp = await fetch(`/messages/${msgId}/tags`, {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json', 'X-CSRFToken': window.csrf_token },
-            body: JSON.stringify({ tag: tagName })
-        });
-        if (resp.ok) {
-            // Parse the response to get the new tag info
-            const data = await resp.json();
-            // Find the tag list container
-            const tagList = msgDiv.querySelector('.tag-list');
-            // Create the new tag pill element
-            const span = document.createElement('span');
-            span.className = 'tag-pill';
-            span.dataset.tagId = data.tag.id;
-            span.innerHTML = `
-                ${data.tag.name}
-                <span class="remove-tag" title="Remove tag">&times;</span>
-            `;
-            // Insert before the "+" button
-            const addBtn = tagList.querySelector('.add-tag-btn');
-            tagList.insertBefore(span, addBtn);
-            // Reset the input and suggestions
-            if (input) input.value = '';
-            if (suggestionsDiv) {
-                suggestionsDiv.innerHTML = '';
-                suggestionsDiv.style.display = 'none';
-            }
-        } else if (resp.status === 409) {
-            // Duplicate tag—do nothing, or show a message
-        } else {
-            // Show error
-        }
-
-    }
-
+    // --- Render markdown/code for each message ---
     document.addEventListener('DOMContentLoaded', function () {
-        // Check if URL has a hash like #msg-123
+        document.querySelectorAll('.msg-content').forEach(block => {
+            const role = block.dataset.role;
+            if (role === "assistant") {
+                block.innerHTML = marked.parse(block.textContent);
+            } else {
+                const pre = document.createElement('pre');
+                const code = document.createElement('code');
+                code.textContent = block.textContent;
+                pre.appendChild(code);
+                block.innerHTML = '';
+                block.appendChild(pre);
+            }
+        });
+
+        // --- Handle hash fragment for highlight and scroll ---
         const hash = window.location.hash;
         if (hash && hash.startsWith('#msg-')) {
             const msg = document.querySelector(hash);
@@ -213,7 +86,6 @@
             }
         }
     });
-
 </script>
 
 {% endblock %}
