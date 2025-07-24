@@ -1,55 +1,113 @@
-import os
-import logging
-from anthropic import Anthropic
+# app/providers/anthropic_provider.py
+# --- top of file ---
+from __future__ import annotations
+from anthropic.types import (
+    MessageStreamEvent,  # ← union of all possible events
+    ContentBlockDeltaEvent,  # ← the one that contains tokens
+)
 
-from app.services.conversation import get_conversation_messages
+
+import logging
+import os
+from collections.abc import Generator
+from typing import Dict, List
+
+from anthropic import Anthropic, APIConnectionError, APIStatusError
+
 from app.providers.base_provider import AIProvider
+from app.services.conversation import get_conversation_messages
 from app.model_registry import get_model_metadata
 
 logger = logging.getLogger(__name__)
 
 
 class AnthropicProvider(AIProvider):
-    def __init__(self):
-        self.client = Anthropic(api_key=os.getenv("ANTHROPIC_API_KEY"))
+    """
+    Streams tokens from any Claude‑3 model.
 
-    def stream_response(self, message, user_id, conversation_id, model):
-        logger.info(
-            f"AnthropicProvider: User ID {user_id}, Conversation ID {conversation_id}"
+    Matches the interface used by AIStreamer:
+        stream_response(message, user_id, conversation_id, model, system_prompt=...)
+    """
+
+    def __init__(self, *, client: Anthropic | None = None) -> None:
+        # Dependency‑injectable for tests
+        self.client: Anthropic = client or Anthropic(
+            api_key=os.getenv("ANTHROPIC_API_KEY")
         )
-        logger.info(f"User message: {message}")
 
-        conversation_history = get_conversation_messages(conversation_id)
+    # ------------------------------------------------------------------ #
+    #  Public method required by AIStreamer                               #
+    # ------------------------------------------------------------------ #
 
-        # Claude 3 uses structured messages and an optional system prompt
-        system_prompt = "You are an intelligent assistant."
+    def stream_response(
+        self,
+        message: str,
+        user_id: int,
+        conversation_id: int | None,
+        model: str,
+        system_prompt: str | None = None,
+    ) -> Generator[str, None, None]:
+        logger.info(
+            "AnthropicProvider: user=%s  conv=%s  model=%s",
+            user_id,
+            conversation_id,
+            model,
+        )
 
-        messages = []
-        for msg in conversation_history:
-            if msg.role in ["user", "assistant"]:
-                messages.append({"role": msg.role, "content": msg.content})
-
+        # ---------- build message list ---------- #
+        msg_history: List[Dict[str, str]] = [
+            {"role": m.role, "content": m.content}
+            for m in get_conversation_messages(conversation_id)
+            if m.role in ("user", "assistant")
+        ]
         if message:
-            messages.append({"role": "user", "content": message})
-            # Only Anthropic needs this logic:
-            metadata = get_model_metadata(model)
-            max_tokens = metadata.get("max_tokens", 4096)  # default fallback
-            collected_chunks = []
+            msg_history.append({"role": "user", "content": message})
 
-            try:
-                with self.client.messages.stream(
-                    model=model,
-                    system=system_prompt,
-                    messages=messages,
-                    max_tokens=max_tokens,
-                ) as stream:
-                    for chunk in stream:
-                        if chunk.type == "content_block_delta":
-                            text = (
-                                chunk.delta.text
-                            )  # ✅ FIX: Access `text` as attribute, not with .get()
-                            collected_chunks.append(text)
-                            yield text
-            except Exception as e:
-                logger.error(f"Anthropic stream error: {e}")
-                raise
+        # ---------- pull per‑model defaults ---------- #
+        metadata = get_model_metadata(model)
+        max_tokens: int = metadata.get("max_tokens", 4096)
+        temperature: float | None = metadata.get("temperature")
+
+        # ---------- use caller‑supplied system prompt if provided ---------- #
+        system_prompt = system_prompt or metadata.get(
+            "system_prompt", "You are an intelligent assistant."
+        )
+
+        # ---------- stream! ---------- #
+        try:
+            stream_kwargs = dict(
+                model=model,
+                system=system_prompt,
+                messages=msg_history,
+                max_tokens=max_tokens,
+            )
+            if temperature is not None:
+                stream_kwargs["temperature"] = temperature
+
+            stream_ctx = self.client.messages.stream(**stream_kwargs)
+
+            with stream_ctx as stream:
+                for event in stream:
+                    text = _extract_text_from_event(event)
+                    if text:
+                        yield text
+
+        except (APIConnectionError, APIStatusError) as err:
+            # Surface Anthropic‑specific errors so AIStreamer can handle/log them
+            logger.error("Anthropic error: %s", err)
+            raise
+
+
+# ---------------------------------------------------------------------- #
+#  Helper for the new Claude‑3 event schema                              #
+# ---------------------------------------------------------------------- #
+
+
+def _extract_text_from_event(event: MessageStreamEvent) -> str | None:
+    """
+    Return the token string only for ContentBlockDeltaEvent.
+    All other event types are ignored.
+    """
+    if isinstance(event, ContentBlockDeltaEvent):
+        return event.delta.text  # ✔ correct for 0.52.0
+    return None

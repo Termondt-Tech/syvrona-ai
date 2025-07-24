@@ -7,42 +7,52 @@ MODEL_REGISTRY = {
     "gpt-4.1": {
         "provider": "openai",
         "display_name": "GPT-4.1",
+        "openai_endpoint": "chat",
     },
     "gpt-4.1-mini": {
         "provider": "openai",
         "display_name": "GPT-4.1 Mini",
+        "openai_endpoint": "chat",
     },
     "gpt-4o": {
         "provider": "openai",
         "display_name": "GPT-4o",
+        "openai_endpoint": "chat",
     },
     "gpt-4o-mini": {
         "provider": "openai",
         "display_name": "GPT-4o Mini",
+        "openai_endpoint": "chat",
     },
     "gpt-4.1-nano": {
         "provider": "openai",
         "display_name": "GPT-4.1 Nano",
+        "openai_endpoint": "chat",
     },
     "o3": {
         "provider": "openai",
         "display_name": "O3",
+        "openai_endpoint": "responses",
     },
     "o3-mini": {
         "provider": "openai",
         "display_name": "O3 Mini",
+        "openai_endpoint": "responses",
     },
     "o4-mini": {
         "provider": "openai",
         "display_name": "O4 Mini",
+        "openai_endpoint": "responses",
     },
     "gpt-4.5": {
         "provider": "openai",
         "display_name": "GPT-4.5",
+        "openai_endpoint": "chat",
     },
     "gpt-3.5-turbo": {
         "provider": "openai",
         "display_name": "GPT-3.5 Turbo",
+        "openai_endpoint": "chat",
     },
     "claude-sonnet-4-20250514": {
         "provider": "anthropic",
