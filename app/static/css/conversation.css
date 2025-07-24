@@ -307,9 +307,5 @@
     margin-bottom: 1.5rem;
 }
 
-.conversation-container .add-tag-btn,
-.conversation-container .tag-input,
-.conversation-container .tag-suggestions {
-    display: none !important;
-}
+
 /* Optionally, tweak message backgrounds, etc. */
