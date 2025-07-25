@@ -7,9 +7,9 @@
 
 
 {% block module_content %}
-<h1 class="form-title">Create New Prompt Chain</h1>
-{% include "_flash.html" %}
 <div class="form-panel">
+    <h1 class="form-title">Create New Prompt Chain</h1>
+    {% include "_flash.html" %}
     <form method="post" autocomplete="off" id="create-chain-form">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">

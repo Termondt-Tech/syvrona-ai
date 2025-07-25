@@ -8,7 +8,7 @@
 {% endblock %}
 
 {% block content %}
-<main class="form-container">
+<div class="form-panel">
     <h1 class="form-title">Select Subscription Plan</h1>
     {% include "_flash.html" %}
     {% if free_trial_enabled %}
@@ -52,7 +52,7 @@
                     <div class="plan-card-content">
                         <div class="plan-title">Pro Yearly <span class="badge-best">Best Value</span></div>
                         <div class="plan-price">$99<span class="plan-period">/year</span></div>
-                        <div class="plan-desc">Save 17% compared to monthly</div>
+                        <div class="plan-desc">2 months free</div>
                          {% if free_trial_enabled %}
                         <!-- Trial "pill" on each plan card -->
                         <span class="trial-pill">
@@ -80,5 +80,5 @@
             <a href="{{ url_for('auth.dashboard_view') }}">Return to Dashboard</a>
         </div>
     </form>
-</main>
+</div>
 {% endblock %}

@@ -1,9 +1,10 @@
 {% extends "prompt_module_base.html" %}
 
 {% block module_content %}
-<h1 class="form-title">Run Chain: {{ chain.title|e }}</h1>
-{% include "_flash.html" %}
+
 <div class="form-panel">
+    <h1 class="form-title">Run Chain: {{ chain.title|e }}</h1>
+    {% include "_flash.html" %}
     <form method="POST" action="{{ url_for('chat.chat_page') }}" class="run-chain-form" autocomplete="off">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <input type="hidden" name="chain_id" value="{{ chain.id }}">
