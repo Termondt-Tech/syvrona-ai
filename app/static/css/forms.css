@@ -219,3 +219,41 @@
         align-items: stretch;
     }
 }
+
+
+/* For password fields ONLY, use password-control to contain input and button */
+.password-control {
+  position: relative;
+  width: 100%;
+}
+.password-control .form-control {
+  padding-right: 2.5em;
+  width: 100%;
+  box-sizing: border-box;
+}
+.toggle-password {
+  position: absolute;
+  top: 50%;
+  right: 0.75em;
+  transform: translateY(-50%);
+  background: none;
+  border: none;
+  color: #888;
+  cursor: pointer;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  height: 2em;
+  width: 2em;
+}
+.toggle-password:focus .toggle-icon {
+  stroke: #2563eb;
+}
+.toggle-icon {
+  pointer-events: none;
+  user-select: none;
+  display: inline-block;
+  vertical-align: middle;
+}
