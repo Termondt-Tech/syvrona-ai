@@ -1,5 +1,15 @@
 # Changelog
 
+## [1.4.7] - 2025-07-25
+
+- Architecture and Usability Improvements & Bug Fixes.
+- [Full release notes & upgrade instructions →](docs/releases/1.4.7.md)
+
+## [1.4.6] - 2025-07-22
+
+- Bug Fixes.
+- [Full release notes & upgrade instructions →](docs/releases/1.4.6.md)
+
 ## [1.4.5] - 2025-07-18
 
 - Syvrona Chat: UI/UX Improvements & Bug Fixes.
