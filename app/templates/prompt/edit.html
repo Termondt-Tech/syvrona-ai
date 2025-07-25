@@ -6,9 +6,9 @@
 
 
 {% block module_content %}
-<h1 class="form-title">Edit Prompt</h1>
-{% include "_flash.html" %}
 <div class="form-panel">
+    <h1 class="form-title">Edit Prompt</h1>
+    {% include "_flash.html" %}
     <form method="post" autocomplete="off">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">

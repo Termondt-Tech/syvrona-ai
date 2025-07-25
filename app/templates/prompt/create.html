@@ -6,9 +6,9 @@
 {% endblock %}
 
 {% block module_content %}
-<h1 class="form-title">Create New Prompt</h1>
-{% include "_flash.html" %}
 <div class="form-panel">
+    <h1 class="form-title">Create New Prompt</h1>
+    {% include "_flash.html" %}
     <form method="post" autocomplete="off">
         <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
         <div class="form-group">
@@ -48,7 +48,8 @@
 
         <div class="form-actions-row">
             <button type="submit" class="btn btn-primary">Create Prompt</button>
-            <button type="submit" name="submit" value="create_another" class="btn btn-primary">Create and Add Another</button>
+            <button type="submit" name="submit" value="create_another" class="btn btn-primary">Create and Add
+                Another</button>
             <a href="{{ url_for('prompt.prompt_list') }}" class="btn btn-secondary">Cancel</a>
         </div>
     </form>
