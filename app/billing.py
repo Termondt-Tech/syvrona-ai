@@ -10,7 +10,7 @@ from flask import (
     current_app,
 )
 from flask_login import current_user, login_required
-from flask_wtf.csrf import csrf
+from . import csrf
 import stripe
 
 from app.feature_flags import get_feature_config, is_feature_enabled
