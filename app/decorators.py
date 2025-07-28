@@ -26,7 +26,7 @@ def require_active_subscription(f):
         # Allow admins full access regardless of subscription status
         if current_user.is_admin:
             return f(*args, **kwargs)
-        if current_user.subscription_status != "active":
+        if current_user.subscription_status not in ("active", "trialing"):
             flash("You need an active subscription to access this feature.", "info")
             return redirect(url_for("billing.subscribe", next=request.url))
         return f(*args, **kwargs)
