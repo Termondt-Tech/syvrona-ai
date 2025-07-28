@@ -10,6 +10,7 @@ from flask import (
     current_app,
 )
 from flask_login import current_user, login_required
+from flask_wtf.csrf import csrf
 import stripe
 
 from app.feature_flags import get_feature_config, is_feature_enabled
@@ -73,6 +74,7 @@ def create_checkout_session():
         return jsonify(error=str(e)), 500
 
 
+@csrf.exempt
 @billing.route("/stripe/webhook", methods=["POST"])
 def stripe_webhook():
     payload = request.data
