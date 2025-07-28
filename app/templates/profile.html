@@ -16,7 +16,7 @@
   <div class="subscription-info">
     <p><strong>Plan:</strong> {{ price_labels.get(user.subscription_plan, user.subscription_plan) }}</p>
     <p><strong>Status:</strong> {{ user.subscription_status|capitalize }}</p>
-    {% if user.subscription_status == 'active' %}
+    {% if user.subscription_status in ['active', 'trialing'] %}
     <a href="{{ url_for('billing.manage_subscription') }}" class="btn-primary">Manage Subscription</a>
     {% else %}
     <a href="{{ url_for('billing.subscribe') }}" class="btn-primary">Subscribe</a>

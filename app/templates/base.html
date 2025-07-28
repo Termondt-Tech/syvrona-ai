@@ -46,8 +46,7 @@
                 <!-- Nav links -->
                 <nav class="nav-links" id="navLinks">
                     {% if current_user.is_authenticated and (current_user.is_admin or current_user.subscription_status
-                    ==
-                    'active') %}
+                    in ['active', 'trialing']) %}
                     <div class="dropdown">
                         <button class="dropbtn">AI Assistant ▾</button>
                         <div class="dropdown-content">
