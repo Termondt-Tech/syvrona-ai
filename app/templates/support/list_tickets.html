@@ -31,15 +31,15 @@
             <tbody>
                 {% for ticket in tickets %}
                 <tr>
-                    <td>{{ ticket.type|capitalize }}</td>
-                    <td>{{ ticket.subject|e }}</td>
-                    <td>
+                    <td data-label="Type">{{ ticket.type|capitalize }}</td>
+                    <td data-label="Subject">{{ ticket.subject|e }}</td>
+                    <td data-label="Status">
                         <span class="support-status support-status-{{ ticket.status|lower }}">
                             {{ ticket.status|capitalize }}
                         </span>
                     </td>
-                    <td>{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
-                    <td>
+                    <td data-label="Last Updated">{{ ticket.last_updated.strftime('%Y-%m-%d %H:%M') }}</td>
+                    <td data-label="Actions">
                         <a href="{{ url_for('support.view_ticket', ticket_id=ticket.id) }}"
                             class="btn btn-primary btn-sm">View</a>
                     </td>

@@ -148,3 +148,43 @@
         max-width: 1400px;
     }
 }
+/* --- mobile fixes for Syvrona conversation tables -------------------- */
+
+/* 1. Let the table shrink below 480 px instead of forcing a scroll      */
+@media (max-width: 768px) {
+    .app-table {
+        /* Drop the hard min‑width and use fixed layout so long words wrap */
+        min-width: 100%;
+        table-layout: fixed;
+        word-wrap: break-word;          /* older syntax */
+        overflow-wrap: anywhere;        /* modern syntax */
+    }
+}
+
+/* 2. Constrain the inline “Rename” input so it never overflows          */
+.edit-title-form {
+    display: flex;
+    gap: 0.5rem;
+    align-items: center;
+}
+.edit-title-form input[type="text"] {
+    flex: 1 1 0;           /* take remaining width but stop at cell edge */
+    max-width: 100%;
+    padding: 0.45em 0.6em;
+    font-size: 0.95rem;
+    box-sizing: border-box;
+}
+
+/* Stack the form vertically on very narrow screens so buttons don’t wrap awkwardly */
+@media (max-width: 480px) {
+    .edit-title-form { flex-direction: column; align-items: stretch; }
+    .edit-title-form button { align-self: flex-end; }
+}
+
+/* 3. When we switch to card‑style rows, remove horizontal scrolling     */
+@media (max-width: 480px) {
+    .app-table-responsive { overflow-x: visible; }   /* no phantom scroll bar */
+}
+
+/* (Optional) If you’d like the label/stacked cards to show field names,
+   add data-label attributes in the template:  <td data-label="Title">… */

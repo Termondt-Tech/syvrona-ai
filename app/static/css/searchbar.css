@@ -1,38 +1,36 @@
-/* Searchbar Shared Styles */
+/* Search header ------------------------------------------------------ */
 
 .search-header-row {
     display: flex;
-    justify-content: space-between;
     align-items: flex-start;
-    gap: 1.2em;
     flex-wrap: wrap;
-    margin-bottom: 1.5em;
+    justify-content: space-between;   /* desktop layout */
+    gap: 1.2rem;
     max-width: 900px;
-    margin-left: auto;
-    margin-right: auto;
+    margin: 0 auto 1.5rem;
 }
 
-.search-header-row .btn-primary {
+.search-header-row .btn-primary {   /* create‑conversation button */
     flex-shrink: 0;
     white-space: nowrap;
 }
 
 .search-row {
     display: flex;
-    gap: 0.6em;
     align-items: center;
-    flex: 1 1 320px;
-    justify-content: flex-end;
+    gap: 0.6rem;
+    flex: 1 1 320px;               /* let search grow */
+    justify-content: flex-end;      /* desktop: right‑align */
 }
 
+/* search input */
 .search-input {
     flex: 1 1 140px;
-    padding: 0.6em 1em;
-    border-radius: 7px;
-    border: 1px solid #cbd5e1;
-    font-size: 1em;
     min-width: 120px;
     max-width: 300px;
+    padding: 0.6rem 1rem;
+    border: 1px solid #cbd5e1;
+    border-radius: 7px;
     background: #fff;
     color: #334155;
     transition: border 0.16s;
@@ -42,19 +40,20 @@
     outline: none;
 }
 
+/* — Tablet-ish widths (≤900 px) — */
+@media (max-width: 900px) {
+    .search-header-row { justify-content: flex-start; gap: 0.8rem; }
+    .search-row        { flex: 1 1 auto; }           /* grow as needed */
+}
+
+/* — Stack vertically (≤650 px) — */
 @media (max-width: 650px) {
     .search-header-row {
         flex-direction: column;
         align-items: stretch;
-        gap: 0.7em;
+        gap: 0.6rem;
+        margin-bottom: 1rem;        /* tighten white band */
     }
-    .search-row {
-        justify-content: stretch;
-        width: 100%;
-    }
-    .search-input {
-        width: 100%;
-        min-width: 0;
-        max-width: 100%;
-    }
+    .search-row   { justify-content: flex-start; width: 100%; }
+    .search-input { width: 100%; flex: 1 1 auto; max-width: 100%; }
 }

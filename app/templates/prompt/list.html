@@ -36,16 +36,16 @@
         <tbody>
             {% for prompt in prompts.items %}
             <tr>
-                <td>
+                <td data-label="Title">
                     <strong>{{ prompt.title|e }}</strong>
                 </td>
-                <td>
+                <td data-label="Description">
                     <div>{{ prompt.description|default('—')|e }}</div>
                 </td>
-                <td>
+                <td data-label="Last Updated">
                     {{ prompt.updated_at.strftime('%Y-%m-%d %I:%M %p') if prompt.updated_at else 'N/A' }}
                 </td>
-                <td>
+                <td data-label="Actions">
                     <div class="app-actions">
 
                         <a href="{{ url_for('prompt.edit_prompt', prompt_id=prompt.id) }}"

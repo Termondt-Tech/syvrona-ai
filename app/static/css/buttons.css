@@ -92,3 +92,17 @@ a.btn, button.btn, input[type="submit"].btn {
     align-items: center;
     flex-wrap: wrap;
 }
+/* ---------- one override block (add after your current button rules) ------------ */
+
+/* Make every .btn (and variants) a tiny flex container */
+.btn,
+a.btn,
+button.btn,
+input[type="submit"].btn {
+    display: inline-flex;           /* replaces inline‑block  */
+    align-items: center;            /* vertical centring      */
+    justify-content: center;        /* horizontal centring    */
+}
+
+/* If you prefer to limit it to the search form only: */
+/* .search-row .btn { display:inline-flex; align-items:center; justify-content:center; } */

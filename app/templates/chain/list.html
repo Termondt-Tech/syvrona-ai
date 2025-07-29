@@ -37,13 +37,13 @@
         <tbody>
             {% for chain in chains.items %}
             <tr>
-                <td>
+                <td data-label="Title">
                     <strong>{{ chain.title|e }}</strong>
                 </td>
-                <td class="hide-mobile">
+                <td class="hide-mobile" data-label="Description">
                     <div>{{ chain.description|default('—')|e }}</div>
                 </td>
-                <td class="hide-mobile">
+                <td class="hide-mobile" data-label="Tags">
                     <div class="tag-list-container">
                         {% for tag in chain.tags %}
                         <span class="tag-item">{{ tag.name|e }}</span>
@@ -52,13 +52,13 @@
                         {% endfor %}
                     </div>
                 </td>
-                <td>
+                <td data-label="Steps" >
                     {{ chain.prompts|length }}
                 </td>
-                <td>
+                <td data-label="Last Updated">
                     {{ chain.updated_at.strftime('%Y-%m-%d %I:%M %p') if chain.updated_at else 'N/A' }}
                 </td>
-                <td>
+                <td data-label="Actions">
                     <div class="app-actions">
                         <a href="{{ url_for('chain.edit_chain', chain_id=chain.id) }}"
                             class="btn btn-secondary btn-sm">Edit</a>
