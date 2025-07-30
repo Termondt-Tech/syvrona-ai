@@ -16,13 +16,18 @@ migrate = Migrate()  # ← create Migrate instance
 
 login_manager = LoginManager()
 
-logger = logging.getLogger(__name__)
-
 hcaptcha = hCaptcha()
 csrf = CSRFProtect()
 
 
 def create_app(config=None):
+    configure_logging()
+    logger = logging.getLogger(__name__)
+    logger.info(
+        "Logging configured (effective level: %s)",
+        logging.getLevelName(logger.getEffectiveLevel()),
+    )
+
     app = Flask(__name__)
     app.config.from_object(Config)
     if config:
@@ -36,9 +41,6 @@ def create_app(config=None):
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
     logger.info("Login manager initialized")
-
-    configure_logging()
-    logger.info("Logging configured")
 
     hcaptcha.init_app(app)
     csrf.init_app(app)
@@ -133,5 +135,11 @@ def create_app(config=None):
     @app.errorhandler(404)
     def page_not_found(e):
         return render_template("404.html"), 404
+
+    @app.errorhandler(500)
+    def internal_server_error(e):
+        # Optionally log the error here for debugging (don't show details to user)
+        logger.error("Internal server error: %s", e)
+        return render_template("500.html"), 500
 
     return app

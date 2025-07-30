@@ -44,7 +44,15 @@ class SignupHandler:
         )
         db.session.add(self.new_user)
         db.session.commit()
-        logger.info(f"New user created: {self.new_user.email}")
+        logger.info(
+            "New user created: user_id=%s",
+            self.new_user.id,
+        )
+        logger.info(
+            "User chose plan: user_id=%s plan=%s",
+            self.new_user.id,
+            self.plan,
+        )
 
     def send_welcome_email(self):
         token = generate_confirmation_token(self.new_user.email)
@@ -71,17 +79,31 @@ class SignupHandler:
         )
 
     def create_stripe_customer(self):
-        customer = stripe.Customer.create(
-            email=self.new_user.email,
-            name=self.new_user.name,
-            metadata={"user_id": self.new_user.id},
-        )
-        self.new_user.stripe_customer_id = customer.id
-        self.new_user.last_login = datetime.now()
-        db.session.commit()
-        logger.info(
-            f"Stripe customer created: {customer.id} for user: {self.new_user.email}"
-        )
+        try:
+            customer = stripe.Customer.create(
+                email=self.new_user.email,
+                name=self.new_user.name,
+                metadata={"user_id": self.new_user.id},
+            )
+            self.new_user.stripe_customer_id = customer.id
+            self.new_user.last_login = datetime.now()
+            db.session.commit()
+            logger.info(
+                "Stripe customer created: customer_id=%s user_id=%s",
+                customer.id,
+                self.new_user.id,
+            )
+        except Exception as e:
+            logger.error(
+                "Stripe customer creation error: user_id=%s error=%s",
+                self.new_user.id,
+                e,
+            )
+            flash(
+                "There was an error creating your account. Please contact support.",
+                "error",
+            )
+            raise
 
     def handle_subscription(self):
         price_ids = current_app.config.get("STRIPE_PRICE_IDS", {})
@@ -93,17 +115,31 @@ class SignupHandler:
             if free_trial_enabled and free_trial_days > 0:
                 subscription_data["trial_period_days"] = free_trial_days
 
-            session = stripe.checkout.Session.create(
-                customer=self.new_user.stripe_customer_id,
-                payment_method_types=["card"],
-                line_items=[{"price": price_id, "quantity": 1}],
-                mode="subscription",
-                subscription_data=subscription_data,
-                allow_promotion_codes=False,
-                success_url=url_for("auth.dashboard_view", _external=True)
-                + "?session_id={CHECKOUT_SESSION_ID}",
-                cancel_url=url_for("auth.dashboard_view", _external=True),
-            )
+            try:
+                session = stripe.checkout.Session.create(
+                    customer=self.new_user.stripe_customer_id,
+                    payment_method_types=["card"],
+                    line_items=[{"price": price_id, "quantity": 1}],
+                    mode="subscription",
+                    subscription_data=subscription_data,
+                    allow_promotion_codes=False,
+                    success_url=url_for("auth.dashboard_view", _external=True)
+                    + "?session_id={CHECKOUT_SESSION_ID}",
+                    cancel_url=url_for("auth.dashboard_view", _external=True),
+                )
+            except Exception as e:
+                logger.error(
+                    "Stripe checkout session create error: user_id=%s error=%s",
+                    self.new_user.id,
+                    e,
+                )
+                flash(
+                    "There was an error creating your subscription. "
+                    "Please contact support.",
+                    "error",
+                )
+                raise
+
             return redirect(session.url)
         else:
             # Free plan
