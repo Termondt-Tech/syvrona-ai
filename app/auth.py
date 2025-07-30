@@ -75,7 +75,11 @@ def login_post():
 
     if honeypot:
         # If the honeypot field is filled, it's likely a bot submission
-        logger.warning("Honeypot field filled—possible bot: %r", request.form)
+        logger.warning(
+            "Honeypot field filled—possible bot: ip=%s",
+            request.remote_addr,
+        )
+
         return redirect(url_for("auth.login"))
 
     if current_app.config.get("HCAPTCHA_ENABLED", False):
@@ -93,11 +97,22 @@ def login_post():
         or not check_password_hash(user.password, password)
         or not user.is_active
     ):
+        logger.info(
+            "Failed login attempt: ip=%s exists=%s active=%s",
+            request.remote_addr,
+            bool(user),
+            user.is_active if user else None,
+        )
         flash("Login not permitted. Please check your login details.", "error")
         # if the user doesn't exist or password is wrong, reload the page
         return redirect(url_for("auth.login"))
 
     # if the above check passes, then we know the user has the right credentials
+    logger.info(
+        "User logged in: user_id=%s ip=%s",
+        user.id,
+        request.remote_addr,
+    )
 
     # ✅ Update last_login timestamp
     user.last_login = datetime.now(tz=UTC)
@@ -130,11 +145,19 @@ def signup_post():
     honeypot = request.form.get("middle_name", "")
     if honeypot:
         # If the honeypot field is filled, it's likely a bot submission
-        logger.warning("Honeypot field filled—possible bot: %r", request.form)
+        logger.warning(
+            "Signup honeypot filled—possible bot: remote_addr=%s",
+            request.remote_addr,
+        )
+
         return redirect(url_for("auth.signup"))
 
     if current_app.config.get("HCAPTCHA_ENABLED", False):
         if not hcaptcha.verify():
+            logger.info(
+                "Signup captcha failed: ip=%s",
+                request.remote_addr,
+            )
             flash("Captcha failed. Please try again.", "error")
             return redirect(url_for("auth.login"))
 
@@ -147,6 +170,11 @@ def signup_post():
     )
     response = handler.process()
     if handler.new_user:
+        logger.info(
+            "New user signed up: user_id=%s ip=%s",
+            handler.new_user.id,
+            request.remote_addr,
+        )
         login_user(handler.new_user)
     return response
 
@@ -158,7 +186,7 @@ def forgot_password():
         email = request.form["email"]
         user = User.query.filter_by(email=email).first()
         if user:
-            logger.info(f"Password reset link requested for user: {user.email}")
+            logger.info("Password reset requested: user_id=%s", user.id)
             token = generate_reset_token(user.email)
             reset_url = url_for("auth.reset_password", token=token, _external=True)
             # Send reset email
@@ -168,6 +196,7 @@ def forgot_password():
             send_mailgun_message(user.email, subject, text, html=html)
             flash("A password reset link has been sent to your email.", "info")
         else:
+            logger.info("Password reset requested for non-existent user")
             # Avoid leaking info; always show same message.
             flash("A password reset link has been sent to your email.", "info")
         return redirect(url_for("auth.login"))
@@ -286,13 +315,18 @@ def update_profile():
             # Check if the new email is already in use by someone else
             existing_user = db.session.query(User).filter_by(email=email).first()
             if existing_user:
+                logger.info(
+                    "Attempted email update to existing email: user_id=%s",
+                    user.get_id(),
+                )
                 flash("Email address already in use.", "warning")
                 return redirect(url_for("auth.profile"))
 
             logger.info(
-                f"Updating email for user: {user.get_id()} "
-                f"from {user.email} to {email}"
+                "User changed email: user_id=%s",
+                user.get_id(),
             )
+
             user.email = email
             user.verified = False  # Mark as unverified
             db.session.commit()

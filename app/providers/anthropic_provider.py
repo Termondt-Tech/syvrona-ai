@@ -6,7 +6,7 @@ from anthropic.types import (
     ContentBlockDeltaEvent,  # ← the one that contains tokens
 )
 
-
+import time
 import logging
 import os
 from collections.abc import Generator
@@ -54,6 +54,8 @@ class AnthropicProvider(AIProvider):
             model,
         )
 
+        start = time.monotonic()
+
         # ---------- build message list ---------- #
         msg_history: List[Dict[str, str]] = [
             {"role": m.role, "content": m.content}
@@ -94,8 +96,23 @@ class AnthropicProvider(AIProvider):
 
         except (APIConnectionError, APIStatusError) as err:
             # Surface Anthropic‑specific errors so AIStreamer can handle/log them
-            logger.error("Anthropic error: %s", err)
+            logger.error(
+                "AnthropicProvider error: user=%s conv=%s model=%s error=%s",
+                user_id,
+                conversation_id,
+                model,
+                err,
+            )
             raise
+        finally:
+            elapsed = time.monotonic() - start
+            logger.info(
+                "AnthropicProvider: user=%s  conv=%s  model=%s  elapsed=%.2f seconds",
+                user_id,
+                conversation_id,
+                model,
+                elapsed,
+            )
 
 
 # ---------------------------------------------------------------------- #

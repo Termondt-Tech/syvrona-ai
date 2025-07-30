@@ -1,6 +1,8 @@
 import logging
 from typing import Any, Generator, List, Optional, Dict
 
+import time
+
 from app.model_registry import get_model_metadata
 from app.providers.openai_provider import OpenAIProvider, ModelAccessError
 from app.providers.anthropic_provider import AnthropicProvider
@@ -12,12 +14,16 @@ logger = logging.getLogger(__name__)
 class MessagePersister:
     def save_user(self, conv_id: Optional[int], user_msg: str, model: str) -> Any:
         msg = create_message(conv_id, "user", user_msg, model)
-        logger.info("User message ID=%s saved", msg.id)
+        logger.info(
+            "User message saved: id=%s conv=%s model=%s", msg.id, conv_id, model
+        )
         return msg
 
     def save_assistant(self, conv_id: Optional[int], text: str, model: str) -> Any:
         msg = create_message(conv_id, "assistant", text, model)
-        logger.info("Assistant message ID=%s saved", msg.id)
+        logger.info(
+            "Assistant message saved: id=%s conv=%s model=%s", msg.id, conv_id, model
+        )
         return msg
 
 
@@ -60,6 +66,8 @@ class AIStreamer:
         conversation_id: Optional[int],
         model_name: str,
     ) -> Generator[str, None, None]:
+
+        start = time.monotonic()
         """
         Yields assistant tokens as they arrive. Persists both user and
         assistant messages (if streaming succeeds and tokens are produced).
@@ -80,6 +88,7 @@ class AIStreamer:
         self._persister.save_user(conversation_id, user_prompt, model_name)
 
         tokens: List[str] = []
+
         try:
             for token in provider.stream_response(
                 message=user_prompt,
@@ -92,9 +101,21 @@ class AIStreamer:
                 yield token
 
         except ModelAccessError as err:
-            self._logger.warning("Model access error: %s", err)
+            self._logger.warning(
+                "Model access error: user=%s conv=%s model=%s provider=%s error=%s",
+                user_id,
+                conversation_id,
+                model_name,
+                provider_key,
+                err,
+            )
             if fallback_model:
-                self._logger.info("Retrying with fallback model '%s'", fallback_model)
+                self._logger.info(
+                    "Retrying with fallback model '%s' for user=%s conv=%s",
+                    fallback_model,
+                    user_id,
+                    conversation_id,
+                )
                 # Recursion is safe here (no unbounded chains in registry)
                 yield from self.chat(
                     user_prompt, user_id, conversation_id, fallback_model
@@ -103,8 +124,24 @@ class AIStreamer:
             raise
 
         except Exception as err:
-            self._logger.error("Provider error: %s", err)
+            self._logger.error(
+                "Provider error: user=%s conv=%s model=%s provider=%s error=%s",
+                user_id,
+                conversation_id,
+                model_name,
+                provider_key,
+                err,
+            )
             raise
+        finally:
+            elapsed = time.monotonic() - start
+            self._logger.info(
+                "AIStreamer: user=%s  conv=%s  model=%s  elapsed=%.2f seconds",
+                user_id,
+                conversation_id,
+                model_name,
+                elapsed,
+            )
 
         # Persist assistant message (SRP - extracted)
         if tokens:

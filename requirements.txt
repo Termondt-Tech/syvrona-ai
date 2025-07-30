@@ -37,3 +37,4 @@ anthropic==0.52.0
 stripe==12.2.0
 flask-hcaptcha==0.7.2
 Flask-WTF==1.2.2
+gunicorn==23.0.0

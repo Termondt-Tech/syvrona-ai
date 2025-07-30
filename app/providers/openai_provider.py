@@ -1,5 +1,7 @@
 from __future__ import annotations
 
+import time
+
 import logging
 from collections.abc import Generator
 from typing import Dict, List, Optional, Any
@@ -83,6 +85,7 @@ class OpenAIProvider(AIProvider):
             conversation_id,
             model,
         )
+        start = time.monotonic()
 
         messages = self._build_context(conversation_id, message, system_prompt)
         try:
@@ -137,8 +140,25 @@ class OpenAIProvider(AIProvider):
         except OpenAIError as e:
             if getattr(e, "code", "") == "model_not_found":
                 raise ModelAccessError(str(e)) from e
-            logger.error("OpenAI error: %s", e)
+            logger.error(
+                "OpenAIProvider error: user=%s conv=%s model=%s error=%s",
+                user_id,
+                conversation_id,
+                model,
+                e,
+            )
+
             raise
+
+        finally:
+            elapsed = time.monotonic() - start
+            logger.info(
+                "OpenAIProvider: user=%s  conv=%s  model=%s  elapsed=%.2f seconds",
+                user_id,
+                conversation_id,
+                model,
+                elapsed,
+            )
 
     @staticmethod
     def _build_context(

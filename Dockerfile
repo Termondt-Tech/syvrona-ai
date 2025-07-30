@@ -26,4 +26,4 @@ USER appuser
 EXPOSE 5000
 
 # Set the command to run the Flask app
-CMD ["python", "app.py"]
+CMD ["gunicorn", "-w", "2", "-b", "0.0.0.0:5000", "app:create_app()"]

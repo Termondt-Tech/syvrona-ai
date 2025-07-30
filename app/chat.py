@@ -309,8 +309,6 @@ def latest_messages(conversation_id):
 @login_required
 @require_active_subscription
 def chat_page():
-    logger.info(f"Current User: {current_user.get_id()}")
-
     conversation_id = None
     prefilled_prompt = ""
     selected_model = DEFAULT_MODEL_KEY
@@ -378,42 +376,46 @@ def chat_page():
 @login_required
 @require_active_subscription
 def answer():
-    data = request.get_json()
-    message = data["message"]
-    model = data.get("model", "gpt-3.5-turbo")  # default fallback
-    raw_conversation_id = data.get("conversation_id")
-    logger.info(f"Raw conversation_id: {raw_conversation_id!r}")
-    logger.info(f"Model: {model}")
-    logger.info(f"Current User: {current_user.get_id()}")
-    user_id = current_user.get_id()
+    try:
+        data = request.get_json()
+        message = data["message"]
+        model = data.get("model", "gpt-3.5-turbo")  # default fallback
+        raw_conversation_id = data.get("conversation_id")
 
-    if raw_conversation_id in (None, "", "None", "null"):
-        conversation_id = None
-    else:
-        try:
-            conversation_id = int(raw_conversation_id)
-        except (TypeError, ValueError):
+        user_id = current_user.get_id()
+
+        if raw_conversation_id in (None, "", "None", "null"):
             conversation_id = None
+        else:
+            try:
+                conversation_id = int(raw_conversation_id)
+            except (TypeError, ValueError):
+                conversation_id = None
 
-    if not conversation_id:
-        conversation = create_conversation(user_id, message)
-        conversation_id = conversation.id
-        logger.info(f"New conversation created with ID: {conversation_id}")
+        if not conversation_id:
+            conversation = create_conversation(user_id, message)
+            conversation_id = conversation.id
 
-    from app.services.ai_streamer import AIStreamer  # adjust path as needed
+        from app.services.ai_streamer import AIStreamer  # adjust path as needed
 
-    streamer = AIStreamer()
+        streamer = AIStreamer()
 
-    logger.info("Calling AIStreamer.chat...")
+        @stream_with_context
+        def generate():
+            response = streamer.chat(message, user_id, conversation_id, model)
+            for res in response:
+                yield res
 
-    @stream_with_context
-    def generate():
-        response = streamer.chat(message, user_id, conversation_id, model)
-        for res in response:
-            yield res
-
-    response = Response(generate(), content_type="text/plain")
-    response.headers["X-Conversation-Id"] = str(conversation_id)
-    # This line delivers a fresh CSRF token to the client for the next request
-    response.headers["X-CSRFToken"] = generate_csrf()
-    return response
+        response = Response(generate(), content_type="text/plain")
+        response.headers["X-Conversation-Id"] = str(conversation_id)
+        # This line delivers a fresh CSRF token to the client for the next request
+        response.headers["X-CSRFToken"] = generate_csrf()
+        return response
+    except Exception as e:
+        logger.error(
+            "Error in /answer: user_id=%s remote_addr=%s error=%s",
+            current_user.get_id(),
+            request.remote_addr,
+            e,
+        )
+        return Response("Internal Server Error", status=500)

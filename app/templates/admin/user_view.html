@@ -10,7 +10,7 @@
 {% block content %}
 <main class="main-content">
     <h1 class="main-title">User Details: {{ user.name }}</h1>
-     {% with messages = get_flashed_messages(with_categories=True) %}
+    {% with messages = get_flashed_messages(with_categories=True) %}
     {% if messages %}
     {% for category, message in messages %}
     <div class="flash-message flash-{{ category|lower }}">
@@ -19,7 +19,7 @@
     {% endfor %}
     {% endif %}
     {% endwith %}
-    <div class="user-detail-card">
+    <section class="form-panel mt-1">
         <ul>
             <li><strong>ID:</strong> {{ user.id }}</li>
             <li><strong>Name:</strong> {{ user.name or 'N/A' }}</li>
@@ -27,28 +27,151 @@
             <li><strong>Created:</strong> {{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</li>
             <li><strong>Admin:</strong> {{ 'Yes' if user.is_admin else 'No' }}</li>
             <li><strong>Active:</strong> {{ 'Yes' if user.is_active else 'No' }}</li>
-            <li><strong>Last Login:</strong> {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</li>
+            <li><strong>Last Login:</strong> {{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else
+                'Never' }}</li>
             <li><strong>Stripe Customer ID:</strong> {{ user.stripe_customer_id or 'N/A' }}</li>
-            <li><strong>Subscription Status:</strong> {{ user.subscription_status }}</li>
-            <li><strong>Subscription Plan:</strong> {{ price_labels.get(user.subscription_plan, user.subscription_plan) or 'None' }}</li>
-            <li><strong>Subscription Start:</strong> {{ user.subscription_start.strftime('%Y-%m-%d') if user.subscription_start else 'N/A' }}</li>
-            <li><strong>Subscription End:</strong> {{ user.subscription_end.strftime('%Y-%m-%d') if user.subscription_end else 'N/A' }}</li>
         </ul>
+        <div class="form-group">
+            <label class="font-semibold">Notification Preferences:</label>
+            {% set prefs = user.preferences or {} %}
+            {% if prefs and prefs.get('email_notifications') %}
+            <ul style="list-style: disc; margin-left: 1.5em;">
+                <li>
+                    Support replies:
+                    <span class="badge badge-{{ 'active' if prefs.email_notifications.ticket_reply else 'inactive' }}">
+                        {{ "Yes" if prefs.email_notifications.ticket_reply else "No" }}
+                    </span>
+                </li>
+                <li>
+                    System updates:
+                    <span class="badge badge-{{ 'active' if prefs.email_notifications.system else 'inactive' }}">
+                        {{ "Yes" if prefs.email_notifications.system else "No" }}
+                    </span>
+                </li>
+                <li>
+                    News & offers:
+                    <span class="badge badge-{{ 'active' if prefs.email_notifications.marketing else 'inactive' }}">
+                        {{ "Yes" if prefs.email_notifications.marketing else "No" }}
+                    </span>
+                </li>
+            </ul>
+            {% else %}
+            <div class="text-muted" style="margin-top: 0.5em;">No preferences set</div>
+            {% endif %}
+        </div>
+        </section>
+        <section class="form-panel mt-1">
+            <div class="form-title">Usage Stats</div>
+            <ul class="pref-list" style="margin-bottom:0;">
+                <li>
+                    <strong>User messages sent:</strong>
+                    <span class="badge badge-system">{{ stats.message_count_user }}</span>
+                </li>
+                <li>
+                    <strong>AI responses received:</strong>
+                    <span class="badge badge-system">{{ stats.message_count_ai }}</span>
+                </li>
+                <li>
+                    <strong>Conversations started:</strong>
+                    <span class="badge badge-ticket">{{ stats.conversation_count }}</span>
+                </li>
+                <li>
+                    <strong>Messages (last 7d):</strong>
+                    <span class="badge badge-marketing">{{ stats.recent_user_msgs }} user</span>
+                    /
+                    <span class="badge badge-marketing">{{ stats.recent_ai_msgs }} ai</span>
+                </li>
+                <li>
+                    <strong>Most active day:</strong>
+                    {% if stats.most_active %}
+                    <span class="badge badge-admin">{{ stats.most_active[0] }}</span>
+                    <span class="badge badge-admin">{{ stats.most_active[1] }} msgs</span>
+                    {% else %}
+                    <span class="badge badge-none">N/A</span>
+                    {% endif %}
+                </li>
+                <li>
+                    <strong>Avg. msgs per conversation:</strong>
+                    <span class="badge badge-user">{{ stats.avg_msgs_per_convo }}</span>
+                </li>
+                <li>
+                    <strong>Top models used:</strong>
+                    {% if stats.model_stats %}
+                    {% for model, count in stats.model_stats %}
+                    <span class="badge badge-system" style="margin-right:.25em;">
+                        {{ model or 'unknown' }} ({{ count }})
+                    </span>
+                    {% endfor %}
+                    {% else %}
+                    <span class="badge badge-none">N/A</span>
+                    {% endif %}
+                </li>
+            </ul>
+        </section>
+
+
+        <section class="form-panel mt-1">
+            <div class="form-title">Update Subscription</div>
+            <form method="POST" autocomplete="off">
+                <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+
+                <div class="form-group">
+                    <label for="subscription_status">Subscription Status</label>
+                    <select id="subscription_status" name="subscription_status" required class="input">
+                        <option value="">Select status…</option>
+                        {% for status in subscription_status_options %}
+                        <option value="{{ status }}" {% if user.subscription_status==status %}selected{% endif %}>
+                            {{ status|capitalize }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subscription_plan">Subscription Plan</label>
+                    <select id="subscription_plan" name="subscription_plan" class="input">
+                        <option value="">None</option>
+                        {% for pid, label in price_labels.items() %}
+                        <option value="{{ pid }}" {% if user.subscription_plan==pid %}selected{% endif %}>
+                            {{ label }}
+                        </option>
+                        {% endfor %}
+                    </select>
+                </div>
+                <div class="form-group">
+                    <label for="subscription_start">Subscription Start</label>
+                    <input id="subscription_start" type="date" name="subscription_start" class="input"
+                        value="{{ user.subscription_start.strftime('%Y-%m-%d') if user.subscription_start else '' }}"
+                        autocomplete="off">
+                </div>
+                <div class="form-group">
+                    <label for="subscription_end">Subscription End</label>
+                    <input id="subscription_end" type="date" name="subscription_end" class="input"
+                        value="{{ user.subscription_end.strftime('%Y-%m-%d') if user.subscription_end else '' }}"
+                        autocomplete="off">
+                </div>
+                <div class="form-actions">
+                    <button type="submit" name="update_subscription" class="btn btn-primary">
+                        Save Changes
+                    </button>
+                </div>
+            </form>
+        </section>
         <form method="POST" style="display: inline;">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button name="deactivate" type="submit" class="btn btn-{{ 'danger' if user.is_active else 'success' }}">
                 {{ 'Deactivate' if user.is_active else 'Activate' }}
             </button>
         </form>
-        <form method="POST" style="display: inline;" onsubmit="return confirm('Are you sure you want to delete this user?');">
+        <form method="POST" style="display: inline;"
+            onsubmit="return confirm('Are you sure you want to delete this user?');">
             <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
             <button name="delete" type="submit" class="btn btn-danger">Delete</button>
         </form>
         <a href="{{ url_for('admin.user_list') }}" class="btn btn-secondary">Back to User List</a>
     </div>
-    
 
-    
+
+
 </main>
 
 {% endblock %}

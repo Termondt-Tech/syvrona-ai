@@ -50,6 +50,11 @@ def create_checkout_session():
         current_user.stripe_customer_id = customer.id
         db.session.commit()
         stripe_customer_id = customer.id
+        logger.info(
+            "Stripe customer created: customer_id=%s user_id=%s",
+            customer.id,
+            current_user.id,
+        )
     else:
         stripe_customer_id = current_user.stripe_customer_id
 
@@ -91,12 +96,12 @@ def stripe_webhook():
         logger.error(f"Invalid signature: {e}")
         return jsonify({"error": "Invalid signature"}), 400
 
-    logger.info(f"Received Stripe event: {event['type']}")
+    logger.info("Received Stripe event: %s", event["type"])
 
     # Handle relevant Stripe event types
     if event["type"] == "checkout.session.completed":
         session = event["data"]["object"]
-        logger.info(f"checkout.session.completed: {session}")
+        logger.info("checkout.session.completed: %s", session)
         # (No subscription info here, handled in the next block)
 
     if event["type"] in (
@@ -105,16 +110,18 @@ def stripe_webhook():
         "customer.subscription.deleted",
     ):
         subscription = event["data"]["object"]
-        logger.info(f"Processing subscription event: {subscription}")
+        logger.info("Processing subscription event: %s", subscription)
         stripe_customer_id = subscription["customer"]
 
-        logger.info(f"Stripe event for customer: {stripe_customer_id}")
+        logger.info("Stripe event for customer: %s", stripe_customer_id)
 
         user = User.query.filter_by(stripe_customer_id=stripe_customer_id).first()
         if user:
             logger.info(
-                f"User found: id={user.id}, email={user.email}, "
-                f"old status={user.subscription_status}"
+                "User found: id=%s, email=%s, old status=%s",
+                user.id,
+                user.email,
+                user.subscription_status,
             )
             user.subscription_status = subscription["status"]  # e.g., "active"
 
@@ -148,16 +155,15 @@ def stripe_webhook():
 
             db.session.commit()
             logger.info(
-                (
-                    f"Updated user id={user.id}: "
-                    f"new status={user.subscription_status}, "
-                    f"plan={user.subscription_plan}"
-                )
+                "Updated user id=%s: new status=%s, plan=%s",
+                user.id,
+                user.subscription_status,
+                user.subscription_plan,
             )
 
         else:
             logger.warning(
-                f"No user found for Stripe customer ID: {stripe_customer_id}"
+                "No user found for Stripe customer ID: %s", stripe_customer_id
             )
 
     return "", 200
@@ -190,6 +196,11 @@ def subscribe():
             )
             user.stripe_customer_id = customer.id
             db.session.commit()
+            logger.info(
+                "Stripe customer created: customer_id=%s user_id=%s",
+                customer.id,
+                user.id,
+            )
 
         if plan in price_ids:
             price_id = price_ids[plan]

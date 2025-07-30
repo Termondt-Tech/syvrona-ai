@@ -48,9 +48,15 @@
             <ul>
                 {% for c in recent_convos %}
                 <li>
-                    <a href="{{ url_for('chat.view_conversation', conversation_id=c.id) }}">{{ c.title or "Untitled"
-                        }}</a>
+                    {{ c.title or "Untitled" }}
                     <span class="conversation-date">{{ c.created_at.strftime('%Y-%m-%d') }}</span>
+                    <a href="{{ url_for('chat.view_conversation', conversation_id=c.id) }}" class="btn-link">View</a>
+                    <form action="{{ url_for('chat.chat_page') }}" method="post" class="inline-form">
+                        <input type="hidden" name="csrf_token" value="{{ csrf_token() }}">
+                        <input type="hidden" name="conversation_id" value="{{ c.id }}">
+                        <button type="submit" class="btn-link">Resume</button>
+                    </form>
+
                 </li>
                 {% endfor %}
             </ul>
