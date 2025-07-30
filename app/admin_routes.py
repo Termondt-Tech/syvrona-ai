@@ -3,8 +3,9 @@ from datetime import datetime, timezone
 import logging
 import os
 from flask import Blueprint, render_template, redirect, url_for, flash, request
+from sqlalchemy import desc, func
 from app.constants import STRIPE_SUBSCRIPTION_STATUSES
-from app.models import Notification, Ticket, TicketMessage, User
+from app.models import Conversation, Message, Notification, Ticket, TicketMessage, User
 from app.decorators import admin_required
 from flask_login import login_required, current_user
 from app import db
@@ -19,18 +20,15 @@ logger = logging.getLogger(__name__)
 @login_required
 @admin_required
 def user_list():
-    sort_columns = {
-        "created_at": User.created_at,
-        "last_login": User.last_login,
-    }
+
     sort = request.args.get("sort", "created_at")
     direction = request.args.get("direction", "desc")
     per_page = request.args.get("per_page", 25, type=int)
     page = request.args.get("page", 1, type=int)
 
-    filter_admin = request.args.get("admin", "")  # "yes", "no", ""
-    filter_active = request.args.get("active", "")  # "yes", "no", ""
-    filter_subscription = request.args.get("subscription_status", "")  # e.g. "active"
+    filter_admin = request.args.get("admin", "")
+    filter_active = request.args.get("active", "")
+    filter_subscription = request.args.get("subscription_status", "")
 
     query = User.query
 
@@ -43,19 +41,58 @@ def user_list():
         query = query.filter(User.is_active.is_(True))
     elif filter_active == "no":
         query = query.filter(User.is_active.is_(False))
-
-    # Subscription status filtering
     if filter_subscription:
         query = query.filter(User.subscription_status == filter_subscription)
 
-    sort_column = sort_columns.get(sort, User.created_at)
-    if direction == "asc":
-        query = query.order_by(sort_column.asc())
+    # --- Sort handling ---
+    if sort in ("messages_sent", "messages_received"):
+        role = "user" if sort == "messages_sent" else "assistant"
+        msg_count_subq = (
+            db.session.query(
+                Conversation.user_id.label("uid"),
+                func.count(Message.id).label("msg_count"),
+            )
+            .join(Message, Conversation.id == Message.conversation_id)
+            .filter(Message.role == role)
+            .group_by(Conversation.user_id)
+            .subquery()
+        )
+        query = query.outerjoin(msg_count_subq, User.id == msg_count_subq.c.uid)
+        sort_column = func.coalesce(msg_count_subq.c.msg_count, 0)
+        if direction == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
     else:
-        query = query.order_by(sort_column.desc())
+        sort_columns = {
+            "created_at": User.created_at,
+            "last_login": User.last_login,
+        }
+        sort_column = sort_columns.get(sort, User.created_at)
+        if direction == "asc":
+            query = query.order_by(sort_column.asc())
+        else:
+            query = query.order_by(sort_column.desc())
 
     users_pagination = query.paginate(page=page, per_page=per_page)
     users = users_pagination.items
+
+    # Efficient badge count fetch (for just visible users)
+    user_ids = [u.id for u in users]
+    user_msg_counts = dict(
+        db.session.query(Conversation.user_id, func.count(Message.id))
+        .join(Message, Conversation.id == Message.conversation_id)
+        .filter(Conversation.user_id.in_(user_ids), Message.role == "user")
+        .group_by(Conversation.user_id)
+        .all()
+    )
+    ai_msg_counts = dict(
+        db.session.query(Conversation.user_id, func.count(Message.id))
+        .join(Message, Conversation.id == Message.conversation_id)
+        .filter(Conversation.user_id.in_(user_ids), Message.role == "assistant")
+        .group_by(Conversation.user_id)
+        .all()
+    )
 
     return render_template(
         "admin/user_list.html",
@@ -68,6 +105,8 @@ def user_list():
         filter_active=filter_active,
         filter_subscription=filter_subscription,
         subscription_statuses=STRIPE_SUBSCRIPTION_STATUSES,
+        user_msg_counts=user_msg_counts,
+        ai_msg_counts=ai_msg_counts,
     )
 
 
@@ -100,7 +139,110 @@ def user_detail(user_id):
         os.getenv("STRIPE_PRICE_ID_PRO_YEARLY"): "Pro Yearly ($99/year)",
     }
 
+    STRIPE_SUBSCRIPTION_STATUS_OPTIONS = [
+        "active",
+        "trialing",
+        "canceled",
+        "incomplete",
+        "incomplete_expired",
+        "past_due",
+        "paused",
+        "unpaid",
+    ]
+
     user = User.query.get_or_404(user_id)
+
+    # Core message and conversation counts
+    message_count_user = (
+        db.session.query(func.count(Message.id))
+        .join(Conversation)
+        .filter(Conversation.user_id == user.id, Message.role == "user")
+        .scalar()
+    )
+    message_count_ai = (
+        db.session.query(func.count(Message.id))
+        .join(Conversation)
+        .filter(Conversation.user_id == user.id, Message.role == "assistant")
+        .scalar()
+    )
+    conversation_count = (
+        db.session.query(func.count(Conversation.id))
+        .filter(Conversation.user_id == user.id)
+        .scalar()
+    )
+
+    # Most active day for user messages
+    most_active = (
+        db.session.query(
+            func.date(Message.created_at), func.count(Message.id).label("msg_count")
+        )
+        .join(Conversation)
+        .filter(Conversation.user_id == user.id, Message.role == "user")
+        .group_by(func.date(Message.created_at))
+        .order_by(desc("msg_count"))
+        .first()
+    )
+
+    # Recent activity (last 7 days)
+    from datetime import datetime, timedelta, UTC
+
+    now = datetime.now(tz=UTC)
+    seven_days_ago = now - timedelta(days=7)
+    recent_user_msgs = (
+        db.session.query(func.count(Message.id))
+        .join(Conversation)
+        .filter(
+            Conversation.user_id == user.id,
+            Message.role == "user",
+            Message.created_at >= seven_days_ago,
+        )
+        .scalar()
+    )
+    recent_ai_msgs = (
+        db.session.query(func.count(Message.id))
+        .join(Conversation)
+        .filter(
+            Conversation.user_id == user.id,
+            Message.role == "assistant",
+            Message.created_at >= seven_days_ago,
+        )
+        .scalar()
+    )
+
+    # Top AI models used
+    model_stats = (
+        db.session.query(Message.model, func.count(Message.id))
+        .join(Conversation)
+        .filter(Conversation.user_id == user.id, Message.role == "assistant")
+        .group_by(Message.model)
+        .order_by(desc(func.count(Message.id)))
+        .limit(3)
+        .all()
+    )
+
+    # --- FIXED: Average messages per conversation ---
+    msg_counts = (
+        db.session.query(func.count(Message.id))
+        .join(Conversation)
+        .filter(Conversation.user_id == user.id)
+        .group_by(Conversation.id)
+        .all()
+    )
+    msg_counts = [c[0] for c in msg_counts]
+    avg_msgs_per_convo = (
+        round(sum(msg_counts) / len(msg_counts), 2) if msg_counts else 0
+    )
+
+    stats = {
+        "message_count_user": message_count_user,
+        "message_count_ai": message_count_ai,
+        "conversation_count": conversation_count,
+        "most_active": most_active,
+        "recent_user_msgs": recent_user_msgs,
+        "recent_ai_msgs": recent_ai_msgs,
+        "model_stats": model_stats,
+        "avg_msgs_per_convo": avg_msgs_per_convo,
+    }
 
     if request.method == "POST":
         if "deactivate" in request.form:
@@ -122,8 +264,24 @@ def user_detail(user_id):
                 db.session.commit()
                 flash("User deleted successfully.", "success")
                 return redirect(url_for("admin.user_list"))
+        elif "update_subscription" in request.form:
+            user.subscription_status = request.form.get("subscription_status")
+            user.subscription_plan = request.form.get("subscription_plan")
+            # Handle dates safely; HTML5 returns ISO format
+            start = request.form.get("subscription_start")
+            end = request.form.get("subscription_end")
+            user.subscription_start = datetime.fromisoformat(start) if start else None
+            user.subscription_end = datetime.fromisoformat(end) if end else None
+            db.session.commit()
+            flash("Subscription details updated.", "success")
 
-    return render_template("admin/user_view.html", user=user, price_labels=PRICE_LABELS)
+    return render_template(
+        "admin/user_view.html",
+        user=user,
+        price_labels=PRICE_LABELS,
+        subscription_status_options=STRIPE_SUBSCRIPTION_STATUS_OPTIONS,
+        stats=stats,
+    )
 
 
 @admin.route("/tickets")

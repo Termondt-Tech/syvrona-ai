@@ -87,6 +87,29 @@
                             {% endif %}
                         </a>
                     </th>
+                    <th>
+                        <a href="{{ url_for('admin.user_list',
+                            sort='messages_sent',
+                            direction='desc' if sort != 'messages_sent' else ('asc' if direction == 'desc' else 'desc')
+                        ) }}">
+                            Msgs Sent
+                            {% if sort == 'messages_sent' %}
+                            {% if direction == 'asc' %}▲{% else %}▼{% endif %}
+                            {% endif %}
+                        </a>
+                    </th>
+                    <th>
+                        <a href="{{ url_for('admin.user_list',
+                            sort='messages_received',
+                            direction='desc' if sort != 'messages_received' else ('asc' if direction == 'desc' else 'desc')
+                        ) }}">
+                            AI Replies
+                            {% if sort == 'messages_received' %}
+                            {% if direction == 'asc' %}▲{% else %}▼{% endif %}
+                            {% endif %}
+                        </a>
+
+                    </th>
                     <th>Action</th>
                 </tr>
             </thead>
@@ -117,6 +140,17 @@
                         {% endif %}
                     <td>{{ user.created_at.strftime('%Y-%m-%d') if user.created_at else 'N/A' }}</td>
                     <td>{{ user.last_login.strftime('%Y-%m-%d %H:%M') if user.last_login else 'Never' }}</td>
+                    <td>
+                        <span class="badge badge-system">
+                            {{ user_msg_counts.get(user.id, 0) }}
+                        </span>
+                    </td>
+                    <td>
+                        <span class="badge badge-marketing">
+                            {{ ai_msg_counts.get(user.id, 0) }}
+                        </span>
+                    </td>
+
                     <td>
                         <form method="POST" action="{{ url_for('admin.toggle_user_active', user_id=user.id) }}"
                             onsubmit="return confirmToggle('{{ user.email }}', {{ user.is_active|tojson }});">
