@@ -12,16 +12,14 @@ health = Blueprint("health", __name__)
 
 @health.route("/healthz")
 def healthz():
-    logger.info("Health check performed")
     return jsonify({"status": "ok"}), 200
 
 
 @health.route("/readyz")
 def readyz():
-    logger.info("Readiness check performed")
     try:
         db.session.execute(text("SELECT 1"))
         return jsonify({"status": "ready"}), 200
-    except OperationalError:
-        logger.error("Database connection error during readiness check")
+    except OperationalError as e:
+        logger.error("Database connection error during readiness check: %s", e)
         return jsonify({"status": "db-error"}), 503
