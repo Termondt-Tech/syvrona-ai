@@ -13,11 +13,11 @@ def handle_ratelimit(e: RateLimitExceeded) -> Response:
     """Log one line and return a polite 429 JSON/plain response."""
     user_id = getattr(current_user, "id", None)
     log.warning(
-        "RATE_LIMIT_EXCEEDED user=%s ip=%s path=%s limit=\"%s\" retry_after=%s",
+        'RATE_LIMIT_EXCEEDED user=%s ip=%s path=%s limit="%s" retry_after=%s',
         user_id,
         request.remote_addr,
         request.path,
-        e.description,          # e.g. "3 per 1 minute"
+        e.description,  # e.g. "3 per 1 minute"
         getattr(e, "retry_after", "unknown"),
     )
     return Response("Rate limit exceeded", status=429, mimetype="text/plain")
