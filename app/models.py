@@ -1,6 +1,8 @@
+# app/models.py
 from flask_login import UserMixin
 from . import db
 from datetime import datetime, UTC
+from sqlalchemy.dialects import mysql
 
 
 class User(UserMixin, db.Model):
@@ -29,6 +31,22 @@ class User(UserMixin, db.Model):
     )
     verified = db.Column(db.Boolean, default=False)
     preferences = db.Column(db.JSON, nullable=True)
+
+
+class UsageStat(db.Model):
+    __tablename__ = "usage_stat"
+    id = db.Column(db.Integer, primary_key=True)
+    user_id = db.Column(db.Integer, db.ForeignKey("user.id"), nullable=False)
+    period_start = db.Column(db.Date)  # first day of month (UTC)
+    tokens = db.Column(
+        db.BigInteger().with_variant(mysql.BIGINT(unsigned=True), "mysql"),
+        nullable=False,
+        default=0,
+    )
+
+    __table_args__ = (
+        db.UniqueConstraint("user_id", "period_start", name="uix_usage_month"),
+    )
 
 
 class Conversation(db.Model):

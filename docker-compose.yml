@@ -12,7 +12,10 @@ services:
       retries: 3
       start_period: 10s
     depends_on:
-      - mysql
+      mysql:
+        condition: service_healthy
+      redis:
+        condition: service_healthy
   mysql:
     image: mysql:8.0
     restart: always
@@ -31,6 +34,17 @@ services:
       timeout: 5s
       retries: 5
       start_period: 20s
+  redis:                         # ➋ Redis is now a first-class service
+    image: redis:8
+    restart: always
+    volumes:
+      - redis-data:/data
+    command: ["redis-server", "--save", "", "--appendonly", "no"]   # disable RDB saves (ephemeral rate-limit store)
+    healthcheck:
+      test: ["CMD-SHELL", "redis-cli ping | grep PONG"]
+      interval: 10s
+      timeout: 3s
+      retries: 5
   test:
     build: .
     command: pytest
@@ -41,3 +55,4 @@ services:
 
 volumes:
   mysql_data:
+  redis-data:

@@ -1,4 +1,5 @@
 import os
+import json
 
 
 class Config:
@@ -39,6 +40,30 @@ class Config:
     # CSRF protection
     WTF_CSRF_ENABLED = os.getenv("WTF_CSRF_ENABLED", "true").lower() == "true"
     WTF_CSRF_TIME_LIMIT = int(os.getenv("WTF_CSRF_TIME_LIMIT", 86400))  # 24 hours
+
+    # Rate limiting configuration
+    # Default to Redis; can be overridden in .env
+    RATELIMIT_STORAGE_URI = os.getenv("RATELIMIT_STORAGE_URI", "redis://redis:6379/0")
+
+    # ---- Rate-limit tiers -----------------------------------------------
+    _default = {
+        "free": "5 per minute;100 per day",
+        "pro": "60 per minute;3000 per day",
+    }
+
+    _env_json = os.getenv("RATE_LIMIT_TIERS")
+
+    if _env_json:
+        try:
+            RATE_LIMIT_TIERS = json.loads(_env_json)
+        except json.JSONDecodeError:
+            raise ValueError("RATE_LIMIT_TIERS must be valid JSON")
+    else:
+        RATE_LIMIT_TIERS = _default
+
+    # ---- Token quotas ---------------------------------------------------
+    # Default to 50,000 tokens for free tier; can be overridden in .env
+    TOKEN_QUOTAS = json.loads(os.getenv("TOKEN_QUOTAS", '{"free": 50000}'))
 
 
 class DevelopmentConfig(Config):

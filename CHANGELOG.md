@@ -1,5 +1,10 @@
 # Changelog
 
+## [1.4.8] - 2025-08-08
+
+- Abuse Prevention, Architecture Improvements, & Bug Fixes.
+- [Full release notes & upgrade instructions →](docs/releases/1.4.8.md)
+
 ## [1.4.7] - 2025-07-25
 
 - Architecture and Usability Improvements & Bug Fixes.
