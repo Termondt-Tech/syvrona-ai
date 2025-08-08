@@ -30,6 +30,8 @@ from . import db
 
 from app.models import Message, PromptChain, Tag, message_tags, Conversation
 
+from app.extensions import limiter
+from app.limits import enforce_token_quota, plan_limits
 
 chat = Blueprint("chat", __name__)
 
@@ -373,8 +375,10 @@ def chat_page():
 
 
 @chat.route("/answer", methods=["GET", "POST"])
+@limiter.limit(plan_limits)
 @login_required
 @require_active_subscription
+@enforce_token_quota  # Apply token quota limits
 def answer():
     try:
         data = request.get_json()

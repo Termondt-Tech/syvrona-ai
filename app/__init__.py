@@ -9,6 +9,8 @@ from flask_wtf import CSRFProtect
 
 from app.config import Config
 
+from app.extensions import init_extensions  # Import the redis client and limiter
+
 from .log_config import configure_logging
 
 db = SQLAlchemy()
@@ -37,6 +39,8 @@ def create_app(config=None):
     logger.info("Database initialized")
     migrate.init_app(app, db)  # ← bind Migrate to app/db
     logger.info("Migration initialized")
+
+    init_extensions(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
@@ -101,6 +105,10 @@ def create_app(config=None):
     from .tags import tags_bp as tags_blueprint
 
     app.register_blueprint(tags_blueprint, url_prefix="/tags")
+
+    from app.ratelimit_logging import bp as ratelimit_bp
+
+    app.register_blueprint(ratelimit_bp)
 
     @app.context_processor
     def inject_unread_notification_count():
