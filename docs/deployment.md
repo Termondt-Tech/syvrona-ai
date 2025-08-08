@@ -100,6 +100,28 @@ docker logs syvrona-ai-web-1
 * MySQL container persists data via Docker volumes (never bind-mounts).
 * Do **not** run Docker as root; ensure `appuser` is in the `docker` group.
 
+## Backup MySQL
+
+1. Login to production server and run commands:
+
+    ```bash
+    # ssh to prod
+    ssh appuser@syvrona.com
+
+    # change to syvrona-ai directory
+    cd syvrona-ai
+
+    # excecute backup
+    docker exec syvrona-ai-mysql-1 mysqldump -u root -p'yourpassword' --all-databases --routines --events --triggers --single-transaction > /home/appuser/syvrona_backup_$(date +%F_%H-%M-%S).sql
+    ```
+
+2. From local Machine
+
+    ```bash
+    # copy file down to network storage array
+    scp appuser@syvrona.com:/home/appuser/syvrona_backup_$(date +%F_%H-%M-%S).sql /Volumes/termondttech/Syvrona/database-backups/prod
+    ```
+
 ## Troubleshooting Checklist
 
 * **App container fails to start:**
