@@ -179,6 +179,11 @@
             <div class="tag-suggestions" style="display:none;"></div>
         `;
         body.appendChild(userDiv);
+        const userTagInput = userDiv.querySelector('.tag-input');
+        if (userTagInput && window.SyvronaTags?.bindTagInput) {
+            window.SyvronaTags.bindTagInput(userTagInput);
+        }
+
 
         // --- Always create assistant div with spinner immediately ---
         const assistantDiv = document.createElement("div");
@@ -203,6 +208,11 @@
             <div class="tag-suggestions" style="display:none;"></div>
         `;
         body.appendChild(assistantDiv);
+        const assistantTagInput = assistantDiv.querySelector('.tag-input');
+        if (assistantTagInput && window.SyvronaTags?.bindTagInput) {
+            window.SyvronaTags.bindTagInput(assistantTagInput);
+        }
+
         scrollChatToBottomAndFocus();
 
         const assistantMsgContent = assistantDiv.querySelector('.msg-content');
@@ -222,6 +232,18 @@
                     conversation_id: window.conversationId ? Number(window.conversationId) : null
                 })
             });
+
+            // -------- NEW: handle rate-limit burst (HTTP 429) ----------
+            if (response.status === 429) {
+                showToast("Too many requests – please wait a moment and try again.");
+                return;            // bail early; no stream to read
+            }
+            // -------- NEW: handle token quota exceeded (HTTP 402) ----------
+            else if (response.status === 402) {
+                showToast("You hit your monthly token quota. Upgrade or wait for reset.");
+                return;
+            }
+
 
             const reader = response.body.getReader();
             let output = "";
@@ -255,7 +277,7 @@
             await updateLatestMessages();
 
             input.focus();
-            
+
             async function updateLatestMessages() {
                 const resp = await fetch(`/conversation/${window.conversationId}/latest`);
                 const latest = await resp.json();
