@@ -26,7 +26,7 @@ USER appuser
 EXPOSE 5000
 
 # Set the command to run the Flask app in production mode using Gunicorn
-CMD ["gunicorn", "-w", "2", "--max-requests", "100", "--max-requests-jitter", "20", "-b", "0.0.0.0:5000", "app:create_app()"]
+CMD ["gunicorn", "-w", "2", "--timeout", "120", "--max-requests", "100", "--max-requests-jitter", "20", "-b", "0.0.0.0:5000", "app:create_app()"]
 
 # Alternatively, in development, you might want to use Flask's built-in server (not recommended for production)
 # Uncomment the following line to use Flask's development server:

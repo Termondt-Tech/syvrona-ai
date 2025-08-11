@@ -4,33 +4,33 @@ DEFAULT_MODEL_KEY = "gpt-4.1"
 
 
 MODEL_REGISTRY = {
+    "gpt-5": {
+        "provider": "openai",
+        "display_name": "GPT-5",
+        "openai_endpoint": "responses",
+        "encoding": "cl100k_base",
+    },
+    "gpt-5-chat-latest": {
+        "provider": "openai",
+        "display_name": "GPT-5 Chat",
+        "openai_endpoint": "responses",
+        "encoding": "cl100k_base",
+    },
+    "gpt-5-mini": {
+        "provider": "openai",
+        "display_name": "GPT-5 Mini",
+        "openai_endpoint": "responses",
+        "encoding": "cl100k_base",
+    },
+    "gpt-5-nano": {
+        "provider": "openai",
+        "display_name": "GPT-5 Nano",
+        "openai_endpoint": "responses",
+        "encoding": "cl100k_base",
+    },
     "gpt-4.1": {
         "provider": "openai",
         "display_name": "GPT-4.1",
-        "openai_endpoint": "chat",
-        "encoding": "cl100k_base",
-    },
-    "gpt-4.1-mini": {
-        "provider": "openai",
-        "display_name": "GPT-4.1 Mini",
-        "openai_endpoint": "chat",
-        "encoding": "cl100k_base",
-    },
-    "gpt-4o": {
-        "provider": "openai",
-        "display_name": "GPT-4o",
-        "openai_endpoint": "chat",
-        "encoding": "cl100k_base",
-    },
-    "gpt-4o-mini": {
-        "provider": "openai",
-        "display_name": "GPT-4o Mini",
-        "openai_endpoint": "chat",
-        "encoding": "cl100k_base",
-    },
-    "gpt-4.1-nano": {
-        "provider": "openai",
-        "display_name": "GPT-4.1 Nano",
         "openai_endpoint": "chat",
         "encoding": "cl100k_base",
     },
@@ -38,30 +38,6 @@ MODEL_REGISTRY = {
         "provider": "openai",
         "display_name": "O3",
         "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
-    },
-    "o3-mini": {
-        "provider": "openai",
-        "display_name": "O3 Mini",
-        "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
-    },
-    "o4-mini": {
-        "provider": "openai",
-        "display_name": "O4 Mini",
-        "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
-    },
-    "gpt-4.5": {
-        "provider": "openai",
-        "display_name": "GPT-4.5",
-        "openai_endpoint": "chat",
-        "encoding": "cl100k_base",
-    },
-    "gpt-3.5-turbo": {
-        "provider": "openai",
-        "display_name": "GPT-3.5 Turbo",
-        "openai_endpoint": "chat",
         "encoding": "cl100k_base",
     },
     "claude-sonnet-4-20250514": {
@@ -76,34 +52,10 @@ MODEL_REGISTRY = {
         "max_tokens": 32000,
         "encoding": "cl100k_base",
     },
-    "claude-3-7-sonnet-20250219": {
-        "provider": "anthropic",
-        "display_name": "Claude 3 Sonnet",
-        "max_tokens": 64000,  # 128k with beta header, see docs
-        "encoding": "cl100k_base",
-    },
-    "claude-3-5-sonnet-20241022": {
-        "provider": "anthropic",
-        "display_name": "Claude 3.5 Sonnet",
-        "max_tokens": 8192,
-        "encoding": "cl100k_base",
-    },
     "claude-3-5-haiku-20241022": {
         "provider": "anthropic",
         "display_name": "Claude 3.5 Haiku",
         "max_tokens": 8192,
-        "encoding": "cl100k_base",
-    },
-    "claude-3-haiku-20240307": {
-        "provider": "anthropic",
-        "display_name": "Claude 3 Haiku",
-        "max_tokens": 4096,
-        "encoding": "cl100k_base",
-    },
-    "claude-3-opus-20240229": {
-        "provider": "anthropic",
-        "display_name": "Claude 3 Opus",
-        "max_tokens": 4096,
         "encoding": "cl100k_base",
     },
 }

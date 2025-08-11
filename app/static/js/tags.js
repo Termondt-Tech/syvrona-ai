@@ -130,10 +130,7 @@
 
     // --- Setup tag functionality for all existing tag-inputs (chat/convo) ---
     function setupTagInputs() {
-        // Only run if tag inputs exist on page
-        if (!document.querySelector('.tag-input')) return;
-
-        document.querySelectorAll('.tag-input').forEach(bindTagInput);
+        // Always attach delegated handlers (works even if inputs appear later)
         document.addEventListener('click', function (e) {
             if (e.target.classList.contains('add-tag-btn')) {
                 const msgDiv = e.target.closest('[data-msg-id]');
@@ -155,7 +152,12 @@
                 }).then(() => tagSpan.remove());
             }
         });
+
+        // Only bind existing inputs present at load (if any)
+        const inputs = document.querySelectorAll('.tag-input');
+        if (inputs.length) inputs.forEach(bindTagInput);
     }
+
 
     // --- Setup modal logic for tag rename/delete (tags page) ---
     function setupTagModals() {
