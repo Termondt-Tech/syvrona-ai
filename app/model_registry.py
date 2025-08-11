@@ -46,9 +46,9 @@ MODEL_REGISTRY = {
         "max_tokens": 64000,
         "encoding": "cl100k_base",
     },
-    "claude-opus-4-20250514": {
+    "claude-opus-4-1-20250805": {
         "provider": "anthropic",
-        "display_name": "Claude 4 Opus",
+        "display_name": "Claude 4.1 Opus",
         "max_tokens": 32000,
         "encoding": "cl100k_base",
     },

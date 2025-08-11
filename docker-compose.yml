@@ -5,6 +5,7 @@ services:
       - .env
     ports:
       - 5001:5000
+    restart: always
     healthcheck:
       test: ["CMD", "python", "-c", "import sys, urllib.request; sys.exit(0) if urllib.request.urlopen('http://localhost:5000/healthz').getcode() == 200 else sys.exit(1)"]
       interval: 30s
