@@ -7,6 +7,14 @@ class Config:
     SECURITY_PASSWORD_SALT = os.getenv("SECURITY_PASSWORD_SALT")
     SQLALCHEMY_DATABASE_URI = os.getenv("DATABASE_URL")
     SQLALCHEMY_TRACK_MODIFICATIONS = False
+    SQLALCHEMY_ENGINE_OPTIONS = {
+        # Reasonable defaults for MySQL + gthread workers
+        "pool_size": int(os.getenv("DB_POOL_SIZE", 10)),
+        "max_overflow": int(os.getenv("DB_MAX_OVERFLOW", 5)),
+        "pool_pre_ping": True,  # detect dead connections
+        "pool_recycle": int(os.getenv("DB_POOL_RECYCLE", 1800)),  # seconds
+        "pool_reset_on_return": "rollback",  # keeps connections clean between requests
+    }
 
     STRIPE_PRICE_IDS = {
         "pro_monthly": os.getenv("STRIPE_PRICE_ID_PRO_MONTHLY"),

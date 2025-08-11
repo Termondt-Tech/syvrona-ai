@@ -41,5 +41,3 @@ def configure_logging() -> None:
             },
         }
     )
-
-    logging.getLogger().info("Logging configured at level %s", level)

@@ -1,0 +1,20 @@
+[mysqld]
+# --- Memory / performance (safe for 4GB host with app on same box) ---
+innodb_buffer_pool_size = 1G
+innodb_log_file_size    = 256M
+innodb_flush_method     = O_DIRECT
+table_open_cache        = 1024
+
+# --- Connections (matches your Gunicorn+SQLAlchemy pool math) ---
+# 5 workers * (pool_size 10 + overflow 5) = 75 peak → headroom to 200
+max_connections         = 200
+
+# --- Diagnostics (helps find real issues fast) ---
+slow_query_log          = 1
+long_query_time         = 0.5
+# slow_query_log_file   = /var/lib/mysql/slow.log   # optional (default is OK)
+
+# --- Reliability ---
+# Make sure we use utf8mb4 throughout (you already pass charset in URI too)
+character-set-server    = utf8mb4
+collation-server        = utf8mb4_unicode_ci

@@ -22,13 +22,24 @@ hcaptcha = hCaptcha()
 csrf = CSRFProtect()
 
 
+def _mask_url(url_obj):
+    # SQLAlchemy 2.x: render_as_string(hide_password=True); 1.4 fallback otherwise
+    try:
+        return url_obj.render_as_string(hide_password=True)
+    except Exception:
+        # basic mask for older versions
+        url = str(url_obj)
+        if "@" in url and ":" in url.split("@")[0]:
+            # replace password segment before '@'
+            creds, host = url.split("@", 1)
+            user = creds.split("://", 1)[-1].split(":")[0]
+            return url.replace(creds, f"{user}:***")
+        return url
+
+
 def create_app(config=None):
     configure_logging()
     logger = logging.getLogger(__name__)
-    logger.info(
-        "Logging configured (effective level: %s)",
-        logging.getLevelName(logger.getEffectiveLevel()),
-    )
 
     app = Flask(__name__)
     app.config.from_object(Config)
@@ -36,23 +47,28 @@ def create_app(config=None):
         app.config.update(config)
 
     db.init_app(app)
-    logger.info("Database initialized")
+
     migrate.init_app(app, db)  # ← bind Migrate to app/db
-    logger.info("Migration initialized")
 
     init_extensions(app)
 
     login_manager.init_app(app)
     login_manager.login_view = "auth.login"
-    logger.info("Login manager initialized")
 
     hcaptcha.init_app(app)
     csrf.init_app(app)
 
-    logger.info("App configuration:")
-    logger.info(
-        "SQLALCHEMY_DATABASE_URI: %s", app.config.get("SQLALCHEMY_DATABASE_URI")
-    )
+    # Log a concise, definitive engine + pool line (once per process)
+    with app.app_context():
+        eng = db.engine
+        try:
+            app.logger.info(
+                "SQLAlchemy: url=%s pool=%s",
+                _mask_url(eng.url),
+                eng.pool.status(),
+            )
+        except Exception as e:
+            app.logger.warning("SQLAlchemy: could not read pool status: %s", e)
 
     from .models import User
 
