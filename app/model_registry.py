@@ -1,6 +1,6 @@
 # model_registry.py
 
-DEFAULT_MODEL_KEY = "gpt-4.1"
+DEFAULT_MODEL_KEY = "gpt-5-chat-latest"
 
 
 MODEL_REGISTRY = {
