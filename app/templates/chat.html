@@ -115,6 +115,24 @@
         this.classList.remove('show');
     });
 
+    // --- Set error message in assistant div ---
+    // This is used when the assistant fails to respond or an error occurs
+    // It replaces the spinner with an error message
+    function setAssistantError(assistantDiv, message) {
+        if (!assistantDiv) return;
+        const content = assistantDiv.querySelector('.msg-content');
+        if (content) {
+            content.innerHTML = `
+                <div class="error-bubble" role="alert">
+                    ${message}
+                </div>
+            `;
+        }
+        // it’s no longer a “pending” placeholder
+        assistantDiv.removeAttribute('data-msg-id');
+    }
+
+
     // --- On page load: scroll to bottom ---
     window.addEventListener('DOMContentLoaded', () => {
         // --- Render all message markdown/code (delegated to marked.js) ---
@@ -236,14 +254,21 @@
             // -------- NEW: handle rate-limit burst (HTTP 429) ----------
             if (response.status === 429) {
                 showToast("Too many requests – please wait a moment and try again.");
+                setAssistantError(assistantDiv, "Rate limit hit. Please try again shortly.");
                 return;            // bail early; no stream to read
             }
             // -------- NEW: handle token quota exceeded (HTTP 402) ----------
             else if (response.status === 402) {
                 showToast("You hit your monthly token quota. Upgrade or wait for reset.");
+                setAssistantError(assistantDiv, "Monthly token quota exceeded.");
                 return;
             }
-
+            // -------- NEW: handle other errors (HTTP 500, etc.) ----------
+            else if (!response.ok || !response.body) {
+                showToast("Request failed. Please try again.");
+                setAssistantError(assistantDiv, "Request failed. Please try again.");
+                return;
+            }
 
             const reader = response.body.getReader();
             let output = "";
