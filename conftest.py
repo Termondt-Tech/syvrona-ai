@@ -1,4 +1,5 @@
 import pytest
+from sqlalchemy.pool import StaticPool
 from app import create_app, db
 from werkzeug.security import generate_password_hash
 
@@ -62,6 +63,10 @@ def app():
                 "sqlite:///:memory:"  # Use in-memory DB for tests
             ),
             "SQLALCHEMY_TRACK_MODIFICATIONS": False,
+            "SQLALCHEMY_ENGINE_OPTIONS": {
+                "poolclass": StaticPool,
+                "connect_args": {"check_same_thread": False},
+            },
         }
     )
     with app.app_context():
