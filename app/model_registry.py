@@ -1,9 +1,15 @@
 # model_registry.py
 
-DEFAULT_MODEL_KEY = "gpt-5-chat-latest"
+DEFAULT_MODEL_KEY = "gpt-5.1-2025-11-13"
 
 
 MODEL_REGISTRY = {
+    "gpt-5.1-2025-11-13": {
+        "provider": "openai",
+        "display_name": "GPT-5.1",
+        "openai_endpoint": "responses",
+        "encoding": "cl100k_base",
+    },
     "gpt-5": {
         "provider": "openai",
         "display_name": "GPT-5",
@@ -34,10 +40,10 @@ MODEL_REGISTRY = {
         "openai_endpoint": "chat",
         "encoding": "cl100k_base",
     },
-    "o3": {
-        "provider": "openai",
-        "display_name": "O3",
-        "openai_endpoint": "responses",
+    "claude-sonnet-4-5-20250929": {
+        "provider": "anthropic",
+        "display_name": "Claude 4.5 Sonnet",
+        "max_tokens": 64000,
         "encoding": "cl100k_base",
     },
     "claude-sonnet-4-20250514": {

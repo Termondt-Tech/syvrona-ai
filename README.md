@@ -20,7 +20,7 @@ Syvrona is an AI-powered technician assistant platform, built with Flask and des
 ## 🚀 Tech Stack
 
 - Python 3.12
-- Flask 3.1.1
+- Flask 3.1.2
 - Docker
 - MySQL
 - OpenAI API integration
