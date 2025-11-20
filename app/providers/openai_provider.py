@@ -1,7 +1,6 @@
 from __future__ import annotations
 
 import time
-
 import logging
 from collections.abc import Generator
 from typing import Dict, List, Optional, Any
@@ -31,25 +30,56 @@ class _EndpointStrategy:
         client: OpenAI,
         model: str,
         messages: List[Dict[str, str]],
+        generation_config: Dict[str, Any],
     ) -> Stream:
+        """
+        Create a streaming response using the appropriate OpenAI endpoint.
+
+        generation_config comes from MODEL_REGISTRY["generation_config"], but we
+        only pass through parameters that are actually supported by the endpoint.
+        """
+        # Common config
+        temperature = generation_config.get("temperature")
+        top_p = generation_config.get("top_p")
+        max_tokens = generation_config.get("max_tokens")  # optional, may be absent
+
         if self.endpoint_name == "chat":
+            kwargs: Dict[str, Any] = {"stream": True}
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+            if top_p is not None:
+                kwargs["top_p"] = top_p
+            if max_tokens is not None:
+                kwargs["max_tokens"] = max_tokens
+
             return client.chat.completions.create(
                 model=model,
                 messages=messages,
-                stream=True,
+                **kwargs,
             )
+
         elif self.endpoint_name == "responses":
+            kwargs = {"stream": True}
+            if temperature is not None:
+                kwargs["temperature"] = temperature
+            if top_p is not None:
+                kwargs["top_p"] = top_p
+            # Responses API uses max_output_tokens, not max_tokens
+            if max_tokens is not None:
+                kwargs["max_output_tokens"] = max_tokens
+
             return client.responses.create(
                 model=model,
                 input=messages,
-                stream=True,
+                **kwargs,
             )
+
         else:
             raise ValueError(f"Unknown strategy '{self.endpoint_name}'")
 
 
 def build_strategy_registry() -> dict[str, _EndpointStrategy]:
-    strat = {}
+    strat: Dict[str, _EndpointStrategy] = {}
     for model, meta in MODEL_REGISTRY.items():
         if meta.get("provider") == "openai":
             endpoint = meta.get("openai_endpoint", "chat")
@@ -87,7 +117,10 @@ class OpenAIProvider(AIProvider):
         )
         start = time.monotonic()
 
+        # Build message context
         messages = self._build_context(conversation_id, message, system_prompt)
+
+        # Look up strategy and per-model generation config
         try:
             strategy = self.strategy_registry[model]
         except KeyError:
@@ -95,8 +128,17 @@ class OpenAIProvider(AIProvider):
                 f"Unknown or disabled model '{model}'. "
                 "Check app.config['OPENAI_MODELS']."
             )
+
+        meta = MODEL_REGISTRY.get(model, {}) or {}
+        generation_config: Dict[str, Any] = meta.get("generation_config", {}) or {}
+
         try:
-            stream = strategy.create_stream(self.client, model, messages)
+            stream = strategy.create_stream(
+                self.client,
+                model,
+                messages,
+                generation_config=generation_config,
+            )
             for chunk in stream:
                 # 1. O3: handle response.output_text.delta event (OpenAI o3)
                 if getattr(chunk, "type", None) == "response.output_text.delta":
@@ -147,7 +189,6 @@ class OpenAIProvider(AIProvider):
                 model,
                 e,
             )
-
             raise
 
         finally:

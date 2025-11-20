@@ -8,6 +8,7 @@ from sqlalchemy.dialects.mysql import insert
 from sqlalchemy import literal_column
 
 from app.model_registry import get_model_metadata
+from app.providers.gemini_provider import GeminiProvider
 from app.providers.openai_provider import OpenAIProvider, ModelAccessError
 from app.providers.anthropic_provider import AnthropicProvider
 from app.models import UsageStat, create_message, db
@@ -42,6 +43,7 @@ class ProviderRegistry:
         self._providers = providers or {
             "openai": OpenAIProvider(),
             "anthropic": AnthropicProvider(),
+            "gemini": GeminiProvider(),
         }
 
     def get_provider(self, key: str) -> Any:
