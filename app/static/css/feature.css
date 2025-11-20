@@ -169,3 +169,13 @@
   color: #6b7280;
   font-size: 1rem;
 }
+/* Ensure Key Features heading and "View all features" link align the same */
+.feature-section .key-features-title,
+.feature-section .feature-view-all {
+  text-align: center;
+}
+.feature-view-all {
+  margin-top: -5px;
+  margin-bottom: 20px;
+  text-align: center;
+}
