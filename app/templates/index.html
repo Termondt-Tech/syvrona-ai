@@ -1,23 +1,23 @@
 {% extends "base.html" %}
 
 {% block header %}
-<title>Syvrona – AI Chat Assistant for Thinking, Writing & Exploration</title>
+<title>Syvrona – AI Chat for Productivity, Writing & Real Work</title>
 <meta name="description"
-    content="Syvrona is an intelligent AI companion designed for brainstorming, writing, and deep conversation. A clean and simple interface for creators, professionals, and curious minds.">
+    content="An AI chat workspace built for writing, brainstorming, and productivity. Switch AI models, tag messages, save ideas, and stay organized. Free trial.">
 <!-- Open Graph -->
-<meta property="og:title" content="Syvrona – Your Personal AI Chat Assistant">
+<meta property="og:title" content="Syvrona – AI Chat for Productivity, Writing & Real Work">
 <meta property="og:site_name" content="Syvrona">
 <meta property="og:description"
-    content="Chat naturally, write better, and explore ideas with Syvrona. A smart, streamlined AI assistant for professionals, creatives, and curious minds.">
+    content="An AI chat workspace for real work. Switch AI models, tag messages, and stay organized. Free trial.">
 <meta property="og:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
 <meta property="og:url" content="https://syvrona.com/">
 <meta property="og:type" content="website">
 
 <!-- Twitter Card -->
 <meta name="twitter:card" content="summary_large_image">
-<meta name="twitter:title" content="Syvrona – Your Personal AI Chat Assistant">
+<meta name="twitter:title" content="Syvrona – AI Chat for Productivity, Writing & Real Work">
 <meta name="twitter:description"
-    content="A simple, smart AI assistant built to help you brainstorm, write, and explore ideas.">
+    content="Write faster, brainstorm better, and organize ideas with Syvrona’s AI chat workspace. Free trial.">
 <meta name="twitter:image" content="https://syvrona.com/static/images/syvrona-1200x630.png">
 <link rel="canonical" href="https://syvrona.com/" />
 
@@ -43,7 +43,7 @@
       "name": "Free Trial",
       "price": "0",
       "priceCurrency": "USD",
-      "description": "7-day free trial for all paid plans. Credit card required at signup. Cancel anytime during the trial and your card will not be charged.",
+      "description": "ree trial for all paid plans. Credit card required at signup. Cancel anytime during the trial and your card will not be charged.",
       "isAccessibleForFree": false
     },
     {%endif %}
@@ -76,15 +76,11 @@
 <main class="main-content main-content-wide">
     <div class="main-content-narrow">
 
-        <h1 class="main-title">Welcome to Syvrona</h1>
+        <h1 class="main-title">Your AI Chat Workspace for Real Work</h1>
         <p>
-            Syvrona is your personal AI companion—designed to help you think, write, and explore ideas through natural
-            conversation.
-            Whether you're brainstorming, drafting content, answering technical questions, or just curious, Syvrona
-            provides
-            a clean,
-            focused chat experience with memory support and custom enhancements.
+            Syvrona is an AI chat workspace and business AI assistant designed for professionals, creators, and deep thinkers. Brainstorm ideas, write faster, organize your thoughts, and switch between models — all in a clean, distraction-free interface.
         </p>
+
     </div>
     {% if free_trial_enabled and free_trial_days > 0 %}
     <div class="free-trial-promo">
@@ -155,8 +151,9 @@
         {% if free_trial_enabled and free_trial_days > 0 %}
         <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Start Free Trial</a>
         <p class="cta-subtext">
-            No charge today. Cancel anytime during your {{ free_trial_days }}-day trial.
+            No charge today. Cancel anytime during your free trial.
         </p>
+        
         {% else %}
         <a href="{{ url_for('auth.signup') }}" class="btn-primary cta-btn">Subscribe Now</a>
         <p class="cta-subtext">
@@ -167,10 +164,11 @@
     <div class="main-content-narrow">
         <p>
             Syvrona powers creativity and productivity for individuals and teams alike.
-            Interested in advanced business, enterprise, or self-hosted options? <a
-                href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer"><strong>Visit
-                    Termondt
-                    Tech to learn more.</strong></a>
+            Interested in advanced business, enterprise, or self-hosted options?
+            <a href="https://termondttech.com/syvrona" target="_blank" rel="noopener noreferrer">
+                <strong>Visit Termondt Tech to learn more.</strong>
+            </a> (opens in a new tab)
+
         </p>
 
 
