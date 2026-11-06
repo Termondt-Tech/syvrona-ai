@@ -27,8 +27,9 @@ public export, not product development, unless Rich says otherwise.
 `instance/`, `node_modules/`, `db/`). Still open and gating everything else: rotate the
 credentials sitting in `.flaskenv`, `.flaskenv.prod`, `app/.flaskenv.dev`, `.env` and
 `.env.prod`, then delete the three `.flaskenv*` files and `app.log` (AI-1, Rich). The
-git-history scan (AI-3) is done and clean; the open publication question is the personal
-email on every commit. → the assessment, §8, and the scan record, §6.
+git-history scan (AI-3) is done and clean, and the Secret Scan workflow (SC-3) re-runs it on
+every push; the open publication question is the personal email on every commit. → the
+assessment, §8, and the scan record, §6.
 
 ## Build / test / lint
 
@@ -48,12 +49,17 @@ Outside Docker, `app/config.py` raises at **import** time without `DATABASE_URL`
 ```
 DATABASE_URL=sqlite:///:memory: SECRET_KEY=test python -m pytest -q
 DATABASE_URL=sqlite:///:memory: SECRET_KEY=test python -m pytest tests/test_app.py::test_healthz -q
-black --check . --exclude '/migrations/' && flake8 . --exclude=migrations   # CI lint; RED on master since 2025-11-20
+black --check app tests app.py conftest.py && flake8 app tests app.py conftest.py   # CI lint, green since 2026-11-06
+docker run --rm -v "$PWD":/repo:ro ghcr.io/gitleaks/gitleaks:v8.28.0 git /repo --log-opts="--all -m" --redact --no-banner   # what Secret Scan CI runs
 ```
 
 `black` line length 88; `flake8` ignores E203 and W503; `migrations/` is excluded from
-both. Dev server: `python app.py` (host and port from `FLASK_RUN_HOST` / `FLASK_RUN_PORT`)
-or `flask run` via `.flaskenv`. Production: `gunicorn -c app/gunicorn.conf.py "app:create_app()"`.
+both. CI pins black 26.10.1 and flake8 7.5.0 (neither is in `.venv`; install those exact
+versions). Lint explicit paths locally: `pyproject.toml` sets `exclude`, which turns off
+black's default skipping of `.venv`, so `black .` would crawl it.
+
+Dev server: `python app.py` (host and port from `FLASK_RUN_HOST` / `FLASK_RUN_PORT`) or
+`flask run` via `.flaskenv`. Production: `gunicorn -c app/gunicorn.conf.py "app:create_app()"`.
 
 **Credentials load from three places** (compose `env_file: .env`, `load_dotenv()` in
 `app.py`, the `flask` CLI's `.flaskenv`). Treat `.env` as the only one; `.env.example`
@@ -149,6 +155,9 @@ are `datetime.now(tz=UTC)`.
   inline, and a P0 to P3 action table.
 - Secrets only from the environment. Never print a value from `.env*` or `.flaskenv*`
   into a document, a log or a commit; `.claude/settings.json` denies reading them.
+- A gitleaks hit is a real key until reviewed. A reviewed false positive gets an inline
+  `# gitleaks:allow` on the current line, or its fingerprint in `.gitleaksignore` if it lives
+  only in history.
 - Keep this file short. A resolved question gets one current-state sentence here and a
   pointer into `docs/`; relocate narrative, never delete it.
 
@@ -172,6 +181,7 @@ app/
 migrations/                 Alembic, 14 revisions, linear chain
 tests/test_app.py conftest.py   23 tests; SQLite StaticPool; CSRF off
 docker-compose.yml          web, mysql:8.0, redis:8, test; docker-compose.override.yml bind-mounts for dev only
-.github/workflows/          test.yml, python-lint.yml, docker-build.yml, release-drafter.yml (tags, not SHAs)
+.github/workflows/          test.yml, python-lint.yml, docker-build.yml, release-drafter.yml (tags, not SHAs);
+                            secret-scan.yml (gitleaks over full history; action and image pinned by digest)
 docs/                       assessment, architecture reference, deployment, releases/, roadmap (historical)
 ```

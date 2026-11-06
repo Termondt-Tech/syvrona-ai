@@ -33,7 +33,6 @@ from . import db
 from app.feature_flags import is_feature_enabled, get_feature_config
 from app.utils import confirm_token, generate_confirmation_token, send_mailgun_message
 
-
 auth = Blueprint("auth", __name__)
 
 logger = logging.getLogger(__name__)

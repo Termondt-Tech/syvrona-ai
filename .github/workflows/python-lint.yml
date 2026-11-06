@@ -19,7 +19,9 @@ jobs:
           python-version: "3.12"
 
       - name: Install linters
-        run: pip install black flake8
+        # Pinned so a new black or flake8 release cannot turn master red on its own.
+        # Bump deliberately, reformat in the same commit, and update CLAUDE.md.
+        run: pip install black==26.10.1 flake8==7.5.0
 
       - name: Run black
         run: black --check . --exclude '/migrations/'

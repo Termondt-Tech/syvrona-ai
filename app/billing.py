@@ -19,7 +19,6 @@ from .models import User
 from datetime import datetime
 import os
 
-
 logger = logging.getLogger(__name__)
 
 stripe.api_key = os.getenv("STRIPE_API_KEY")

@@ -82,8 +82,7 @@ MODEL_REGISTRY = {
         "display_name": "GPT-5.2 Chat Latest",
         "openai_endpoint": "responses",
         "encoding": "cl100k_base",
-        "generation_config": {
-        },
+        "generation_config": {},
     },
     "gpt-5.1-2025-11-13": {
         "provider": "openai",
@@ -101,8 +100,7 @@ MODEL_REGISTRY = {
         "display_name": "GPT-5.1 Codex",
         "openai_endpoint": "responses",
         "encoding": "cl100k_base",
-        "generation_config": {
-        },
+        "generation_config": {},
     },
     # -------------------- Anthropic -------------------- #
     "claude-sonnet-4-5-20250929": {
@@ -202,26 +200,22 @@ PROFILE_OVERRIDES = {
         "temperature": 0.7,
         "top_p": 0.95,
     },
-
     # Very deterministic: coding, prompt-building, tools, tests
     "coding": {
         "temperature": 0.2,
         "top_p": 0.9,
     },
-
     # Low-temp summarization / analysis
     "summarize": {
         "temperature": 0.25,
         "top_p": 0.9,
     },
-
     # High-variability brainstorming / creative writing / ideation
     # Uses the *universal* safe max temp (1.0) so Claude stays happy.
     "creative": {
         "temperature": 1.0,
         "top_p": 0.95,
     },
-
     # Explicit "no-op" profile if you want to say "use model defaults as-is"
     "default": {
         # intentionally empty
