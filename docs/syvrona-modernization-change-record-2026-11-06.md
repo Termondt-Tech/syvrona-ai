@@ -24,6 +24,9 @@ infrastructure were not in scope.
   (D16).
 - **The chat path has tests for the first time.** The suite grew from 23 to 118 tests. It
   passes on SQLite, inside the test image and on MySQL 8.0.46.
+- **Four rules are now pinned by tests that parse the source** (§8, added after the merge):
+  conversation ownership, the model boundary, HTTP timeouts and aware clock reads. Each
+  fails on an old commit that broke it.
 - **No live provider call was made.** Every key was revoked on 2026-11-06. The new model
   IDs, limits and parameter rules come from the providers' own documentation, read the same
   day. A smoke test with fresh keys is the first thing to do before any hosting (MOD-1).
@@ -145,6 +148,7 @@ cache were pruned to free it, leaving the newest 6 GB of cache. No volume was to
 | MOD-6 | P3 | [if needed] | A Gemini Interactions API adapter, if MOD-1 shows Argon needs it. | agent |
 | MOD-7 | P3 | [option] | Count quotas from provider-reported usage instead of local estimates. This is a product decision: real input counts include the whole history. | Rich decides |
 | MOD-8 | P3 | [at the next tag] | Release note and `CHANGELOG.md` line, if this is tagged. `pyproject.toml` says `1.5.0.dev0`. | Rich |
+| MOD-9 | P3 | [option] | A fifth invariant (§8): no legacy `Model.query.get(` or `.query.get_or_404(` under `app/`. Master has none today; the runtime check is only `filterwarnings`, on the paths a test happens to run. | agent |
 
 ## 7. What this could not verify
 
@@ -159,3 +163,76 @@ cache were pruned to free it, leaving the newest 6 GB of cache. No volume was to
 - GitHub Actions has not run this change.
 - Stripe webhook payloads were tested with the item-level `current_period_*` fields the
   code reads. The live account's API version was not checked.
+
+## 8. Pinned invariants
+
+Added 2026-11-06, after the merge. Verified against source: syvrona-ai `master` @ `65ced27`
+plus `tests/test_invariants.py`.
+
+`tests/test_invariants.py` parses every module under `app/` with `ast` and fails if a
+forbidden shape appears anywhere, naming the file, line and offender. It follows Argus
+`tests/test_order_guard.py` (L591 to L603, the test that pins the one construction of
+`DuplicateOrderGuard`). It imports nothing from the app, so the same file runs against any
+commit. Each commit below was checked out into a scratch worktree, the file was copied in,
+and it was run with `pytest --noconftest`.
+
+| Rule | Test | Defect | Fails on |
+|---|---|---|---|
+| (a) Every route that takes a conversation id, as a URL parameter or from request data, calls `get_user_conversation(..., current_user.id)` | `test_every_route_that_takes_a_conversation_id_checks_its_owner` | D13, D1 | `6d1e103` and `90a30d8`: six routes each, `answer` among them (see below) |
+| (b) No `openai`, `anthropic`, `google.genai` or `google.generativeai` import outside `app/providers/` | `test_no_provider_sdk_is_imported_outside_app_providers` | The model boundary (assessment §4.2) | `7968819` (2025-07-17): `app/handler/openai_handler.py:1` and `openai_streamer.py:2`, both unused by then. Passes on its child `a1dd4da` and on all 61 commits from there to `90a30d8` |
+| (c) Every `requests.<verb>(...)` passes a `timeout=` that is not `None` | `test_every_requests_call_passes_a_timeout` | D11 | `90a30d8` and `6d1e103`: `utils.py::send_mailgun_message` (line 25) |
+| (d) Every `now()` passes a tz and every `fromtimestamp()` a second argument or `tz=`; no `utcnow`, `utcfromtimestamp` or `today` at all | `test_no_naive_clock_reads` | D8 | `90a30d8` and `6d1e103`: four in `billing.py::stripe_webhook`, two in `services/signup.py` (`last_login`, `subscription_start`) |
+
+Two more tests keep the rules honest. `test_the_ownership_scan_still_sees_answer` fails if
+rule (a) stops treating `/answer` as a route that takes a conversation id; it fails on
+`75a4f85` (`6d1e103^`) and older, where `answer` read the id from the signed session. And
+`test_each_checker_flags_exactly_the_marked_lines`, once per rule, runs each checker on a
+snippet of forbidden and allowed shapes and requires exactly the marked lines back, so a
+checker that silently matches nothing fails.
+
+**What rule (a) shows about D13.** The rule names the helper, and the helper did not exist
+before 2026-11-06. On old commits it therefore flags every conversation route. A one-off
+scan of the flagged routes for an inline `user_id` comparison separates them:
+
+| Commit | `answer` takes the id from | Flagged | Inline `user_id` check | No check at all |
+|---|---|---|---|---|
+| `75a4f85` (`6d1e103^`) | the signed session (out of scope) | 5 | all 5 | none |
+| `6d1e103` | the client's JSON | 6 | 5 (`resume_conversation` gone, `chat_page` in scope) | **`answer`** |
+| `90a30d8` | the client's JSON | 6 | 5 | **`answer`** |
+
+So the rule fails on `6d1e103`'s parent too. It is stricter than the code was then: it
+would have forced the five inline checks into one helper before any of these commits could
+pass. Checked with the same scan on all 61 commits from `a1dd4da` to `90a30d8`: on the ten
+before `6d1e103` no flagged route lacks a check, and on all 51 from `6d1e103` on, `answer`
+is the one flagged route with no check of any kind.
+
+**Mutation check on master.** Each guarded fix was undone, one at a time, in a scratch
+worktree at `65ced27`. Each time exactly one test failed, the matching one, and nothing
+else did.
+
+| Undone | Failing test | Its report |
+|---|---|---|
+| `/answer`'s two-line ownership check (D13) | rule (a) | `app/chat.py:384 answer` |
+| `from openai import OpenAI` prepended to `services/conversation.py` | rule (b) | `app/services/conversation.py:1 openai` |
+| `timeout=MAILGUN_TIMEOUT` removed (D11) | rule (c) | `app/utils.py:35 requests.post` |
+| `datetime.now(tz=UTC)` → `datetime.now()` for `last_login` (D8) | rule (d) | `app/services/signup.py:89 datetime.now()` |
+
+**Verification.** The suite on the Python 3.13.12 venv: 127 passed (118 plus these nine).
+black 26.10.1 and flake8 7.5.0 on `app tests app.py conftest.py`: clean. CI's `test` stage
+runs the whole suite, so the rules run there with no workflow change.
+
+> **Unverified:** the nine tests have not run in the `test` image, on MySQL or in GitHub
+> Actions. They read source files only and never touch the database.
+
+**What the rules do not see.**
+
+- (a) keys on the name `conversation_id`. A route that names its URL parameter otherwise
+  (`<int:cid>`), or reads the id under another key, escapes it. It checks that the helper
+  is called with the logged-in user, not that a `None` result is acted on. The message
+  routes (`/message/<id>`, `/messages/<id>/tags`) check ownership through
+  `message.conversation.user_id` and are outside it.
+- (b) does not see an import from a computed string.
+- (c) covers `requests.<verb>` and verbs imported from `requests`, not `requests.Session`
+  methods or other HTTP clients. `app/` uses neither today.
+- (d) does not cover parsers such as `fromisoformat` and `strptime`, which return naive
+  values from strings. `admin_routes.py::_utc_date` attaches UTC to its one parse.

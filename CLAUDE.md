@@ -29,7 +29,7 @@ pushed, issue and PR text included, is public; secret scanning and push protecti
 dependency current under a seven-day cooldown in hash-pinned locks, the registry on GPT-6,
 Claude 5.5 and Gemini 3.5 to 4, defects D1 to D12 fixed plus ten more found on the way
 (D13 was a security bug: `/answer` accepted another user's conversation id), 118 tests on
-SQLite and MySQL 8.0. **Not verified: any live provider call**, because every key is
+SQLite and MySQL 8.0, plus nine that pin four source rules. **Not verified: any live provider call**, because every key is
 revoked. Published the same day (SC-2, SC-4, SC-5 done). Not started, each Rich's call:
 security hardening and infrastructure (AI-9, AI-10) and the Rails-Review sample (AI-12).
 → the change record, §6 and §7.
@@ -43,7 +43,7 @@ pytest; the compose `test` service and CI) and `runtime` (gunicorn; the default 
 ```
 cp .env.example .env                       # fill in values; never commit .env
 docker compose up -d --build               # web on :5001 (container :5000), mysql :3306, redis
-docker compose build test && docker compose run --rm test   # 118 tests on SQLite; what CI runs
+docker compose build test && docker compose run --rm test   # 127 tests on SQLite; what CI runs
 docker exec -it syvrona-ai-web-1 flask db upgrade            # also builds an empty database
 ```
 
@@ -169,6 +169,10 @@ naive columns, so stored values are UTC wall time.
 - Ownership is checked on every route that takes an id, with
   `services/conversation.py::get_user_conversation` for conversations: not found and not
   yours are the same 404.
+- `tests/test_invariants.py` parses `app/` and fails on a conversation route that skips
+  that helper, an SDK import outside `app/providers/`, a `requests` call without
+  `timeout=`, or a clock read without a tz. A break is fixed in the code, not by
+  loosening the rule. → change record §8.
 - Adding a model is a registry entry plus the provider's documented limits; the registry
   tests keep retired IDs out. Structured log fields everywhere: `user=%s conv=%s model=%s`.
 - Every defect fix lands with a test that fails without it. `tests/fakes.py::FakeProvider`
@@ -209,7 +213,7 @@ app/
   templates/ static/        Jinja2 + inline JS; chat.html carries the streaming client
   gunicorn.conf.py          gthread, preload_app=False, max_requests=100 (low), /dev/shm heartbeat
 migrations/                 Alembic, 15 revisions from baseline_2025_05, linear chain
-tests/ conftest.py          118 tests; FakeProvider; SQLite StaticPool or TEST_DATABASE_URL; CSRF off
+tests/ conftest.py          127 tests (nine parse app/); FakeProvider; SQLite StaticPool or TEST_DATABASE_URL; CSRF off
 pyproject.toml              direct deps, pytest and black config; requirements*.txt are its locks
 Dockerfile                  stages: base → test | runtime; tiktoken data baked in at build
 docker-compose.yml          web (runtime), mysql:8.0, redis:8, test (test stage); override bind-mounts for dev only
