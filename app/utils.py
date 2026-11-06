@@ -6,8 +6,17 @@ import logging
 
 logger = logging.getLogger(__name__)
 
+# (connect, read) seconds. Without a timeout a Mailgun stall holds a Gunicorn worker
+# thread indefinitely (D11).
+MAILGUN_TIMEOUT = (5, 15)
+
 
 def send_mailgun_message(to, subject, text, html=None):
+    """Send one email through Mailgun; return True if Mailgun accepted it.
+
+    Email is a side effect of signups and tickets, never their point: a failure is
+    logged and reported as False, and the caller's request carries on.
+    """
     MAILGUN_DOMAIN = current_app.config.get("MAILGUN_DOMAIN")
     MAILGUN_API_KEY = current_app.config.get("MAILGUN_API_KEY")
     MAILGUN_FROM_EMAIL = current_app.config.get(
@@ -22,11 +31,25 @@ def send_mailgun_message(to, subject, text, html=None):
     }
     if html:
         data["html"] = html
-    return requests.post(
-        f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
-        auth=("api", MAILGUN_API_KEY),
-        data=data,
-    )
+    try:
+        response = requests.post(
+            f"https://api.mailgun.net/v3/{MAILGUN_DOMAIN}/messages",
+            auth=("api", MAILGUN_API_KEY),
+            data=data,
+            timeout=MAILGUN_TIMEOUT,
+        )
+    except requests.RequestException as exc:
+        logger.error("Mailgun send failed: subject=%r error=%s", subject, exc)
+        return False
+    if not response.ok:
+        logger.error(
+            "Mailgun rejected message: subject=%r status=%s body=%.200s",
+            subject,
+            response.status_code,
+            response.text,
+        )
+        return False
+    return True
 
 
 def generate_confirmation_token(email):

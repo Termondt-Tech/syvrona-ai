@@ -13,6 +13,12 @@ from app.utils import send_staff_reply_alert
 
 admin = Blueprint("admin", __name__, url_prefix="/admin")
 
+
+def _utc_date(value):
+    """An admin form's YYYY-MM-DD as midnight UTC; None when blank (D8)."""
+    return datetime.fromisoformat(value).replace(tzinfo=timezone.utc) if value else None
+
+
 logger = logging.getLogger(__name__)
 
 
@@ -114,7 +120,7 @@ def user_list():
 @login_required
 @admin_required
 def toggle_user_active(user_id):
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
 
     if user.id == current_user.id:
         flash("You can't deactivate your own account.", "error")
@@ -150,7 +156,7 @@ def user_detail(user_id):
         "unpaid",
     ]
 
-    user = User.query.get_or_404(user_id)
+    user = db.get_or_404(User, user_id)
 
     # Core message and conversation counts
     message_count_user = (
@@ -270,8 +276,8 @@ def user_detail(user_id):
             # Handle dates safely; HTML5 returns ISO format
             start = request.form.get("subscription_start")
             end = request.form.get("subscription_end")
-            user.subscription_start = datetime.fromisoformat(start) if start else None
-            user.subscription_end = datetime.fromisoformat(end) if end else None
+            user.subscription_start = _utc_date(start)
+            user.subscription_end = _utc_date(end)
             db.session.commit()
             flash("Subscription details updated.", "success")
 
@@ -313,7 +319,7 @@ def ticket_detail(ticket_id):
     from flask import request, redirect, url_for, flash
     from datetime import datetime, timezone
 
-    ticket = Ticket.query.get_or_404(ticket_id)
+    ticket = db.get_or_404(Ticket, ticket_id)
     messages = ticket.messages  # Already ordered if you set order_by
 
     if request.method == "POST":
@@ -382,7 +388,7 @@ def notification_list():
 @login_required
 @admin_required
 def notification_detail(notification_id):
-    notification = Notification.query.get_or_404(notification_id)
+    notification = db.get_or_404(Notification, notification_id)
     users = {u.id: u for u in User.query.all()}
     return render_template(
         "admin/notification_detail.html", notification=notification, users=users

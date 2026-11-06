@@ -1,259 +1,229 @@
-"""
-MODEL CONFIGURATION & TUNING REFERENCE
---------------------------------------
+"""The models Syvrona offers, and everything the chat path needs to know about each.
 
-This registry exposes each model's **sampling defaults** so developers can:
+Keys are the providers' own API model IDs. Refreshed 2026-11-06 from each provider's
+models, deprecations and migration pages; see the change record in ``docs/`` for the
+sources and for what replaced each retired ID.
 
-    • See, at a glance, how the model is configured by default
-    • Override behavior in a controlled, explicit way
-    • Keep model identity (provider, endpoint, encoding) separate from tuning
+Entry fields:
 
-The values in `generation_config` are chosen to match the *provider defaults*
-as closely as possible at the time of writing:
+``provider``           ``"openai"`` | ``"anthropic"`` | ``"gemini"``.
+``display_name``       Shown in model selectors and the help pages.
+``context_window``     Total tokens the model accepts per request (input + output).
+``max_output_tokens``  Cap sent with every request; reserved out of the context window.
+``generation_config``  Sampling settings. Current models mostly refuse them:
+                       Claude 5.5 answers 400 to ``temperature``, ``top_p`` and
+                       ``top_k``; Gemini 3.6+ and 4 ignore them; GPT-5/6-family
+                       models accept ``temperature``/``top_p`` only with
+                       ``reasoning_effort`` ``"none"``. Validation enforces this.
+``options``            Provider-specific settings (OpenAI: ``endpoint``,
+                       ``reasoning_effort``). Opaque to the chat service.
+``system_prompt``      Optional; ``DEFAULT_SYSTEM_PROMPT`` otherwise.
+``fallback_model``     Optional; tried when the provider says this model is unavailable.
+                       Must be another registry key, and fallback chains must end.
 
-    OpenAI  : temperature = 1.0, top_p = 1.0
-    Anthropic (Claude) : temperature = 1.0, top_p = 1.0
-    Gemini  : temperature = 1.0, top_p ≈ 0.95, top_k = 64, candidate_count = 1
-
-If a provider changes their documented defaults in the future, we should update
-the corresponding block here so this file continues to reflect “true defaults”.
-
----------------------------------------------------------------------------
-HOW TO TUNE (WHEN NEEDED)
----------------------------------------------------------------------------
-
-To tune a model, change or add fields under `generation_config` for that model:
-
-    temperature       0–2 (OpenAI, Gemini) or 0–1 (Anthropic).
-                      • Lower  (0–0.3): more deterministic, good for coding,
-                        reasoning, tests.
-                      • Medium (0.4–0.8): balanced general chat.
-                      • Higher (0.9+): more creative, more variance.
-
-    top_p             0–1 nucleus sampling cutoff.
-                      • 1.0 = use full distribution.
-                      • Lower values (0.8–0.95) = more conservative.
-
-    top_k             (Gemini only) number of candidate tokens to sample from.
-                      • Higher (e.g. 64) = more variety.
-                      • Lower (e.g. 1–10) = very deterministic.
-
-    candidate_count   (Gemini) number of alternative responses to generate.
-                      • >1 multiplies cost and latency; keep at 1 unless you
-                        actually use multiple candidates.
-
-    max_output_tokens / max_tokens
-                      • Caps the length of the model’s response. Anthropic
-                        requires `max_tokens`; for others it’s optional and
-                        often better set per-feature rather than globally.
-
----------------------------------------------------------------------------
-FUTURE: USER-SELECTABLE TUNING PROFILES
----------------------------------------------------------------------------
-
-A future version of Syvrona might let the *end user* choose a profile, for
-example:
-
-    • Precise (low temperature)
-    • Balanced (default)
-    • Creative (higher temperature)
-    • Coding (very low temperature, stricter top_p)
-    • Summarization (short, low temperature)
-
-Implementation idea (for later):
-
-    1. Keep this registry as “base defaults”.
-    2. Define a separate PROFILE_OVERRIDES dict (e.g. in profiles.py).
-    3. At request time, merge:
-           model_defaults
-        →  profile_overrides (if any)
-        →  per-call overrides (if any)
-
-For now, this file simply documents and exposes the default settings.
+``validate_registry()`` runs at import, so a bad entry stops the app from starting
+instead of failing one chat request at a time.
 """
 
-DEFAULT_MODEL_KEY = "gpt-5.2-chat-latest"
+from __future__ import annotations
 
+from collections.abc import Mapping
+from typing import Any
 
-MODEL_REGISTRY = {
-    # -------------------- OpenAI -------------------- #
-    "gpt-5.2-chat-latest": {
+DEFAULT_SYSTEM_PROMPT = "You are an intelligent assistant."
+
+DEFAULT_MODEL_KEY = "gpt-6.1-sol"
+
+MODEL_REGISTRY: dict[str, dict[str, Any]] = {
+    # -------------------- OpenAI (Responses API) -------------------- #
+    "gpt-6-astra": {
         "provider": "openai",
-        "display_name": "GPT-5.2 Chat Latest",
-        "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
+        "display_name": "GPT-6 Astra",
+        "context_window": 1_050_000,
+        "max_output_tokens": 128_000,
         "generation_config": {},
+        "options": {"endpoint": "responses"},
+        "fallback_model": "gpt-6.1-sol",
     },
-    "gpt-5.1-2025-11-13": {
+    "gpt-6.1-sol": {
         "provider": "openai",
-        "display_name": "GPT-5.1",
-        "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
-        "generation_config": {
-            # Balanced, general-purpose assistant
-            "temperature": 0.7,
-            "top_p": 1.0,
-        },
-    },
-    "gpt-5.1-codex": {
-        "provider": "openai",
-        "display_name": "GPT-5.1 Codex",
-        "openai_endpoint": "responses",
-        "encoding": "cl100k_base",
+        "display_name": "GPT-6.1 Sol",
+        "context_window": 1_050_000,
+        "max_output_tokens": 128_000,
         "generation_config": {},
+        "options": {"endpoint": "responses"},
+        "fallback_model": "gpt-6-luna",
     },
-    # -------------------- Anthropic -------------------- #
-    "claude-sonnet-4-5-20250929": {
+    "gpt-6-luna": {
+        "provider": "openai",
+        "display_name": "GPT-6 Luna",
+        "context_window": 1_050_000,
+        "max_output_tokens": 128_000,
+        "generation_config": {},
+        "options": {"endpoint": "responses"},
+    },
+    # -------------------- Anthropic (Messages API) -------------------- #
+    "claude-opus-5-5": {
         "provider": "anthropic",
-        "display_name": "Claude 4.5 Sonnet",
-        "max_tokens": 64000,
-        "encoding": "cl100k_base",
-        "generation_config": {
-            # High-quality, reasoning-focused; keep fairly low temp
-            "temperature": 0.35,
-            "top_p": 0.95,
-        },
+        "display_name": "Claude Opus 5.5",
+        "context_window": 1_000_000,
+        "max_output_tokens": 128_000,
+        "generation_config": {},
+        "options": {},
+        "fallback_model": "claude-sonnet-5-5",
     },
-    "claude-opus-4-5-20251101": {
+    "claude-sonnet-5-5": {
         "provider": "anthropic",
-        "display_name": "Claude 4.5 Opus",
-        "max_tokens": 64000,
-        "encoding": "cl100k_base",
-        "generation_config": {
-            # High-quality, reasoning-focused; keep fairly low temp
-            "temperature": 0.35,
-            "top_p": 0.95,
-        },
+        "display_name": "Claude Sonnet 5.5",
+        "context_window": 1_000_000,
+        "max_output_tokens": 128_000,
+        "generation_config": {},
+        "options": {},
+        "fallback_model": "claude-haiku-5-5",
     },
-    "claude-haiku-4-5-20251001": {
+    "claude-haiku-5-5": {
         "provider": "anthropic",
-        "display_name": "Claude 4.5 Haiku",
-        "max_tokens": 64000,
-        "encoding": "cl100k_base",
-        "generation_config": {
-            # High-quality, reasoning-focused; keep fairly low temp
-            "temperature": 0.35,
-            "top_p": 0.95,
-        },
+        "display_name": "Claude Haiku 5.5",
+        "context_window": 1_000_000,
+        "max_output_tokens": 128_000,
+        "generation_config": {},
+        "options": {},
     },
-    # -------------------- Gemini -------------------- #
-    "gemini-3-pro-preview": {
+    # -------------------- Google Gemini (generateContent) -------------------- #
+    "gemini-4-argon": {
         "provider": "gemini",
-        "display_name": "Gemini 3 Pro Preview",
-        "encoding": "cl100k_base",
+        "display_name": "Gemini 4 Argon",
+        "context_window": 1_048_576,
+        "max_output_tokens": 65_536,
+        "generation_config": {},
+        "options": {},
         "system_prompt": "You are a thorough and intelligent assistant.",
-        "fallback_model": "gemini-2.5-flash",
-        "generation_config": {
-            # Higher-quality, more careful answers
-            "temperature": 0.3,
-            "top_p": 0.9,
-            "top_k": 40,
-            "candidate_count": 1,
-        },
+        "fallback_model": "gemini-3.8-flash",
     },
-    "gemini-2.5-flash": {
+    "gemini-3.8-flash": {
         "provider": "gemini",
-        "display_name": "Gemini 2.5 Flash",
-        "encoding": "cl100k_base",
+        "display_name": "Gemini 3.8 Flash",
+        "context_window": 1_048_576,
+        "max_output_tokens": 65_536,
+        "generation_config": {},
+        "options": {},
         "system_prompt": "You are a helpful and concise assistant.",
-        "fallback_model": "gemini-2.0-flash",
-        "generation_config": {
-            # Fast, good default for general chat; slightly more creative
-            "temperature": 0.6,
-            "top_p": 0.9,
-            "top_k": 40,
-            "candidate_count": 1,
-        },
+        "fallback_model": "gemini-3.5-flash-lite",
     },
-    "gemini-2.5-pro": {
+    "gemini-3.5-flash-lite": {
         "provider": "gemini",
-        "display_name": "Gemini 2.5 Pro",
-        "encoding": "cl100k_base",
-        "system_prompt": "You are a thorough and intelligent assistant.",
-        "fallback_model": "gemini-2.5-flash",
-        "generation_config": {
-            # Higher-quality, more careful answers
-            "temperature": 0.3,
-            "top_p": 0.9,
-            "top_k": 40,
-            "candidate_count": 1,
-        },
+        "display_name": "Gemini 3.5 Flash-Lite",
+        "context_window": 1_048_576,
+        "max_output_tokens": 65_536,
+        "generation_config": {},
+        "options": {},
+        "system_prompt": "You are a helpful and concise assistant.",
     },
 }
 
-
-# -------------------- Optional profile-based tuning -------------------- #
-# These profiles are NOT used automatically. They are here so future UI /
-# feature code can easily layer "profiles" on top of model defaults.
-#
-# All values are chosen to be valid across:
-#   - OpenAI (temperature 0–2)
-#   - Anthropic / Claude (temperature 0–1)
-#   - Gemini (temperature 0–2)
-#
-# Example usage (later, in your providers):
-#   cfg = build_generation_config("gpt-5.1-codex", profile="coding")
-#
-PROFILE_OVERRIDES = {
-    # Slightly lower temperature, good for general reasoning & chat
-    "balanced": {
-        "temperature": 0.7,
-        "top_p": 0.95,
+_REQUIRED = ("provider", "display_name", "context_window", "max_output_tokens")
+_KNOWN = frozenset(
+    _REQUIRED + ("generation_config", "options", "system_prompt", "fallback_model")
+)
+_SAMPLING = {
+    "openai": frozenset({"temperature", "top_p"}),
+    "anthropic": frozenset(),
+    "gemini": frozenset({"temperature", "top_p", "top_k"}),
+}
+_OPTIONS = {
+    "openai": {
+        "endpoint": frozenset({"responses", "chat"}),
+        "reasoning_effort": frozenset(
+            {"none", "minimal", "low", "medium", "high", "xhigh"}
+        ),
     },
-    # Very deterministic: coding, prompt-building, tools, tests
-    "coding": {
-        "temperature": 0.2,
-        "top_p": 0.9,
-    },
-    # Low-temp summarization / analysis
-    "summarize": {
-        "temperature": 0.25,
-        "top_p": 0.9,
-    },
-    # High-variability brainstorming / creative writing / ideation
-    # Uses the *universal* safe max temp (1.0) so Claude stays happy.
-    "creative": {
-        "temperature": 1.0,
-        "top_p": 0.95,
-    },
-    # Explicit "no-op" profile if you want to say "use model defaults as-is"
-    "default": {
-        # intentionally empty
-    },
+    "anthropic": {},
+    "gemini": {},
 }
 
 
-def build_generation_config(
-    model_name: str,
-    profile: str | None = None,
-    overrides: dict | None = None,
-) -> dict:
-    """
-    Build the generation_config for a request by merging:
-        1. Model defaults from MODEL_REGISTRY
-        2. Optional profile-level overrides (PROFILE_OVERRIDES)
-        3. Optional per-call overrides (highest priority)
-
-    If you never call this function, behavior is driven solely by the
-    values in MODEL_REGISTRY["..."]["generation_config"].
-    """
-    metadata = MODEL_REGISTRY.get(model_name, {})
-    base = (metadata.get("generation_config") or {}).copy()
-
-    # 1) Apply profile overrides (if any)
-    if profile:
-        profile_cfg = PROFILE_OVERRIDES.get(profile)
-        if profile_cfg:
-            base.update(profile_cfg)
-
-    # 2) Apply per-call overrides (highest precedence)
-    if overrides:
-        for key, value in overrides.items():
-            if value is not None:
-                base[key] = value
-
-    return base
+class RegistryError(ValueError):
+    """A registry entry is malformed."""
 
 
-def get_model_metadata(model_name):
-    return MODEL_REGISTRY.get(model_name, {})
+def validate_registry(
+    registry: Mapping[str, Mapping[str, Any]], default_key: str
+) -> None:
+    """Raise ``RegistryError`` naming every problem in ``registry``."""
+    problems: list[str] = []
+    if default_key not in registry:
+        problems.append(f"DEFAULT_MODEL_KEY {default_key!r} is not a registry key")
+
+    for key, meta in registry.items():
+        where = f"{key}:"
+        missing = [f for f in _REQUIRED if f not in meta]
+        if missing:
+            problems.append(f"{where} missing {', '.join(missing)}")
+            continue
+        unknown = set(meta) - _KNOWN
+        if unknown:
+            problems.append(f"{where} unknown fields {sorted(unknown)}")
+        provider = meta["provider"]
+        if provider not in _SAMPLING:
+            problems.append(f"{where} unknown provider {provider!r}")
+            continue
+
+        window, max_out = meta["context_window"], meta["max_output_tokens"]
+        if not (isinstance(window, int) and isinstance(max_out, int)):
+            problems.append(f"{where} token limits must be integers")
+        elif not 0 < max_out < window:
+            problems.append(f"{where} need 0 < max_output_tokens < context_window")
+
+        sampling = set(meta.get("generation_config") or {})
+        bad = sampling - _SAMPLING[provider]
+        if bad:
+            problems.append(f"{where} {provider} does not accept {sorted(bad)}")
+
+        options = meta.get("options") or {}
+        for opt, value in options.items():
+            allowed = _OPTIONS[provider].get(opt)
+            if allowed is None:
+                problems.append(f"{where} unknown {provider} option {opt!r}")
+            elif value not in allowed:
+                problems.append(
+                    f"{where} option {opt}={value!r} not in {sorted(allowed)}"
+                )
+        if (
+            provider == "openai"
+            and sampling
+            and options.get("reasoning_effort") != "none"
+        ):
+            problems.append(
+                f"{where} temperature/top_p need options.reasoning_effort = 'none'"
+            )
+
+        fallback = meta.get("fallback_model")
+        if fallback is not None and fallback not in registry:
+            problems.append(
+                f"{where} fallback_model {fallback!r} is not a registry key"
+            )
+
+    for key in registry:
+        seen = [key]
+        nxt = registry[key].get("fallback_model")
+        while nxt is not None and nxt in registry:
+            if nxt in seen:
+                problems.append(f"{key}: fallback cycle {' -> '.join(seen + [nxt])}")
+                break
+            seen.append(nxt)
+            nxt = registry[nxt].get("fallback_model")
+
+    if problems:
+        raise RegistryError("Invalid model registry:\n  " + "\n  ".join(problems))
+
+
+def is_known_model(model_name: str) -> bool:
+    return model_name in MODEL_REGISTRY
+
+
+def get_model_metadata(model_name: str) -> dict[str, Any]:
+    """Return the entry for ``model_name``; ``KeyError`` if it is not offered."""
+    return MODEL_REGISTRY[model_name]
+
+
+validate_registry(MODEL_REGISTRY, DEFAULT_MODEL_KEY)

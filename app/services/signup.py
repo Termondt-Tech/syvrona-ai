@@ -1,5 +1,5 @@
 import logging
-from datetime import datetime
+from datetime import UTC, datetime
 from flask import current_app, url_for, render_template, flash, redirect
 from werkzeug.security import generate_password_hash
 from app.feature_flags import get_feature_config, is_feature_enabled
@@ -86,7 +86,7 @@ class SignupHandler:
                 metadata={"user_id": self.new_user.id},
             )
             self.new_user.stripe_customer_id = customer.id
-            self.new_user.last_login = datetime.now()
+            self.new_user.last_login = datetime.now(tz=UTC)
             db.session.commit()
             logger.info(
                 "Stripe customer created: customer_id=%s user_id=%s",
@@ -145,7 +145,7 @@ class SignupHandler:
             # Free plan
             self.new_user.subscription_status = "active"
             self.new_user.subscription_plan = "free"
-            self.new_user.subscription_start = datetime.now()
+            self.new_user.subscription_start = datetime.now(tz=UTC)
             db.session.commit()
             flash("Signup successful. You are now logged in.", "success")
             return redirect(url_for("auth.profile"))

@@ -2,12 +2,13 @@ import logging
 from flask import (
     Blueprint,
     Response,
-    flash,
-    redirect,
-    request,
-    jsonify,
-    render_template,
     abort,
+    current_app,
+    flash,
+    jsonify,
+    redirect,
+    render_template,
+    request,
     session,
     stream_with_context,
     url_for,
@@ -16,15 +17,16 @@ from flask_login import current_user, login_required
 from flask_wtf.csrf import generate_csrf
 
 from app.decorators import require_active_subscription
+from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY, is_known_model
+from app.services.ai_streamer import AIStreamer, PromptTooLongError
 from app.services.conversation import (
     create_conversation,
     delete_conversation,
-    get_conversation,
+    get_conversation_messages,
+    get_user_conversation,
     search_conversations_by_message_paginated,
     update_conversation_title,
-    get_conversation_messages,
 )
-from app.model_registry import DEFAULT_MODEL_KEY, MODEL_REGISTRY
 
 from . import db
 
@@ -50,7 +52,7 @@ def add_tag_to_message(msg_id):
     # One word/multiword tag normalization (optional)
     # tag_name = tag_name.lower()
 
-    message = Message.query.get_or_404(msg_id)
+    message = db.get_or_404(Message, msg_id)
     # Make sure user owns the message (or has access)
     if message.conversation.user_id != current_user.id:
         abort(403)
@@ -74,8 +76,8 @@ def add_tag_to_message(msg_id):
 @login_required
 @require_active_subscription
 def remove_tag_from_message(msg_id, tag_id):
-    message = Message.query.get_or_404(msg_id)
-    tag = Tag.query.get_or_404(tag_id)
+    message = db.get_or_404(Message, msg_id)
+    tag = db.get_or_404(Tag, tag_id)
 
     # Ownership check
     if (
@@ -96,7 +98,7 @@ def remove_tag_from_message(msg_id, tag_id):
 @login_required
 def tagged_messages(tag_id):
     # Get the tag
-    tag = Tag.query.get_or_404(tag_id)
+    tag = db.get_or_404(Tag, tag_id)
     # Ensure the tag belongs to the current user
     if tag.user_id != current_user.id:
         abort(404)
@@ -144,12 +146,12 @@ def create_tag():
 @require_active_subscription
 def view_message(message_id):
 
-    message = Message.query.get_or_404(message_id)
+    message = db.get_or_404(Message, message_id)
     # Ensure the message belongs to a conversation owned by the user
     if message.conversation.user_id != current_user.id:
         abort(404)
 
-    conversation = Conversation.query.get_or_404(message.conversation_id)
+    conversation = message.conversation
     # Optional: get tag_id from ?tag= if coming from tagged page
     back_to_tag_id = request.args.get("tag", type=int)
     back_to_tag_name = None
@@ -198,8 +200,7 @@ def conversations():
 @login_required
 @require_active_subscription
 def edit_conversation_title(conversation_id):
-    convo = get_conversation(conversation_id)
-    if convo is None or convo.user_id != current_user.id:
+    if get_user_conversation(conversation_id, current_user.id) is None:
         abort(404)
 
     update_conversation_title(conversation_id, request.form["title"])
@@ -213,8 +214,8 @@ def edit_conversation_title(conversation_id):
 @login_required
 @require_active_subscription
 def view_conversation(conversation_id):
-    convo = get_conversation(conversation_id)
-    if convo is None or convo.user_id != current_user.id:
+    convo = get_user_conversation(conversation_id, current_user.id)
+    if convo is None:
         abort(404)  # Not found or unauthorized
 
     messages = get_conversation_messages(conversation_id)
@@ -244,8 +245,7 @@ def delete_conversation_route(conversation_id):
     q = request.form.get("q", "").strip()
 
     # Authorization and deletion
-    convo = get_conversation(conversation_id)
-    if not convo or convo.user_id != current_user.id:
+    if get_user_conversation(conversation_id, current_user.id) is None:
         abort(404)  # Not found or unauthorized
 
     session.pop("conversation_id", None)  # In case it was active
@@ -282,13 +282,12 @@ def delete_conversation_route(conversation_id):
 @require_active_subscription
 def latest_messages(conversation_id):
     # Ensure the conversation exists and belongs to the user
-    convo = get_conversation(conversation_id)
-    if convo is None or convo.user_id != current_user.id:
+    if get_user_conversation(conversation_id, current_user.id) is None:
         abort(404)
     # Get the most recent 2 messages in reverse order (latest first)
     messages = (
         Message.query.filter_by(conversation_id=conversation_id)
-        .order_by(Message.created_at.desc())
+        .order_by(Message.created_at.desc(), Message.id.desc())
         .limit(2)
         .all()
     )
@@ -342,15 +341,18 @@ def chat_page():
 
     # If conversation_id exists, load conversation and messages
     if conversation_id:
-        conversation = get_conversation(conversation_id)
-        if conversation and conversation.user_id == current_user.id:
+        conversation = get_user_conversation(conversation_id, current_user.id)
+        if conversation:
             messages = get_conversation_messages(conversation_id)
-            if messages:
-                last_msg_with_model = next(
-                    (m for m in reversed(messages) if m.model), None
-                )
-                if last_msg_with_model:
-                    selected_model = last_msg_with_model.model
+            # Preselect the model last used here, unless it has since been retired.
+            last_model = next(
+                (m.model for m in reversed(messages) if is_known_model(m.model or "")),
+                None,
+            )
+            if last_model:
+                selected_model = last_model
+    if not is_known_model(selected_model):
+        selected_model = DEFAULT_MODEL_KEY
 
     # Build available models for selector
     available_models = [
@@ -374,52 +376,57 @@ def chat_page():
     )
 
 
-@chat.route("/answer", methods=["GET", "POST"])
+@chat.route("/answer", methods=["POST"])
 @limiter.limit(plan_limits)
 @login_required
 @require_active_subscription
 @enforce_token_quota  # Apply token quota limits
 def answer():
+    """Stream one assistant reply as text/plain.
+
+    Everything that can be refused is refused before the stream starts, while a
+    status code can still say so: 400 bad input, 404 a conversation that is not the
+    caller's, 413 a prompt over the model's input budget.
+    """
+    data = request.get_json(silent=True)
+    if not isinstance(data, dict):
+        return jsonify(error="Expected a JSON object."), 400
+
+    message = data.get("message")
+    if not isinstance(message, str) or not message.strip():
+        return jsonify(error="message is required."), 400
+
+    model = data.get("model") or DEFAULT_MODEL_KEY
+    if not isinstance(model, str) or not is_known_model(model):
+        return jsonify(error="Unknown model."), 400
+
+    raw_id = data.get("conversation_id")
+    conversation_id = None
+    if raw_id not in (None, "", "None", "null"):
+        try:
+            if isinstance(raw_id, bool):
+                raise TypeError
+            conversation_id = int(raw_id)
+        except (TypeError, ValueError):
+            return jsonify(error="conversation_id must be an integer."), 400
+        if get_user_conversation(conversation_id, current_user.id) is None:
+            return jsonify(error="Conversation not found."), 404
+
+    streamer = AIStreamer(current_app.extensions["ai_providers"])
     try:
-        data = request.get_json()
-        message = data["message"]
-        model = data.get("model", "gpt-3.5-turbo")  # default fallback
-        raw_conversation_id = data.get("conversation_id")
+        streamer.check_prompt(message, model)
+    except PromptTooLongError as err:
+        return jsonify(error=str(err)), 413
 
-        user_id = current_user.get_id()
+    user_id = current_user.id
+    if conversation_id is None:
+        conversation_id = create_conversation(user_id, message).id
 
-        if raw_conversation_id in (None, "", "None", "null"):
-            conversation_id = None
-        else:
-            try:
-                conversation_id = int(raw_conversation_id)
-            except (TypeError, ValueError):
-                conversation_id = None
-
-        if not conversation_id:
-            conversation = create_conversation(user_id, message)
-            conversation_id = conversation.id
-
-        from app.services.ai_streamer import AIStreamer  # adjust path as needed
-
-        streamer = AIStreamer()
-
-        @stream_with_context
-        def generate():
-            response = streamer.chat(message, user_id, conversation_id, model)
-            for res in response:
-                yield res
-
-        response = Response(generate(), content_type="text/plain")
-        response.headers["X-Conversation-Id"] = str(conversation_id)
-        # This line delivers a fresh CSRF token to the client for the next request
-        response.headers["X-CSRFToken"] = generate_csrf()
-        return response
-    except Exception as e:
-        logger.error(
-            "Error in /answer: user_id=%s remote_addr=%s error=%s",
-            current_user.get_id(),
-            request.remote_addr,
-            e,
-        )
-        return Response("Internal Server Error", status=500)
+    response = Response(
+        stream_with_context(streamer.chat(message, user_id, conversation_id, model)),
+        content_type="text/plain; charset=utf-8",
+    )
+    response.headers["X-Conversation-Id"] = str(conversation_id)
+    # A fresh CSRF token for the client's next request
+    response.headers["X-CSRFToken"] = generate_csrf()
+    return response

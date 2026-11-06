@@ -1,236 +1,115 @@
+"""OpenAI adapter: the Responses API by default, Chat Completions on request.
+
+Registry ``options`` for OpenAI entries:
+
+* ``endpoint``: ``"responses"`` (default) or ``"chat"``.
+* ``reasoning_effort``: forwarded as ``reasoning={"effort": ...}`` on the Responses
+  API. GPT-5-family models accept ``temperature``/``top_p`` only when the effort is
+  ``"none"``; the registry enforces that pairing.
+
+Responses are created with ``store=False``: Syvrona keeps its own history, so there is
+no reason to leave a copy of every conversation on OpenAI's side.
+"""
+
 from __future__ import annotations
 
-import time
 import logging
-from collections.abc import Generator
-from typing import Dict, List, Optional, Any
+from collections.abc import Iterator
+from typing import Any
 
-from openai import OpenAI, Stream
-from openai._exceptions import OpenAIError
+from openai import APIStatusError, OpenAI
 
-from app.providers.base_provider import AIProvider
-from app.services.conversation import get_conversation_messages
-from app.model_registry import MODEL_REGISTRY
+from app.providers.base_provider import (
+    MODEL_ACCESS_STATUS_CODES,
+    AIProvider,
+    ChatRequest,
+    ModelAccessError,
+    ProviderError,
+)
 
 logger = logging.getLogger(__name__)
 
-
-class ModelAccessError(RuntimeError):
-    """Raised when the org is not verified or the model is otherwise unavailable."""
-
-
-class _EndpointStrategy:
-    """Encapsulates how to call a given OpenAI endpoint and iterate the stream."""
-
-    def __init__(self, endpoint_name: str):
-        self.endpoint_name = endpoint_name
-
-    def create_stream(
-        self,
-        client: OpenAI,
-        model: str,
-        messages: List[Dict[str, str]],
-        generation_config: Dict[str, Any],
-    ) -> Stream:
-        """
-        Create a streaming response using the appropriate OpenAI endpoint.
-
-        generation_config comes from MODEL_REGISTRY["generation_config"], but we
-        only pass through parameters that are actually supported by the endpoint.
-        """
-        # Common config
-        temperature = generation_config.get("temperature")
-        top_p = generation_config.get("top_p")
-        max_tokens = generation_config.get("max_tokens")  # optional, may be absent
-
-        if self.endpoint_name == "chat":
-            kwargs: Dict[str, Any] = {"stream": True}
-            if temperature is not None:
-                kwargs["temperature"] = temperature
-            if top_p is not None:
-                kwargs["top_p"] = top_p
-            if max_tokens is not None:
-                kwargs["max_tokens"] = max_tokens
-
-            return client.chat.completions.create(
-                model=model,
-                messages=messages,
-                **kwargs,
-            )
-
-        elif self.endpoint_name == "responses":
-            kwargs = {"stream": True}
-            if temperature is not None:
-                kwargs["temperature"] = temperature
-            if top_p is not None:
-                kwargs["top_p"] = top_p
-            # Responses API uses max_output_tokens, not max_tokens
-            if max_tokens is not None:
-                kwargs["max_output_tokens"] = max_tokens
-
-            return client.responses.create(
-                model=model,
-                input=messages,
-                **kwargs,
-            )
-
-        else:
-            raise ValueError(f"Unknown strategy '{self.endpoint_name}'")
-
-
-def build_strategy_registry() -> dict[str, _EndpointStrategy]:
-    strat: Dict[str, _EndpointStrategy] = {}
-    for model, meta in MODEL_REGISTRY.items():
-        if meta.get("provider") == "openai":
-            endpoint = meta.get("openai_endpoint", "chat")
-            strat[model] = _EndpointStrategy(endpoint)
-    return strat
-
-
-STRATEGY_REGISTRY: Dict[str, _EndpointStrategy] = build_strategy_registry()
+SAMPLING_KEYS = ("temperature", "top_p")
 
 
 class OpenAIProvider(AIProvider):
-    """Streams tokens from any OpenAI model supported by the account."""
+    def __init__(self, client: OpenAI | None = None) -> None:
+        self._client = client or OpenAI()
 
-    def __init__(
-        self,
-        client: Optional[OpenAI] = None,
-        strategy_registry: Optional[Dict[str, _EndpointStrategy]] = None,
-    ):
-        self.client: OpenAI = client or OpenAI()
-        self.strategy_registry = strategy_registry or STRATEGY_REGISTRY
-
-    def stream_response(
-        self,
-        message: str,
-        user_id: int,
-        conversation_id: Optional[int],
-        model: str,
-        system_prompt: Optional[str] = None,
-    ) -> Generator[str, None, None]:
-        logger.info(
-            "OpenAIProvider: user=%s  conv=%s  model=%s",
-            user_id,
-            conversation_id,
-            model,
-        )
-        start = time.monotonic()
-
-        # Build message context
-        messages = self._build_context(conversation_id, message, system_prompt)
-
-        # Look up strategy and per-model generation config
+    def stream(self, request: ChatRequest) -> Iterator[str]:
+        endpoint = request.options.get("endpoint", "responses")
         try:
-            strategy = self.strategy_registry[model]
-        except KeyError:
-            raise ModelAccessError(
-                f"Unknown or disabled model '{model}'. "
-                "Check app.config['OPENAI_MODELS']."
-            )
-
-        meta = MODEL_REGISTRY.get(model, {}) or {}
-        generation_config: Dict[str, Any] = meta.get("generation_config", {}) or {}
-
-        try:
-            stream = strategy.create_stream(
-                self.client,
-                model,
-                messages,
-                generation_config=generation_config,
-            )
-            for chunk in stream:
-                # 1. O3: handle response.output_text.delta event (OpenAI o3)
-                if getattr(chunk, "type", None) == "response.output_text.delta":
-                    text = getattr(chunk, "delta", None)
-                    if text:
-                        yield text
-                        continue
-
-                # 2. Legacy/fallback extraction (for gpt-4, gpt-3.5, etc)
-                if hasattr(chunk, "choices"):
-                    delta = chunk.choices[0].delta
-                    text = getattr(delta, "text", None) or getattr(
-                        delta, "content", None
-                    )
-                    if text:
-                        yield text
-                        continue
-
-                delta = getattr(chunk, "delta", None)
-                if isinstance(delta, dict):
-                    text = delta.get("text") or delta.get("content")
-                    if text:
-                        yield text
-                        continue
-                elif isinstance(delta, str):
-                    yield delta
-                    continue
-
-                # 3. Candidates structure for some O-model events
-                cands = getattr(chunk, "candidates", None)
-                if cands:
-                    cand = cands[0]
-                    delta = getattr(cand, "delta", None)
-                    text = getattr(delta, "text", None) or getattr(
-                        delta, "content", None
-                    )
-                    if text:
-                        yield text
-                        continue
-
-        except OpenAIError as e:
-            if getattr(e, "code", "") == "model_not_found":
-                raise ModelAccessError(str(e)) from e
-            logger.error(
-                "OpenAIProvider error: user=%s conv=%s model=%s error=%s",
-                user_id,
-                conversation_id,
-                model,
-                e,
-            )
+            if endpoint == "responses":
+                yield from self._stream_responses(request)
+            elif endpoint == "chat":
+                yield from self._stream_chat(request)
+            else:
+                raise ValueError(f"Unknown OpenAI endpoint {endpoint!r}")
+        except APIStatusError as err:
+            if err.status_code in MODEL_ACCESS_STATUS_CODES:
+                raise ModelAccessError(str(err)) from err
             raise
 
-        finally:
-            elapsed = time.monotonic() - start
-            logger.info(
-                "OpenAIProvider: user=%s  conv=%s  model=%s  elapsed=%.2f seconds",
-                user_id,
-                conversation_id,
-                model,
-                elapsed,
-            )
+    def _stream_responses(self, request: ChatRequest) -> Iterator[str]:
+        kwargs: dict[str, Any] = {
+            "model": request.model,
+            "input": [{"role": m.role, "content": m.content} for m in request.messages],
+            "max_output_tokens": request.max_output_tokens,
+            "store": False,
+            "stream": True,
+        }
+        if request.system_prompt:
+            kwargs["instructions"] = request.system_prompt
+        if effort := request.options.get("reasoning_effort"):
+            kwargs["reasoning"] = {"effort": effort}
+        kwargs.update(_sampling(request))
 
-    @staticmethod
-    def _build_context(
-        conversation_id: Optional[int],
-        latest_user_msg: Optional[str],
-        system_prompt: Optional[str],
-    ) -> List[Dict[str, str]]:
-        context: List[Dict[str, str]] = []
-        if system_prompt:
-            context.append({"role": "system", "content": system_prompt})
+        with self._client.responses.create(**kwargs) as stream:
+            for event in stream:
+                if event.type == "response.output_text.delta":
+                    if event.delta:
+                        yield event.delta
+                elif event.type == "error":
+                    raise ProviderError(
+                        f"OpenAI stream error {event.code}: {event.message}"
+                    )
+                elif event.type == "response.failed":
+                    error = event.response.error
+                    detail = f"{error.code}: {error.message}" if error else "unknown"
+                    raise ProviderError(f"OpenAI response failed: {detail}")
+                elif event.type == "response.incomplete":
+                    details = event.response.incomplete_details
+                    logger.warning(
+                        "OpenAI response incomplete: "
+                        "user=%s conv=%s model=%s reason=%s",
+                        request.user_id,
+                        request.conversation_id,
+                        request.model,
+                        details.reason if details else "unknown",
+                    )
 
-        if conversation_id:
-            for msg in get_conversation_messages(conversation_id):
-                if msg.role in ("user", "assistant"):
-                    context.append({"role": msg.role, "content": msg.content})
+    def _stream_chat(self, request: ChatRequest) -> Iterator[str]:
+        messages: list[dict[str, str]] = []
+        if request.system_prompt:
+            messages.append({"role": "system", "content": request.system_prompt})
+        messages += [{"role": m.role, "content": m.content} for m in request.messages]
+        kwargs: dict[str, Any] = {
+            "model": request.model,
+            "messages": messages,
+            "max_completion_tokens": request.max_output_tokens,
+            "stream": True,
+        }
+        kwargs.update(_sampling(request))
 
-        if latest_user_msg:
-            context.append({"role": "user", "content": latest_user_msg})
+        with self._client.chat.completions.create(**kwargs) as stream:
+            for chunk in stream:
+                if chunk.choices and (content := chunk.choices[0].delta.content):
+                    yield content
 
-        return context
 
-
-# Optional: keep _extract_token as legacy/future helper,
-# but **don't** collapse all in main flow
-def _extract_token(chunk: Any) -> Optional[str]:
-    text = getattr(chunk, "output_text", None)
-    if text:
-        return text
-    delta = getattr(chunk, "delta", None)
-    if delta:
-        if isinstance(delta, dict):
-            return delta.get("text") or delta.get("content")
-        return getattr(delta, "text", None) or getattr(delta, "content", None)
-    return None
+def _sampling(request: ChatRequest) -> dict[str, Any]:
+    return {
+        k: request.generation_config[k]
+        for k in SAMPLING_KEYS
+        if k in request.generation_config
+    }

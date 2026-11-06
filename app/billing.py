@@ -16,7 +16,7 @@ import stripe
 from app.feature_flags import get_feature_config, is_feature_enabled
 from . import db
 from .models import User
-from datetime import datetime
+from datetime import UTC, datetime
 import os
 
 logger = logging.getLogger(__name__)
@@ -26,6 +26,10 @@ stripe.api_key = os.getenv("STRIPE_API_KEY")
 billing = Blueprint("billing", __name__)
 
 
+def _utc(timestamp: int) -> datetime:
+    return datetime.fromtimestamp(timestamp, tz=UTC)
+
+
 @billing.route("/create-checkout-session", methods=["POST"])
 @login_required
 def create_checkout_session():
@@ -33,10 +37,16 @@ def create_checkout_session():
     if not current_user.is_authenticated:
         return jsonify({"error": "Unauthorized"}), 401
 
-    data = request.get_json()
+    data = request.get_json(silent=True) or {}
     price_id = data.get("price_id")
     if not price_id:
         return jsonify({"error": "Missing price_id"}), 400
+    # Only the plans this app sells; a client-chosen price could be any price on
+    # the Stripe account.
+    if price_id not in set(
+        filter(None, current_app.config["STRIPE_PRICE_IDS"].values())
+    ):
+        return jsonify({"error": "Unknown price_id"}), 400
 
     # Check if the user already has a Stripe customer
     if not current_user.stripe_customer_id:
@@ -69,13 +79,20 @@ def create_checkout_session():
             ],
             mode="subscription",
             allow_promotion_codes=True,
-            success_url=url_for("profile", _external=True)
+            success_url=url_for("auth.profile", _external=True)
             + "?session_id={CHECKOUT_SESSION_ID}",
-            cancel_url=url_for("profile", _external=True),
+            cancel_url=url_for("auth.profile", _external=True),
         )
         return jsonify({"checkout_url": checkout_session.url})
-    except Exception as e:
-        return jsonify(error=str(e)), 500
+    except stripe.StripeError as e:
+        # Logged in full; the client gets no Stripe internals.
+        logger.error(
+            "Checkout session failed: user_id=%s price_id=%s error=%s",
+            current_user.id,
+            price_id,
+            e,
+        )
+        return jsonify(error="Could not start checkout."), 502
 
 
 @csrf.exempt
@@ -91,7 +108,7 @@ def stripe_webhook():
     except ValueError as e:
         logger.error(f"Invalid payload: {e}")
         return jsonify({"error": "Invalid payload"}), 400
-    except stripe.error.SignatureVerificationError as e:
+    except stripe.SignatureVerificationError as e:
         logger.error(f"Invalid signature: {e}")
         return jsonify({"error": "Invalid signature"}), 400
 
@@ -129,22 +146,16 @@ def stripe_webhook():
             if items:
                 item = items[0]
                 user.subscription_plan = item["price"]["id"]
-                user.subscription_start = datetime.fromtimestamp(
-                    item["current_period_start"]
-                )
+                # Stripe timestamps are Unix seconds; store them as UTC (D8).
+                user.subscription_start = _utc(item["current_period_start"])
                 # For canceled, prefer ended_at if present, otherwise fall back
                 if subscription["status"] == "canceled":
                     ended_at = subscription.get("ended_at")
-                    if ended_at:
-                        user.subscription_end = datetime.fromtimestamp(ended_at)
-                    else:
-                        user.subscription_end = datetime.fromtimestamp(
-                            item["current_period_end"]
-                        )
-                else:
-                    user.subscription_end = datetime.fromtimestamp(
-                        item["current_period_end"]
+                    user.subscription_end = _utc(
+                        ended_at if ended_at else item["current_period_end"]
                     )
+                else:
+                    user.subscription_end = _utc(item["current_period_end"])
 
             else:
                 # If no items present, clear subscription plan and dates

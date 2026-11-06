@@ -1,8 +1,13 @@
 # app/models.py
+from datetime import UTC, date, datetime
+
 from flask_login import UserMixin
-from . import db
-from datetime import datetime, UTC
 from sqlalchemy.dialects import mysql
+from sqlalchemy.dialects.mysql import insert as mysql_insert
+from sqlalchemy.dialects.postgresql import insert as postgresql_insert
+from sqlalchemy.dialects.sqlite import insert as sqlite_insert
+
+from . import db
 
 
 class User(UserMixin, db.Model):
@@ -96,7 +101,7 @@ class Message(db.Model):
         "Conversation",
         backref=db.backref(
             "messages",
-            order_by="Message.created_at",
+            order_by="[Message.created_at, Message.id]",
             cascade="all, delete-orphan",
             passive_deletes=True,
         ),
@@ -104,7 +109,7 @@ class Message(db.Model):
 
     role = db.Column(db.String(10), nullable=False)  # 'user' or 'assistant'
     content = db.Column(db.Text, nullable=False)
-    model = db.Column(db.String(50), nullable=True)  # e.g., 'gpt-3.5-turbo'
+    model = db.Column(db.String(50), nullable=True)  # registry key, e.g. 'gpt-6.1-sol'
     tags = db.relationship("Tag", secondary=message_tags, backref="messages")
     is_favorite = db.Column(db.Boolean, default=False)
     created_at = db.Column(db.DateTime, default=lambda: datetime.now(tz=UTC))
@@ -321,14 +326,14 @@ def get_user_conversations(user_id):
 
 
 def get_conversation(conversation_id):
-    conversation = Conversation.query.get(conversation_id)
-    return conversation
+    return db.session.get(Conversation, conversation_id)
 
 
 def get_conversation_messages(conversation_id):
+    # id breaks created_at ties (one-second resolution on MySQL DATETIME).
     messages = (
         Message.query.filter_by(conversation_id=conversation_id)
-        .order_by(Message.created_at)
+        .order_by(Message.created_at, Message.id)
         .all()
     )
     return messages
@@ -337,14 +342,14 @@ def get_conversation_messages(conversation_id):
 def get_conversation_messages_by_role(conversation_id, role):
     messages = (
         Message.query.filter_by(conversation_id=conversation_id, role=role)
-        .order_by(Message.created_at)
+        .order_by(Message.created_at, Message.id)
         .all()
     )
     return messages
 
 
 def update_conversation_title(conversation_id, title):
-    conversation = Conversation.query.get(conversation_id)
+    conversation = db.session.get(Conversation, conversation_id)
     if conversation:
         conversation.title = title
         db.session.commit()
@@ -353,7 +358,7 @@ def update_conversation_title(conversation_id, title):
 
 
 def delete_conversation(conversation_id):
-    conversation = Conversation.query.get(conversation_id)
+    conversation = db.session.get(Conversation, conversation_id)
     if conversation:
         db.session.delete(conversation)
         db.session.commit()
@@ -426,3 +431,44 @@ def search_conversations_by_message(user_id, query, limit_per_convo=1, max_convo
     # For template convenience, map by id (could be sparse ordering if you want
     # to preserve match recency)
     return conversations, convo_to_msgs
+
+
+# ---------------------------------------------------------------------------
+# Monthly token usage
+# ---------------------------------------------------------------------------
+
+
+def usage_period_start(now: datetime | None = None) -> date:
+    """First day of the current month in UTC: the key of a ``UsageStat`` row."""
+    return (now or datetime.now(tz=UTC)).date().replace(day=1)
+
+
+def add_usage_tokens(user_id: int, tokens: int, period_start: date) -> None:
+    """Atomically add ``tokens`` to the user's counter for ``period_start``.
+
+    One INSERT ... ON CONFLICT/ON DUPLICATE KEY statement per dialect, so concurrent
+    requests cannot lose an increment. Does not commit: the caller decides the
+    transaction (``AIStreamer`` commits it together with the turn's messages).
+    """
+    if tokens <= 0:
+        return
+    values = {"user_id": user_id, "period_start": period_start, "tokens": tokens}
+    dialect = db.session.get_bind(mapper=UsageStat.__mapper__).dialect.name
+    if dialect in ("mysql", "mariadb"):
+        stmt = mysql_insert(UsageStat).values(**values)
+        stmt = stmt.on_duplicate_key_update(tokens=UsageStat.tokens + tokens)
+    elif dialect in ("sqlite", "postgresql"):
+        insert = sqlite_insert if dialect == "sqlite" else postgresql_insert
+        stmt = insert(UsageStat).values(**values)
+        stmt = stmt.on_conflict_do_update(
+            index_elements=["user_id", "period_start"],
+            set_={"tokens": UsageStat.tokens + tokens},
+        )
+    else:
+        raise NotImplementedError(f"No usage upsert for dialect {dialect!r}")
+    db.session.execute(stmt)
+
+
+def get_usage_tokens(user_id: int, period_start: date) -> int:
+    stat = UsageStat.query.filter_by(user_id=user_id, period_start=period_start).first()
+    return stat.tokens if stat else 0
