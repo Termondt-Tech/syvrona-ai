@@ -170,3 +170,10 @@ cython_debug/
 .flaskenv.prod
 .env.prod
 app/.flaskenv.dev
+
+# Claude Code: personal overrides and worktrees stay local; .claude/settings.json is shared
+.claude/settings.local.json
+.claude/worktrees/
+
+# Leftover tooling (nothing references it)
+node_modules/

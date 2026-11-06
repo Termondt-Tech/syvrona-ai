@@ -1,22 +1,48 @@
-# Exclude Python cache files
-__pycache__/
-*.pyc
-*.pyo
+# Build context for the web and test images. The Dockerfile does `COPY . .`, so
+# anything not listed here ends up in every image built from this tree.
+# Keep `tests/` and `conftest.py`: the compose `test` service runs pytest
+# inside this same image.
 
-# Exclude logs
-*.log
+# Secrets and local configuration. Only compose `env_file` or the environment
+# may supply them. (`.env*` also covers `.env.example`, which has no values.)
+.env*
+**/.flaskenv*
+**/*.log
 
-# Exclude environment files
-.env
+# Version control, editor and agent state
+.git
+.github
+.gitignore
+.dockerignore
+.gitleaksignore
+.DS_Store
+.vscode
+.idea
+.claude
 
-# Exclude virtual environments
-venv/
-.env/
+# Local Python environments and caches
+.venv
+venv
+env
+**/__pycache__
+**/*.py[cod]
+.pytest_cache
+.mypy_cache
 
-# Exclude Docker-related files
+# Local data and leftover tooling
+**/instance
+db
+node_modules
+**/*.db
+**/*.sqlite
+**/*.sqlite3
+
+# Documentation and repo metadata not needed at runtime
+docs
+*.md
+
+# Files that describe or drive the deployment rather than belong in the image
 Dockerfile
-docker-compose.yml
-
-# Exclude other unnecessary files
-*.swp
-*.swo
+docker-compose*.yml
+deploy.sh
+mysql-conf

@@ -126,9 +126,7 @@ docker compose up -d --build
 ## 10. Initialize MySQL DB
 
 ``` bash
-docker exec -it <container_name> /bin/sh
-python create_database.py
-exit
+docker exec -it <container_name> flask db upgrade
 ```
 
 ## 11. Configure Firewall

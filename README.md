@@ -9,6 +9,10 @@ Syvrona is an AI-powered technician assistant platform, built with Flask and des
 ## 📚 Documentation
 
 - [Best Practices](docs/best_practices.md)
+- [Claude Code guide (CLAUDE.md)](CLAUDE.md)
+- [Modernization and value assessment, 2026-11-05](docs/syvrona-modernization-and-value-assessment-2026-11-05.md)
+- [Architecture reference, 2026-06-30](docs/architecture-reference-2026-06-30.md)
+- [Git-history secret scan, 2026-11-06](docs/git-history-secret-scan-2026-11-06.md)
 - [Deployment Guide](docs/deployment.md)
 - [DigitalOcean Install Guide](docs/digital_ocean_install.md)
 - [Product Roadmap](docs/roadmap.md)

@@ -48,9 +48,9 @@ def test_register_new_user(client):
             data={
                 "email": "newuser@example.com",
                 "name": "Test User",
-                "password": "StrongPass123",
+                "password": "StrongPass123",  # gitleaks:allow
                 "plan": "free",
-                "confirm_password": "StrongPass123",
+                "confirm_password": "StrongPass123",  # gitleaks:allow
             },
             follow_redirects=True,
         )
@@ -94,9 +94,9 @@ def test_signup_missing_fields(client):
         data={
             "email": "",
             "name": "Test User",
-            "password": "StrongPass123",
+            "password": "StrongPass123",  # gitleaks:allow
             "plan": "free",
-            "confirm_password": "StrongPass123",
+            "confirm_password": "StrongPass123",  # gitleaks:allow
         },
         follow_redirects=True,
     )
@@ -132,9 +132,9 @@ def test_signup_duplicate_email(client):
             data={
                 "email": "dup@example.com",
                 "name": "Dup User",
-                "password": "StrongPass123",
+                "password": "StrongPass123",  # gitleaks:allow
                 "plan": "free",
-                "confirm_password": "StrongPass123",
+                "confirm_password": "StrongPass123",  # gitleaks:allow
             },
             follow_redirects=True,
         )
@@ -144,9 +144,9 @@ def test_signup_duplicate_email(client):
             data={
                 "email": "dup@example.com",
                 "name": "Dup User",
-                "password": "StrongPass123",
+                "password": "StrongPass123",  # gitleaks:allow
                 "plan": "free",
-                "confirm_password": "StrongPass123",
+                "confirm_password": "StrongPass123",  # gitleaks:allow
             },
             follow_redirects=True,
         )

@@ -1,0 +1,14 @@
+# Known false positives in git history (gitleaks fingerprint: commit:file:rule:line).
+# All eight are the fixture password posted to the sign-up form in tests/test_app.py,
+# which authenticates nothing outside the SQLite test run.
+# See docs/git-history-secret-scan-2026-11-06.md, sections 2 and 8.
+# The current copies of those lines carry an inline `# gitleaks:allow` instead.
+# Add an entry here only for a reviewed false positive, never to silence a real key.
+0ba7bf8d675b9768702076c14ad29d8a66f592e2:tests/test_app.py:generic-api-key:46
+9cbaa026ace4172b5a697752638a4d7857987f14:tests/test_app.py:generic-api-key:48
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:99
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:101
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:139
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:141
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:151
+63b1f29abd578faf2a06576ddc23f9fcf18546f6:tests/test_app.py:generic-api-key:153
