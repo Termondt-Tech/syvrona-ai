@@ -1,0 +1,25 @@
+{
+  "permissions": {
+    "allow": [
+      "Bash(docker compose build test)",
+      "Bash(docker compose run --rm test)",
+      "Bash(python -m pytest:*)",
+      "Bash(pytest:*)",
+      "Bash(black --check:*)",
+      "Bash(flake8:*)",
+      "Bash(git status:*)",
+      "Bash(git diff:*)",
+      "Bash(git log:*)",
+      "Bash(git branch:*)",
+      "Bash(git tag:*)"
+    ],
+    "deny": [
+      "Read(./.env)",
+      "Read(./.env.prod)",
+      "Read(./.flaskenv)",
+      "Read(./.flaskenv.prod)",
+      "Read(./app/.flaskenv.dev)",
+      "Read(./app.log)"
+    ]
+  }
+}
