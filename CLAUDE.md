@@ -15,7 +15,7 @@ public export, not product development, unless Rich says otherwise.
 | [`docs/syvrona-modernization-and-value-assessment-2026-11-05.md`](docs/syvrona-modernization-and-value-assessment-2026-11-05.md) | Current state, the gap inventory, the defects found by reading (D1 to D12), the P0 to P3 action list, the open-source plan. **Read before any change.** |
 | [`docs/architecture-reference-2026-06-30.md`](docs/architecture-reference-2026-06-30.md) | The long-form architecture reference (the former CLAUDE.md): data flow, streaming, registries, schema, and §13 on porting the AI layer to TOMIC. |
 | [`docs/git-history-secret-scan-2026-11-06.md`](docs/git-history-secret-scan-2026-11-06.md) | AI-3 result: no credential in any commit, ref, issue or PR; the one false positive; what a public flip would still expose (the personal commit email). |
-| `README.md` | Local setup, release drafting and PR auto-labeling. |
+| `README.md`, `NOTICE` | The public front page (retired status, local setup, licence) and the licence map: Apache-2.0 code, CC BY 4.0 docs (`LICENSE-docs`), MIT for the two bundled JS libraries (`THIRD_PARTY_LICENSES`). |
 | `docs/deployment.md`, `docs/digital_ocean_install.md` | The droplet deploy and provisioning procedures. Historical: the site is down. |
 | `docs/releases/`, `CHANGELOG.md` | One note per tag; new notes copy `docs/releases/release_template.md`. |
 | `docs/roadmap.md` | The 2025 product roadmap. Historical, not a plan. |
@@ -24,12 +24,18 @@ public export, not product development, unless Rich says otherwise.
 
 **Assessment done 2026-11-05. T0 hygiene landed 2026-11-06**: `.dockerignore` rewritten
 (AI-2) and the dead files removed (`run.back`, `test_config.py`, `tests/create_database.py`,
-`instance/`, `node_modules/`, `db/`). Still open and gating everything else: rotate the
-credentials sitting in `.flaskenv`, `.flaskenv.prod`, `app/.flaskenv.dev`, `.env` and
-`.env.prod`, then delete the three `.flaskenv*` files and `app.log` (AI-1, Rich). The
-git-history scan (AI-3) is done and clean, and the Secret Scan workflow (SC-3) re-runs it on
-every push; the open publication question is the personal email on every commit. → the
-assessment, §8, and the scan record, §6.
+`instance/`, `node_modules/`, `db/`). **AI-1 done 2026-11-06**: Rich revoked every
+provider key at its provider and deleted the three `.flaskenv*` files and `app.log`;
+`.env` and `.env.prod` remain locally and hold only dead keys. The git-history scan (AI-3)
+is done and clean, and the Secret Scan workflow (SC-3) re-runs it on every push. **SC-2
+decided 2026-11-06**: keep the author email and publish by flipping this repository in
+place, history included; the address is already public on four other repositories, so a
+rewrite would hide nothing. Rich flips. **Repo-side publication prep done 2026-11-06**
+(AI-11 in part, AI-7's pinning): Apache-2.0 licence, README reframed as a retired archive,
+every workflow action pinned by SHA with an explicit `permissions` block. Left before the
+flip: re-run both gitleaks scans on the final commit (SC-5); after it, secret scanning
+and push protection (SC-4). The 48 open issues were closed as not planned with an archive
+comment and the six merged branches deleted, both 2026-11-06; `master` is the only branch. → the assessment, §7 and §8, and the scan record, §6.
 
 ## Build / test / lint
 
@@ -59,11 +65,13 @@ versions). Lint explicit paths locally: `pyproject.toml` sets `exclude`, which t
 black's default skipping of `.venv`, so `black .` would crawl it.
 
 Dev server: `python app.py` (host and port from `FLASK_RUN_HOST` / `FLASK_RUN_PORT`) or
-`flask run` via `.flaskenv`. Production: `gunicorn -c app/gunicorn.conf.py "app:create_app()"`.
+`flask run` (the CLI reads `.env` through python-dotenv). Production:
+`gunicorn -c app/gunicorn.conf.py "app:create_app()"`.
 
-**Credentials load from three places** (compose `env_file: .env`, `load_dotenv()` in
-`app.py`, the `flask` CLI's `.flaskenv`). Treat `.env` as the only one; `.env.example`
-lists every variable name with no values.
+**Credentials load from `.env` only** (compose `env_file: .env`, `load_dotenv()` in
+`app.py`, the `flask` CLI). The `.flaskenv*` files were deleted on 2026-11-06; do not
+recreate them, since the `flask` CLI would read one silently. `.env.example` lists every
+variable name with no values.
 
 ## Architecture at a glance
 
@@ -122,7 +130,8 @@ are `datetime.now(tz=UTC)`.
 - The Dockerfile does `COPY . .`; `.dockerignore` (rewritten 2026-11-06) is all that keeps
   `.env*`, `.flaskenv*`, logs, `.venv/`, `.git/` and `docs/` out of the image. **`tests/`
   and `conftest.py` must stay in the context**: the compose `test` service runs pytest
-  inside the same image. Every image built before 2026-11-06 carries live keys (AI-1).
+  inside the same image. Images built before 2026-11-06 carry the old keys, now revoked
+  (AI-1).
 - `requests` is imported by `app/utils.py` but not declared in `requirements.txt`.
 - `encoding` is `cl100k_base` for every model; GPT-5.x use `o200k_base` and Claude and
   Gemini have no tiktoken encoding. Quota counts are approximate everywhere.
@@ -153,6 +162,9 @@ are `datetime.now(tz=UTC)`.
   a `**Type:**` line saying what the document may and may not change, "Verified against
   source: <sha>", numbered sections, evidence by `module::name` anchor, `> **Unverified:**`
   inline, and a P0 to P3 action table.
+- Vendoring third-party code into `app/static/` means a `NOTICE` entry (name, version,
+  path, licence) and its upstream licence text in `THIRD_PARTY_LICENSES`. Pin new
+  workflow actions by full commit SHA with the tag as a trailing comment.
 - Secrets only from the environment. Never print a value from `.env*` or `.flaskenv*`
   into a document, a log or a commit; `.claude/settings.json` denies reading them.
 - A gitleaks hit is a real key until reviewed. A reviewed false positive gets an inline
@@ -181,7 +193,8 @@ app/
 migrations/                 Alembic, 14 revisions, linear chain
 tests/test_app.py conftest.py   23 tests; SQLite StaticPool; CSRF off
 docker-compose.yml          web, mysql:8.0, redis:8, test; docker-compose.override.yml bind-mounts for dev only
-.github/workflows/          test.yml, python-lint.yml, docker-build.yml, release-drafter.yml (tags, not SHAs);
-                            secret-scan.yml (gitleaks over full history; action and image pinned by digest)
+.github/workflows/          test.yml, python-lint.yml, docker-build.yml, release-drafter.yml, secret-scan.yml;
+                            every action pinned by commit SHA, every workflow has a `permissions` block
+LICENSE NOTICE LICENSE-docs THIRD_PARTY_LICENSES   Apache-2.0 code, CC BY 4.0 docs, bundled MIT texts
 docs/                       assessment, architecture reference, deployment, releases/, roadmap (historical)
 ```

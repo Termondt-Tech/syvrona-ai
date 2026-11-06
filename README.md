@@ -2,91 +2,101 @@
 
 ![Syvrona Logo](app/static/images/syvrona-logo-darktext-transparent.png)
 
-Syvrona is an AI-powered technician assistant platform, built with Flask and designed to connect with OpenAI, internal knowledge bases, and third-party systems. It’s developed and maintained by [Termondt Tech](https://termondttech.com).
+**Retired. Not hosted, not maintained, published as an archive.**
+
+Syvrona was a subscription chat workspace for thinking and writing with AI: streaming chat
+with conversation memory, a prompt library and prompt chains, tagging, a choice of OpenAI,
+Anthropic and Google Gemini models, and Stripe billing with per-plan rate limits and monthly
+token quotas. Termondt Tech built and launched it in 2024 and 2025, with ChatGPT as a coding
+assistant and no written rules for that assistant. It is no longer hosted and has no users.
+
+It is public as the "before" picture of the method behind
+[Argus](https://github.com/Termondt-Tech/argus-platform), which was built later by directing
+AI coding agents under written rules. The application code is left as it was when the
+product stopped. The [2026 assessment](docs/syvrona-modernization-and-value-assessment-2026-11-05.md)
+lists what bringing it current would take and the defects found by reading it (D1 to D12),
+none of which are fixed here. The 2026 changes are repository hygiene only: the Docker
+build context, a full-history secret scan, formatting, pinned CI and this licence. More at
+[termondttech.com/syvrona](https://termondttech.com/syvrona).
+
+Every API key the app ever used has been revoked. No credential is in the code or the git
+history: see the [secret-scan record](docs/git-history-secret-scan-2026-11-06.md).
 
 ---
 
-## 📚 Documentation
+## Documentation
 
-- [Best Practices](docs/best_practices.md)
-- [Claude Code guide (CLAUDE.md)](CLAUDE.md)
 - [Modernization and value assessment, 2026-11-05](docs/syvrona-modernization-and-value-assessment-2026-11-05.md)
 - [Architecture reference, 2026-06-30](docs/architecture-reference-2026-06-30.md)
 - [Git-history secret scan, 2026-11-06](docs/git-history-secret-scan-2026-11-06.md)
-- [Deployment Guide](docs/deployment.md)
-- [DigitalOcean Install Guide](docs/digital_ocean_install.md)
-- [Product Roadmap](docs/roadmap.md)
-- [Release Notes](docs/releases/)
-- [Changelog](CHANGELOG.md)
-  
----
-
-## 🚀 Tech Stack
-
-- Python 3.12
-- Flask 3.1.2
-- Docker
-- MySQL
-- OpenAI API integration
-- Anthropic API integration
+- [Claude Code guide (CLAUDE.md)](CLAUDE.md)
+- [Best Practices](docs/best_practices.md)
+- [Deployment Guide](docs/deployment.md) and [DigitalOcean Install Guide](docs/digital_ocean_install.md), historical
+- [Product Roadmap](docs/roadmap.md), historical
+- [Release Notes](docs/releases/) and [Changelog](CHANGELOG.md)
 
 ---
 
-## 🧑‍💻 Local Development Setup
+## Tech stack
+
+- Python 3.12, Flask 3.1, SQLAlchemy 2.0, Alembic migrations
+- MySQL 8.0, Redis (rate limiting), Docker Compose, Gunicorn
+- OpenAI, Anthropic and Google Gemini SDKs behind one streaming endpoint
+- Stripe subscriptions, Mailgun email, optional hCaptcha
+- Jinja2 templates with inline JavaScript; no frontend build
+
+---
+
+## Running it locally
+
+You need your own provider and Stripe keys. Every variable is listed, without values, in
+`.env.example`.
 
 ```bash
-# Clone the repository
 git clone https://github.com/Termondt-Tech/syvrona-ai.git
 cd syvrona-ai
-
-# Spin up local containers
-docker-compose up -d --build
-
-# Enter the app container
-docker exec -it syvrona-ai-web-1 bash
-
-# Migrate database changes - assuming flask db init has already been run
-flask db migrate -m "migration comments..."
-flask db upgrade
-
+cp .env.example .env                                   # fill in your own values
+docker compose up -d --build                           # app at http://localhost:5001
+docker exec -it syvrona-ai-web-1 flask db upgrade      # create the schema
 ```
 
-App runs at: [http://localhost:5001](http://localhost:5001)
+Chat requires an active subscription or an admin account (`app/decorators.py`).
+
+Run the test suite, on SQLite inside the same image:
+
+```bash
+docker compose build test && docker compose run --rm test
+```
 
 ---
 
-## 🔄 Automated Releases & PR Labeling
+## Release history
 
-This repository uses **automated release note generation** and **pull request labeling** to streamline contributions and change tracking:
-
-- **Release Drafter:**  
-  Automatically generates draft release notes from merged PRs.  
-  ➤ Please use clear PR titles, descriptions, and reference issues (e.g., “Fixes #42”).
-
-- **Probot Autolabeler:**  
-  PRs are auto-labeled by file changes and keywords.  
-  ➤ Customize labels in `.github/autolabeler.yml`. Labels include: `bug`, `enhancement`, `documentation`, `question`, etc.
-
-See [.github/release-drafter.yml](.github/release-drafter.yml) and [.github/autolabeler.yml](.github/autolabeler.yml) for details.
-
-### 🧑‍🤝‍🧑 Contributor Guidelines
-
-Help us keep releases organized:
-
-- Use descriptive PR titles and descriptions.
-- Reference related issues (`Fix #123`).
-- Check PR labels before merging.
-
-## 📄 License
-
-This project uses a proprietary license and is the intellectual property of Termondt Tech LLC.  
-See the [LICENSE](LICENSE) file for full terms.
+Releases v1.0.0 to v1.4.8 were cut between May and August 2025 from Git tags. From v1.4.3
+on, Release Drafter built the notes from merged pull requests, and an autolabeler tagged
+pull requests by title and changed files. See [.github/release-drafter.yml](.github/release-drafter.yml),
+[.github/autolabeler.yml](.github/autolabeler.yml), [docs/releases/](docs/releases/) and
+[CHANGELOG.md](CHANGELOG.md).
 
 ---
 
-## 🤝 Maintained By
+## Contributing
 
-**[Rich Termondt](https://termondttech.com)**  
-Founder & Principal Architect at Termondt Tech LLC
+This repository is an archive. Issues and pull requests are not monitored. Fork it freely
+under the licence.
+
+---
+
+## Licence
+
+Code under the Apache License 2.0 (`LICENSE`, `NOTICE`); documents under Creative Commons
+Attribution 4.0 (`LICENSE-docs`). The two bundled JavaScript libraries keep their MIT
+licences (`THIRD_PARTY_LICENSES`). The Syvrona name and logo are not licensed as marks.
+
+---
+
+## Author
+
+**[Rich Termondt](https://termondttech.com)**, Founder and Principal Architect, Termondt Tech LLC
 
 [![Pytest (Docker Compose)](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/test.yml/badge.svg)](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/test.yml) [![Python Lint](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/python-lint.yml/badge.svg)](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/python-lint.yml) [![Docker Build](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/docker-build.yml/badge.svg)](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/docker-build.yml) [![Secret Scan](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/secret-scan.yml/badge.svg)](https://github.com/Termondt-Tech/syvrona-ai/actions/workflows/secret-scan.yml)

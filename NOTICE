@@ -1,0 +1,21 @@
+Syvrona
+Copyright 2024-2026 Termondt Tech LLC
+
+The code in this repository is licensed under the Apache License, Version 2.0
+(see LICENSE). The documents (every file under docs/, and README.md, CLAUDE.md
+and CHANGELOG.md) are licensed under the Creative Commons Attribution 4.0
+International License (see LICENSE-docs).
+
+The Apache License grants no rights to the names "Syvrona" or "Termondt Tech",
+or to the Syvrona logo as a mark (section 6).
+
+This product bundles third-party software under its own licence. The full
+licence texts are in THIRD_PARTY_LICENSES.
+
+  marked 15.0.11, app/static/js/marked.min.js
+    Copyright (c) 2018+, MarkedJS; Copyright (c) 2011-2018, Christopher Jeffrey.
+    MIT License. https://github.com/markedjs/marked
+
+  Sortable 1.15.6, app/static/js/Sortable.min.js
+    Copyright (c) 2019 All contributors to Sortable.
+    MIT License. https://github.com/SortableJS/Sortable
