@@ -1,6 +1,8 @@
 services:
   web:
-    build: .
+    build:
+      context: .
+      target: runtime
     env_file:
       - .env
     ports:
@@ -48,7 +50,9 @@ services:
       timeout: 3s
       retries: 5
   test:
-    build: .
+    build:
+      context: .
+      target: test
     command: pytest
     environment:
       FLASK_ENV: testing

@@ -43,9 +43,15 @@ def update_conversation_title(conversation_id, title):
 
 
 def get_conversation(conversation_id):
-    conversation = Conversation.query.get(conversation_id)
-    if conversation is None:
-        raise ValueError("Conversation not found")
+    """Return the conversation, or ``None`` if there is no such row."""
+    return db.session.get(Conversation, conversation_id)
+
+
+def get_user_conversation(conversation_id, user_id):
+    """Return the conversation only if it exists and belongs to ``user_id``."""
+    conversation = get_conversation(conversation_id)
+    if conversation is None or conversation.user_id != user_id:
+        return None
     return conversation
 
 

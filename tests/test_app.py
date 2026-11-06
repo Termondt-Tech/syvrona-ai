@@ -36,9 +36,10 @@ def test_homepage(client):
 
 
 def test_register_new_user(client):
-    with patch("app.services.signup.send_mailgun_message") as mock_mailgun, patch(
-        "app.services.signup.stripe.Customer.create"
-    ) as mock_stripe_customer:
+    with (
+        patch("app.services.signup.send_mailgun_message") as mock_mailgun,
+        patch("app.services.signup.stripe.Customer.create") as mock_stripe_customer,
+    ):
         mock_mailgun.return_value = None
         mock_stripe_customer.return_value = type(
             "Customer", (), {"id": "cus_test_123"}
@@ -61,11 +62,13 @@ def test_register_new_user(client):
 
 
 def test_signup_paid_plan_redirects_to_stripe(client):
-    with patch("app.services.signup.send_mailgun_message") as mock_mailgun, patch(
-        "app.services.signup.stripe.Customer.create"
-    ) as mock_stripe_customer, patch(
-        "app.services.signup.stripe.checkout.Session.create"
-    ) as mock_stripe_checkout:
+    with (
+        patch("app.services.signup.send_mailgun_message") as mock_mailgun,
+        patch("app.services.signup.stripe.Customer.create") as mock_stripe_customer,
+        patch(
+            "app.services.signup.stripe.checkout.Session.create"
+        ) as mock_stripe_checkout,
+    ):
         mock_mailgun.return_value = None
         mock_stripe_customer.return_value = type(
             "Customer", (), {"id": "cus_paid_123"}
@@ -119,9 +122,10 @@ def test_signup_password_mismatch(client):
 
 
 def test_signup_duplicate_email(client):
-    with patch("app.services.signup.send_mailgun_message") as mock_mailgun, patch(
-        "app.services.signup.stripe.Customer.create"
-    ) as mock_stripe_customer:
+    with (
+        patch("app.services.signup.send_mailgun_message") as mock_mailgun,
+        patch("app.services.signup.stripe.Customer.create") as mock_stripe_customer,
+    ):
         mock_mailgun.return_value = None
         mock_stripe_customer.return_value = type(
             "Customer", (), {"id": "cus_test_dup"}

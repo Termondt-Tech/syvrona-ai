@@ -1,8 +1,11 @@
-from app import create_app
-from dotenv import load_dotenv
 import os
 
+from dotenv import load_dotenv
+
+# Before importing the app: app.config.Config reads os.environ at import time.
 load_dotenv()
+
+from app import create_app  # noqa: E402
 
 app = create_app()
 

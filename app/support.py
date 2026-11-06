@@ -23,7 +23,7 @@ def list_tickets():
 @login_required
 def view_ticket(ticket_id):
 
-    ticket = Ticket.query.get_or_404(ticket_id)
+    ticket = db.get_or_404(Ticket, ticket_id)
     if ticket.user_id != current_user.id and not getattr(
         current_user, "is_staff", False
     ):

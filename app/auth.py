@@ -650,7 +650,7 @@ def dashboard_view():
 @auth.route("/notifications/<int:notification_id>")
 @login_required
 def notification_detail(notification_id):
-    notification = Notification.query.get_or_404(notification_id)
+    notification = db.get_or_404(Notification, notification_id)
 
     # Make sure user can only see their notifications (or broadcasts)
     if notification.for_user_id and notification.for_user_id != current_user.id:

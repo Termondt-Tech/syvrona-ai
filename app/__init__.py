@@ -74,7 +74,12 @@ def create_app(config=None):
 
     @login_manager.user_loader
     def load_user(user_id):
-        return User.query.get(int(user_id))
+        return db.session.get(User, int(user_id))
+
+    # Model providers: built on first use, one per process; tests replace this.
+    from app.services.ai_streamer import ProviderRegistry
+
+    app.extensions.setdefault("ai_providers", ProviderRegistry())
 
     from .routes import main as main_blueprint
 

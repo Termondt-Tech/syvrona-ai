@@ -1,7 +1,7 @@
 """Add Conversation model
 
 Revision ID: 6e6b4a63de26
-Revises: 
+Revises: baseline_2025_05
 Create Date: 2025-05-20 18:53:44.006993
 
 """
@@ -11,7 +11,7 @@ import sqlalchemy as sa
 
 # revision identifiers, used by Alembic.
 revision = '6e6b4a63de26'
-down_revision = None
+down_revision = 'baseline_2025_05'
 branch_labels = None
 depends_on = None
 

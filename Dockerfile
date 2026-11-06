@@ -1,33 +1,31 @@
-# Use the official Python image as the base image
-FROM python:3.12-slim
+# syntax=docker/dockerfile:1
+# Two images from one file:
+#   test     runtime dependencies + pytest; the compose `test` service and CI run it
+#   runtime  what gunicorn serves; built by default because it is the last stage
+# Both install from hash-pinned locks generated from pyproject.toml (see CLAUDE.md).
 
-# Create non-root user and group
+FROM python:3.13.17-slim-trixie AS base
 RUN addgroup --system appgroup && adduser --system --ingroup appgroup appuser
-
-# Set the working directory in the container
 WORKDIR /app
+# tiktoken's BPE file is fetched at build time and verified by tiktoken against its
+# pinned hash, so the server never downloads it while answering a request.
+ENV TIKTOKEN_CACHE_DIR=/opt/tiktoken
 
-# Copy the requirements file to the working directory
-COPY requirements.txt .
-
-# Install the dependencies
-RUN pip install --no-cache-dir -r requirements.txt
-
-# Copy the rest of the application code to the working directory
-COPY . .
-
-# Change ownership of files to appuser
-RUN chown -R appuser:appgroup /app
-
-# Switch to non-root user
+FROM base AS test
+# The container is thrown away after each run, and /app stays root-owned.
+ENV PYTEST_ADDOPTS="-p no:cacheprovider"
+COPY requirements-dev.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements-dev.txt \
+    && python -c "import tiktoken; tiktoken.get_encoding('o200k_base')"
+COPY --chown=appuser:appgroup . .
 USER appuser
+CMD ["pytest"]
 
-# Expose the port on which the Flask app will run
+FROM base AS runtime
+COPY requirements.txt .
+RUN pip install --no-cache-dir --require-hashes -r requirements.txt \
+    && python -c "import tiktoken; tiktoken.get_encoding('o200k_base')"
+COPY --chown=appuser:appgroup . .
+USER appuser
 EXPOSE 5000
-
-# Set the command to run the Flask app in production mode using Gunicorn
 CMD ["gunicorn", "-c", "app/gunicorn.conf.py", "app:create_app()"]
-
-# Alternatively, in development, you might want to use Flask's built-in server (not recommended for production)
-# Uncomment the following line to use Flask's development server:
-# CMD ["python", "app.py"]

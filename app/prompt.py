@@ -164,7 +164,7 @@ def delete_prompt(prompt_id):
 @login_required
 @require_active_subscription
 def use_prompt(prompt_id):
-    prompt = Prompt.query.get_or_404(prompt_id)
+    prompt = db.get_or_404(Prompt, prompt_id)
     if prompt.user_id != current_user.id:
         abort(404)
 

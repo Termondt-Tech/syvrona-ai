@@ -9,13 +9,11 @@ Usage in routes::
 """
 
 from functools import wraps
-from datetime import datetime, UTC
+
 from flask import Response, current_app
-
-
 from flask_login import current_user
 
-from app.models import UsageStat
+from app.models import get_usage_tokens, usage_period_start
 
 FREE_TIER = "free"
 PRO_TIER = "pro"
@@ -61,12 +59,8 @@ def enforce_token_quota(view):
         tier = _tier()  # 'free' or 'pro'
         quota = limits.get(tier, limits.get("free", 50_000))  # default to free quota
 
-        first = datetime.now(tz=UTC).date().replace(day=1)
-        stat = UsageStat.query.filter_by(
-            user_id=current_user.id, period_start=first
-        ).first()
-        tokens_used = stat.tokens if stat else 0
-
+        # One indexed lookup: UNIQUE(user_id, period_start) backs it (see D12).
+        tokens_used = get_usage_tokens(current_user.id, usage_period_start())
         if tokens_used >= quota:
             return Response("Monthly quota exceeded", 402)
         return view(*args, **kwargs)
